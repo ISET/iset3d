@@ -1,0 +1,90 @@
+
+# Dockerize Vistalab's pbrt-v4 to run on the GPU.
+# Note that the images are currently GPU architecture specific
+# Nvidia cc of 6 or better is required
+
+# we have build with 11.6 and 510 for drivers, but this is a stable base choice
+FROM nvidia/cuda:11.4.1-devel-ubuntu20.04
+
+MAINTAINER Zhenyi Liu <zhenyiliu@stanford.edu>
+MAINTAINER David Cardinal <david.cardinal@stanford.edu>
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install a higher version of cmake
+RUN apt-get update -yq && \
+apt-get install -yq software-properties-common && \
+add-apt-repository ppa:graphics-drivers && \
+add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
+apt-get update
+
+# add debugging tools
+RUN apt-get install -y bash vim iputils-ping
+
+RUN apt-get update -yq && apt-get install -yq --no-install-recommends \
+	build-essential \
+	gcc-7 \
+	g++-7 \
+	make \
+	bison \
+	flex \
+	libpthread-stubs0-dev \
+	zlib1g-dev \
+	libgsl-dev \
+	libssl-dev \
+	doxygen \
+	wget \
+       apt-utils \
+       ca-certificates \
+	ninja-build \
+       curl && \
+    rm -rf /var/lib/apt/lists/*
+
+
+# Update and install cmake
+RUN apt-get purge cmake -y && apt autoremove -y \
+&& wget https://cmake.org/files/v3.18/cmake-3.18.1.tar.gz \
+&& tar -xzvf cmake-3.18.1.tar.gz \
+&& cd cmake-3.18.1 \
+&& ./bootstrap \
+&& make -j8 \
+&& make install
+
+
+# Setup folder structure
+RUN mkdir /pbrt
+WORKDIR /pbrt/
+
+# get optiX -- 7.2 is known to work, not sure about newer ones
+COPY NVIDIA-OptiX-SDK-7.2.0-linux64-x86_64 /pbrt/NVIDIA-OptiX-SDK-7.2.0-linux64-x86_64
+
+# Pull the git directory for pbrt-v4
+# We are currently using the omni branch, since it has our support for lenses
+RUN apt-get update -yq && apt-get install -y git \
+&& git clone -b omni --recursive https://github.com/scienstanford/pbrt-v4.git \
+&& git clone https://github.com/Zhenyi-Liu/assimp.git \
+&& cd assimp \
+&& mkdir build \
+&& cd build \
+&& cmake .. \
+&& make -j8 \
+&& make install
+
+# try to build-in libs -- but they may need to be symlinked for this to work
+# possibly modify to use local system version if available?
+COPY libnvoptix.so.1 /usr/lib/x86_64-linux-gnu/libnvoptix.so.1
+COPY libnvidia-rtcore.so.1 /usr/lib/x86_64-linux-gnu/libnnvidia-rtcore.so.1
+
+WORKDIR /pbrt/pbrt-v4/build
+
+# native cmake version of build
+# the shader model selection doesn't seem to work in this version
+# RUN cmake -DPBRT_GPU_SHADER_MODEL=sm_75 -DCMAKE_BUILD_TYPE=MINSIZEREL -DPBRT_OPTIX7_PATH=/pbrt/NVIDIA-OptiX-SDK-7.2.0-linux64-x86_64/ .. \
+
+# Ninja version
+# This is the generator version Matt Pharr suggested for architecture specific builds
+RUN cmake -GNinja -DPBRT_GPU_SHADER_MODEL=sm_75 -DCMAKE_BUILD_TYPE=MINSIZEREL -DPBRT_OPTIX7_PATH=/pbrt/NVIDIA-OptiX-SDK-7.2.0-linux64-x86_64/ .. \
+&& ninja -j12
+
+ENV PATH $PATH:/pbrt/pbrt-v4/build
+

@@ -1,0 +1,28 @@
+
+# Updated Dockerize Vistalab’s pbrt-v4 for CPU.
+
+# Start with Zhenyi's base container
+FROM camerasimulation/pbrt-v4-cpu
+
+MAINTAINER David Cardinal <david.cardinal@stanford.edu>
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install a higher version of cmake
+RUN apt-get update -yq && \
+apt-get install -yq software-properties-common && \
+add-apt-repository ppa:graphics-drivers && \
+add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
+apt-get update
+
+WORKDIR /pbrt/
+
+#add our debugging tools
+RUN apt install -y bash vim iputils-ping
+ENV PATH $PATH:/bin
+
+# Pull the git directory
+
+WORKDIR /pbrt/pbrt-v4/build
+
+ENV PATH $PATH:/pbrt/pbrt-v4/build
