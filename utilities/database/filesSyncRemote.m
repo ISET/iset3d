@@ -1,5 +1,5 @@
 function filesSyncRemote(localDir, hostname, username, remoteDir)
-
+  % another version of dw.upload, if only upload is needed.
     % List local files
     localFiles = dir(localDir);
     
