@@ -108,7 +108,7 @@ end
 
 basecmd = 'docker run %s --name %s --volume="%s":"%s" %s /bin/bash -c "pbrt --toply %s > %s; ls mesh_*.ply"';
 dockercmd = sprintf(basecmd, flags, dockercontainerName, volume, ...
-    dockerWrapper.pathToLinux(volume), dockerimage, dockerWrapper.pathToLinux(fname), [thisName, ext]);
+    pathToLinux(volume), dockerimage, dockerWrapper.pathToLinux(fname), [thisName, ext]);
 % d ockercmd = sprintf(basecmd, dockercontainerName, volume, volume, dockerimage, fname, outputFull);
 % disp(dockercmd)
 %% Run the command

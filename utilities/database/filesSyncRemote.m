@@ -1,10 +1,9 @@
-function filesSyncRemote(localDir, hostname, username, remoteDir)
+function filesSyncRemote(sftpObj, localDir,  remoteDir)
   % another version of dw.upload, if only upload is needed.
     % List local files
     localFiles = dir(localDir);
     
     % Establish an SFTP connection
-    sftpObj = sftp(hostname, username);
     try
         mkdir(sftpObj,remoteDir);
     catch

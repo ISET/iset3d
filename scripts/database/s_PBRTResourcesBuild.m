@@ -44,12 +44,12 @@ remoteUser = 'zhenyiliu';
 remoteServer = sftp('orange.stanford.edu','zhenyiliu');
 remoteDir = '/acorn/data/iset/PBRTResources';
 
-folders = dir(remoteServer,"/acorn/data/iset/PBRTResources");
+folders = dir(remoteServer, remoteDir);
 
-ResourcesTypes = {'assets','scenes','bsdfs','skymaps','spds','lenses','textures'};
+ResourcesTypes = {'asset','scene','bsdf','skymap','spd','lens','texture'};
 
 %% assets
-assetDir = fullfile(remoteDir,'assets');
+assetDir = fullfile(remoteDir,'asset');
 categories = dir(remoteServer, assetDir);
 
 for ii = 1:numel(categories) % first one is '@eaDir'
@@ -61,7 +61,7 @@ for ii = 1:numel(categories) % first one is '@eaDir'
 
     assets = dir(remoteServer, thisCat);
     for jj = 1:numel(assets)
-        if strcmp(assets(jj).name, '@eaDir')
+        if strcmp(assets(jj).name, '@eaDir') || strcmp(assets(jj).name,'textures')
             continue
         end
         thisAsset = fullfile(assets(jj).folder, assets(jj).name);
@@ -74,29 +74,37 @@ for ii = 1:numel(categories) % first one is '@eaDir'
                 'mainfile',[assets(jj).name, '.pbrt'],...
                 'source','blender',...
                 'tags','auto',...
-                'size',piDirSizeGet(remoteServer, thisAsset)/1024^2,... % MB
+                'size',piDirSizeGet(thisAsset,remoteServer)/1024^2,... % MB
                 'format','pbrt');
         end
     end
     fprintf('[INFO]: %s is added.\n',categories(ii).name);
 end
 
-% find all bus
+%% find all bus
 queryStruct.category = 'bus';
 assets = ourDB.contentFind(colName, queryStruct);
 
 
 %% scenes
-[thisID, contentStruct] = ourDB.contentCreate('collection Name',colName, ...
+% upload the file to remote server
+filesSyncRemote(remoteServer, localFolder, remoteDir);
+
+% add this scene to our database
+
+[thisID, contentStruct] = ourDB.contentCreate('collection Name',collectionName, ...
     'type','scene', ...
+    'filepath',remoteDir,...
     'name','low-poly-taxi',...
     'category','iset3d',...
     'mainfile','low-poly-taxi.pbrt',...
     'source','blender',...
     'tags','test',...
-    'size',piDirSizeGet(sceneFolder)/1024^2,... % MB
+    'size',piDirSizeGet(sceneFolder,remoteServer)/1024^2,... % MB
     'format','pbrt'); 
 
+queryStruct.hash = thisID;
+thisScene = ourDB.contentFind(collectionName, queryStruct);
 
 %% scenes
 

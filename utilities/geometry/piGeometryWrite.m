@@ -31,10 +31,10 @@ p = inputParser;
 varargin = ieParamFormat(varargin);
 
 p.addRequired('thisR',@(x)isequal(class(x),'recipe'));
-p.addParameter('remoteresources', getpref('docker','remoteResources',false));
+p.addParameter('remoterender', '');
 p.parse(thisR,varargin{:});
 
-remoteResources = p.Results.remoteresources;
+remoterender = p.Results.remoterender;
 
 %% Create the default file name
 
@@ -75,7 +75,7 @@ if ~isempty(obj)
     % for all of the assets, including objects and lights.
     lvl = 0;
     writeGeometryFlag = 0;
-    recursiveWriteAttributes(fid_obj, obj, rootID, lvl, thisR.outputFile, writeGeometryFlag, thisR, 'remoteresources', remoteResources);
+    recursiveWriteAttributes(fid_obj, obj, rootID, lvl, thisR.outputFile, writeGeometryFlag, thisR, 'remoterender', remoterender);
 else
     % if the tree object is empty, copy the world slot into the geometry
     % file.
@@ -246,7 +246,7 @@ function recursiveWriteAttributes(fid, obj, thisNode, lvl, outFilePath, writeGeo
 %  thisR - The recipe
 %
 % Optional key/val
-%  remoteresources
+%  remoterender
 %
 % Outputs
 %   N/A

@@ -19,11 +19,11 @@ p.addRequired('texture', @isstruct);
 p.addRequired('thisR', @(x)(isa(x,'recipe')));
 
 % remote should be passed in to us if needed
-p.addParameter('remoteresources', false);
+p.addParameter('remoteRender', false);
 
 p.parse(texture, thisR, varargin{:});
 
-remoteResources = p.Results.remoteresources;
+remoteRender = p.Results.remoteRender;
 
 %% String starts with Texture name
 
@@ -82,6 +82,11 @@ for ii=1:numel(textureParams)
             % in the base or in textures/*.  If it does, we do not
             % need to copy it.
             oDir = thisR.get('output dir');
+
+            if remoteRender
+                remoteWorkDir = getpref('ISETDockerPrefs','remoteWorkDir');
+                texturePath = fullfile(remoteWorkDir,texturePath);  
+            end
             if exist(fullfile(oDir,thisVal),'file')
                 % If the file is in the root of the scene, move it
                 % into the 'textures' sub-directory and assign the
@@ -116,9 +121,10 @@ for ii=1:numel(textureParams)
                 % directories. I am worried how often this happens. (BW)
 
                 % Check whether we have it a texture file
-                if remoteResources
+                if remoteRender
                     % We trust that the texture will be there on the server
-                    imgFile = ['textures/' thisVal];
+                    remoteWorkDir = getpref('ISETDockerPrefs','remoteWorkDir');
+                    imgFile = fullfile(remoteWorkDir,'textures',thisVal);
                 else
                     imgFile = piResourceFind('texture',thisVal);
                 end
@@ -130,7 +136,7 @@ for ii=1:numel(textureParams)
                     warning('Texture %s not found! Changing it to diffuse', thisVal);
                 else
                     if ispc % try to fix filename for the Linux docker container
-                        imgFile = dockerWrapper.pathToLinux(imgFile);
+                        imgFile = pathToLinux(imgFile);
                     end
 
                     if isempty(texturePath) || isequal('/',texturePath(1))
@@ -139,7 +145,7 @@ for ii=1:numel(textureParams)
                         thisText = strrep(thisText, imgFile, ['textures/',thisVal]);
                     end
 
-                    if ~remoteResources
+                    if ~remoteRender
                         texturesDir = [thisR.get('output dir'),'/textures'];
                         if ~exist(texturesDir,'dir'), mkdir(texturesDir); end
                         copyfile(imgFile,texturesDir);

@@ -14,7 +14,7 @@ function workingDir = piWrite(thisR,varargin)
 % Optional key/value parameters
 %   remote resources - Use the remote resources on the server (boolean,
 %     default false, can be set using
-%         setpref('docker','remoteResources',true or false)
+%         setpref('docker','remoteRender',true or false)
 %   verbose -- how chatty to be in this routine.
 %
 % Return
@@ -92,8 +92,6 @@ p = inputParser;
 
 p.addRequired('thisR',@(x)isequal(class(x),'recipe'));
 p.addParameter('verbose', 0, @isnumeric);
-p.addParameter('remoteresources', getpref('docker','remoteResources'));
-p.addParameter('pushresources', getpref('docker','pushResources'));
 p.addParameter('mainfileonly',false, @islogical);
 p.addParameter('overwriteresources', true, @islogical);
 p.addParameter('overwritematerials', true, @islogical);
@@ -106,27 +104,18 @@ p.parse(thisR,varargin{:});
 
 % Most resources are on the server.  Hence, setting 'remote resources' to
 % true generally works for remote rendering.
-if p.Results.remoteresources
-    remoteResources = true;
-    overwriteresources  = false;
-else
-    remoteResources = false;
-    overwriteresources  = p.Results.overwriteresources;
-end
-if p.Results.pushresources
-    pushResources = true;
-else
-    pushResources = false;
+
+overwriteresources  = p.Results.overwriteresources;
+
+% Render on remote machine
+if ~isempty(getpref('ISETDockerPrefs','remoteHost'))
+    remoteRender = 1;
+    remoteWorkDir_default = getpref('ISETDockerPrefs','remoteWorkDir');
+    [~,sceneName]=fileparts(thisR.get('output dir'));
+    setpref('ISETDockerPrefs','remoteWorkDir',fullfile(remoteWorkDir_default,sceneName));
 end
 
-% User should define whether
-
-
-% Why we have these two? --Zhenyi
-% BW:  Having the lensfile true broke some of my code.  So I changed it as
-% above to a parameter
 overwritelensfile   = p.Results.overwritelensfile;
-% I left this line in, but like ZHenyi I am not sure why we need this (BW)
 overwritepbrtfile   = true;
 overwritemedia      = true;
 
@@ -149,53 +138,14 @@ exporter = thisR.get('exporter');
 % from the recipe alone.  Unless we need to copy something.
 inputDir   = thisR.get('input dir');
 
-if ~exist(inputDir,'dir') && ~getpref('docker','remoteResources')
+if ~exist(inputDir,'dir') 
     warning('Could not find local inputDir: %s\n',inputDir);
 end
-
 
 % Make working dir if it does not already exist
 workingDir = thisR.get('output dir');
 
-% If we are using remote resources, remove leftover /local
-% files so they don't need to be rsynced
-% Unless we have been told to deliberately push our resources
-if remoteResources && ~pushResources
-    % Empty the working directory and make a fresh copy.
-    if isfolder(workingDir)
-        try
-            % This produces many annoying warning messages.  We should
-            % figure out how to suppress them.
-            q = warning('query');
-            warning('off','all');
-
-            % we want to leave instanced but delete everything else,
-            % so we need to step through the directory
-            contents = dir(workingDir);
-            for ii = 1:numel(contents)
-                fName = fullfile(workingDir, contents(ii).name);
-
-                % skip . and ..
-                if contents(ii).isdir && strncmp(contents(ii).name,'.',1)
-                    continue;
-                elseif isequal(contents(ii).name, 'instanced') % don't delete
-                elseif contents(ii).isdir % delete other folders
-                    rmdir(fName, 's');
-                else % delete other files
-                    delete(fName);
-                end
-            end
-        catch
-            % sometimes matlab  has it locked
-        end
-    else
-        % create it if needed
-        mkdir(workingDir);
-    end
-    % the traditional case without remote resources:
-elseif ~exist(workingDir,'dir')
-    mkdir(workingDir);
-end
+mkdir(workingDir);
 
 % Make a geometry directory
 geometryDir = thisR.get('geometry dir');
@@ -204,7 +154,7 @@ if ~exist(geometryDir, 'dir'), mkdir(geometryDir); end
 renderDir = thisR.get('rendered dir');
 if ~exist(renderDir,'dir'), mkdir(renderDir); end
 
-% Fix recipe to include depth, albedo, and normal if it also wants radiance
+
 if isempty(thisR.metadata) || isempty(thisR.metadata.rendertype)
     preRender = thisR.get('rendertype');
     preRender{end+1} = 'radiance';
@@ -216,16 +166,16 @@ if max(ismember(thisR.metadata.rendertype,'radiance')) && min(~ismember(thisR.me
     thisR.set('rendertype', preRender);
     warning("Your recipe is coded to ask for only radiance. As of pbrt-v4 we default to more channels, so better to remove the rendertype from your recipe.\n");
 end
-if  max(ismember(thisR.metadata.rendertype,'radiance')) && min(~ismember(thisR.metadata.rendertype,'albedo'))
-    preRender = thisR.get('rendertype');
-    preRender{end+1} = 'albedo';
-    thisR.set('rendertype', preRender);
-end
-if  max(ismember(thisR.metadata.rendertype,'radiance')) && min(~ismember(thisR.metadata.rendertype,'normal'))
-    preRender = thisR.get('rendertype');
-    preRender{end+1} = 'normal';
-    thisR.set('rendertype', preRender);
-end
+% if  max(ismember(thisR.metadata.rendertype,'radiance')) && min(~ismember(thisR.metadata.rendertype,'albedo'))
+%     preRender = thisR.get('rendertype');
+%     preRender{end+1} = 'albedo';
+%     thisR.set('rendertype', preRender);
+% end
+% if  max(ismember(thisR.metadata.rendertype,'radiance')) && min(~ismember(thisR.metadata.rendertype,'normal'))
+%     preRender = thisR.get('rendertype');
+%     preRender{end+1} = 'normal';
+%     thisR.set('rendertype', preRender);
+% end
 
 %% Selectively copy data from the input to the output directory.
 piWriteCopy(thisR,overwriteresources,overwritepbrtfile, verbosity)
@@ -295,14 +245,17 @@ if ~isempty(thisR.materials.list) && overwritematerials
     %     this again
 
     % Write critical files.
-    piWriteMaterials(thisR, remoteResources);
+    piWriteMaterials(thisR, remoteRender);
 end
 
 %% Write the scene_geometry.pbrt
 if ~isequal(exporter,'Copy') && overwritegeometry && ~isempty(thisR.assets)
-    piGeometryWrite(thisR, 'remoteresources', remoteResources);
+    piGeometryWrite(thisR, 'remoteRender', remoteRender);
 end
 
+
+% set remoteWorkDir back to the default
+setpref('ISETDockerPrefs','remoteWorkDir',remoteWorkDir_default);
 end   % End of piWrite
 
 %% ---------  Helper functions
@@ -339,7 +292,7 @@ if ~isempty(inputDir)
             % Skip dot-files
             continue;
             % We always copy certain resource files to local, although
-            % some aren't used if remoteResources is being used
+            % some aren't used if remoteRender is being used
         elseif sources(i).isdir && strcmpi(sources(i).name,'instanced')
             % Copy the spds and textures directory files.
             status = status && copyfile(fullfile(sources(i).folder, sources(i).name), fullfile(outputDir,sources(i).name));
@@ -382,7 +335,6 @@ outFile = thisR.get('output file');
 if(isfile(outFile))
     if overwritepbrtfile
         % A pbrt scene file exists.  We delete here and write later.
-        % fprintf('Overwriting PBRT file %s\n',outFile) -- Too chatty
         delete(outFile);
     else
         % Do not overwrite is set, and yet it exists. We don't like this
@@ -846,7 +798,7 @@ end
 end
 
 %%
-function piWriteMaterials(thisR, remoteResources)
+function piWriteMaterials(thisR, remoteRender)
 % Write both materials and textures files into the output directory
 
 % We create the materials file.  Its name is the same as the output pbrt
@@ -856,7 +808,7 @@ basename   = thisR.get('output basename');
 % [~,n] = fileparts(thisR.inputFile);
 fname_materials = sprintf('%s_materials.pbrt',basename);
 thisR.set('materials output file',fullfile(outputDir,fname_materials));
-piMaterialWrite(thisR, 'remoteresources', remoteResources);
+piMaterialWrite(thisR, 'remoteRender', remoteRender);
 
 
 end
@@ -881,7 +833,7 @@ end
 
 %% Write the scene_geometry file
 
-% function piWriteGeometry(thisR, remoteResources)
+% function piWriteGeometry(thisR, remoteRender)
 % % Write the geometry file into the output dir
-% piGeometryWrite(thisR, 'remoteresources', remoteResources);
+% piGeometryWrite(thisR, 'remoteRender', remoteRender);
 % end

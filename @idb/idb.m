@@ -117,7 +117,7 @@ classdef idb < handle
             if ~ismember(name,obj.connection.CollectionNames)
                 createCollection(obj.connection,name);
             else
-                fprintf('[MSG]: Collection %s already exists.\n',name);
+                fprintf('[INFO]: Collection %s already exists.\n',name);
             end
         end
 

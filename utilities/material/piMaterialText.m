@@ -6,13 +6,15 @@ function val = piMaterialText(material, thisR, varargin)
 
 %% Parse input
 p = inputParser;
+varargin = ieParamFormat(varargin);
+
 p.addRequired('material', @isstruct);
 p.addRequired('thisR', @(x)(isa(x,'recipe')));
-p.addParameter('remoteresources', false);
+p.addParameter('remoterender', false);
 
 p.parse(material, thisR, varargin{:});
 
-remoteResources = p.Results.remoteresources;
+remoterender = p.Results.remoterender;
 
 %% Concatatenate string
 if ~strcmp(material.name, '')
@@ -65,7 +67,7 @@ for ii=1:numel(matParams)
 
 
         if strcmp(matParams{ii},'normalmap')
-            if ~remoteResources
+            if ~remoterender
 
                 if ~exist(fullfile(thisR.get('output dir'),thisVal),'file')
                     imgFile = which(thisVal);
@@ -73,7 +75,7 @@ for ii=1:numel(matParams)
                         warning('Normal Map %s not found! Changing it to diffuse', thisVal);
                     else
                         if ispc % try to fix filename for the Linux docker container
-                            imgFile = dockerWrapper.pathToLinux(imgFile);
+                            imgFile = pathToLinux(imgFile);
                         end
 
                         thisText = strrep(thisText,thisVal, imgFile);

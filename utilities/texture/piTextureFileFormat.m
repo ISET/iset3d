@@ -58,7 +58,7 @@ for ii = 1:numel(textureList)
 
             % update texture slot
             if ispc
-                textureList{ii}.filename.value = dockerWrapper.pathToLinux(outputFile);
+                textureList{ii}.filename.value = pathToLinux(outputFile);
             else
                 textureList{ii}.filename.value = outputFile;
             end
@@ -95,7 +95,7 @@ for ii = 1:numel(textureList)
             imwrite(img(:,:,1),outputPath);
         end
         if ispc
-            textureList{ii}.filename.value = dockerWrapper.pathToLinux(outputFile);
+            textureList{ii}.filename.value = pathToLinux(outputFile);
         else
             textureList{ii}.filename.value = outputFile;
         end
@@ -130,7 +130,7 @@ for ii = 1:numel(matKeys)
 
     if exist(thisImgPath, 'file') && ~isempty(normalImgPath)
 
-        [path, name, ext] = fileparts(dockerWrapper.pathToLinux(normalImgPath));
+        [path, name, ext] = fileparts(pathToLinux(normalImgPath));
         if strcmp(ext, '.exr') || strcmp(ext, '.png') || strcmp(ext, '.jpg')
             % do nothing with exr
             continue;
@@ -147,7 +147,7 @@ for ii = 1:numel(matKeys)
         % This is a problem if we are running on Windows and
         % rendering on Linux
         if ispc
-            thisMat.normalmap.value = dockerWrapper.pathToLinux(outputFile);
+            thisMat.normalmap.value = pathToLinux(outputFile);
         else
             thisMat.normalmap.value = outputFile;
         end

@@ -10,11 +10,15 @@
 ieInit;
 if ~piDockerExists, piDockerConfig; end
 
-thisR = piRecipeDefault('scene name','car');
-thisR.set('skymap','noon_009.exr');
+% docker
+isetDocker = idocker('preset','remote orange');
 
-oDist = thisR.get('object distance');
-thisR.set('object distance',3*oDist);  % Better view
+% database
+isetDB     = idb.ISETdb();
+%%
+pbrtFile = '/Users/zhenyi/git_repo/dev/iset3d/data/scenes/ChessSet/ChessSet.pbrt';
+thisR = piRead(pbrtFile);
+piWrite(thisR);
 scene = piWRS(thisR);
 
 %%

@@ -243,14 +243,7 @@ classdef recipe < matlab.mixin.Copyable
                             end
                         end
                     end
-                case {'textures'}
-                    tNames = obj.get('textures','names');
-                    if isempty(tNames)
-                        disp('No textures in this recipe.');
-                    else
-                        disp('Textures:  NYI');
-                    end
-
+                    
                 otherwise
                     error('Unknown show %s\n',varargin{1});
             end
