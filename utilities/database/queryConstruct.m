@@ -9,7 +9,6 @@ function queryString = queryConstruct(s)
     for i = 1:length(fields)
         fieldName = fields{i};  % Current field name
         fieldValue = s.(fieldName);  % Current field value
-
         % Format the field value based on its type
         if ischar(fieldValue) || isstring(fieldValue)
             % For string values, add quotes around the value

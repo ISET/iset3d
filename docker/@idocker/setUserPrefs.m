@@ -17,12 +17,12 @@ function setUserPrefs(obj)
 %   and saves preferences using MATLAB's setpref function.
 %
 % Example:
-%   myObj = MyDockerWrapper();
+%   myObj = idocker();
 %   setUserPrefs(myObj);
 %
 % Zhenyi, Stanford, 2024
 
-prefGroupName = 'ISETDockerPrefs';
+prefGroupName = 'ISETDocker';
 
 % Check if preferences have already been set
 if ispref(prefGroupName)
@@ -39,8 +39,12 @@ if ispref(prefGroupName)
 end
 
 % Prompt user for device preference
-device = input('Choose a device (GPU/CPU): ', 's');
-
+device = input('Choose a device (GPU/CPU) [g/c]: ', 's');
+if strcmpi(device,'g')
+    device = 'gpu';
+elseif strcmpi(device,'c')
+    device = 'cpu';
+end
 % Prompt user for device ID
 deviceID = input('Enter device ID (-1 for none or CPU): ');
 
@@ -48,7 +52,7 @@ deviceID = input('Enter device ID (-1 for none or CPU): ');
 disp('Available render contexts:');
 disp('1. remote-orange');
 disp('2. remote-mux');
-disp('3. Type yours');
+disp('3. Use my own');
 renderContextChoice = input('Choose a render context (1-3): ');
 
 switch renderContextChoice
@@ -89,10 +93,18 @@ end
 setpref(prefGroupName, 'device', lower(device));
 setpref(prefGroupName, 'deviceID', deviceID);
 setpref(prefGroupName, 'dockerImage', dockerImage);
+setpref(prefGroupName, 'renderContext', renderContext);
 setpref(prefGroupName, 'remoteHost', remoteHost);
 setpref(prefGroupName, 'remoteUser', remoteUser);
 setpref(prefGroupName, 'remoteWorkDir', remoteWorkDir);
-setpref(prefGroupName, 'renderContext', renderContext);
+if ~isempty(remoteHost)
+    if strcmpi(renderContext,'remote-orange') || strcmpi(renderContext,'remote-mux')
+        remotePBRTResources = '/acorn/data/iset/PBRTResources';
+    else
+        remotePBRTResources = input('Enter your remote PBRT resources path: ', 's');
+    end
+    setpref(prefGroupName, 'remotePBRTResources', remotePBRTResources);
+end
 
 % Set object properties
 obj.device = device;
@@ -129,7 +141,7 @@ function listPrefs(groupName)
 %   None. The function displays preferences in the command window.
 %
 % Example:
-%   listPrefs('ISETDockerPrefs');
+%   listPrefs('ISETDocker');
 
 if ispref(groupName)
     % Retrieve all preferences within the specified group

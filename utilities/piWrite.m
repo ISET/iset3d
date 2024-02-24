@@ -108,11 +108,11 @@ p.parse(thisR,varargin{:});
 overwriteresources  = p.Results.overwriteresources;
 
 % Render on remote machine
-if ~isempty(getpref('ISETDockerPrefs','remoteHost'))
+if ~isempty(getpref('ISETDocker','remoteHost'))
     remoteRender = 1;
-    remoteWorkDir_default = getpref('ISETDockerPrefs','remoteWorkDir');
+    remoteWorkDir_default = getpref('ISETDocker','remoteWorkDir');
     [~,sceneName]=fileparts(thisR.get('output dir'));
-    setpref('ISETDockerPrefs','remoteWorkDir',fullfile(remoteWorkDir_default,sceneName));
+    setpref('ISETDocker','remoteWorkDir',fullfile(remoteWorkDir_default,sceneName));
 end
 
 overwritelensfile   = p.Results.overwritelensfile;
@@ -255,7 +255,7 @@ end
 
 
 % set remoteWorkDir back to the default
-setpref('ISETDockerPrefs','remoteWorkDir',remoteWorkDir_default);
+setpref('ISETDocker','remoteWorkDir',remoteWorkDir_default);
 end   % End of piWrite
 
 %% ---------  Helper functions

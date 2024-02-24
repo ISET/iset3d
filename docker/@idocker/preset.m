@@ -1,4 +1,4 @@
-function preset(obj, presetName,varargin)
+function preset(obj, presetName, varargin)
 
 presetName = ieParamFormat(presetName);
 
@@ -76,5 +76,15 @@ switch presetName
                 obj.dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-ti';
                 obj.deviceID = 0;
         end
+    otherwise
+        validNames_str = string(validNames);
+        validNames_str{end+1} = ' ';
+        warning('Preset Name is not valid. Consider using these valid names: %s',strjoin(flip(validNames_str),'\n'));
 end
+
+
+
+
+
+
 

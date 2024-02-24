@@ -37,7 +37,7 @@ if ~isopen(ourDB.connection),error('No connection to database.');end
 % we might want to decide, wheather we would like to add this scene to our
 % database.
 % Create a new collection for test
-colName = 'PBRTResources';
+collectionName = 'PBRTResources';
 
 remoteHost = 'orange.stanford.edu';
 remoteUser = 'zhenyiliu';
@@ -66,7 +66,7 @@ for ii = 1:numel(categories) % first one is '@eaDir'
         end
         thisAsset = fullfile(assets(jj).folder, assets(jj).name);
         if assets(jj).isdir
-            ourDB.contentCreate('collection Name',colName, ...
+            ourDB.contentCreate('collection Name',collectionName, ...
                 'type','asset', ...
                 'filepath',thisAsset,...
                 'name',assets(jj).name,...
@@ -82,9 +82,7 @@ for ii = 1:numel(categories) % first one is '@eaDir'
 end
 
 %% find all bus
-queryStruct.category = 'bus';
-assets = ourDB.contentFind(colName, queryStruct);
-
+assets = ourDB.contentFind(collectionName, 'category','bus','type','asset', 'show',true);
 
 %% scenes
 % upload the file to remote server
@@ -111,7 +109,7 @@ thisScene = ourDB.contentFind(collectionName, queryStruct);
 
 
 
-[thisID, contentStruct] = ourDB.contentCreate('collection Name',colName, ...
+[thisID, contentStruct] = ourDB.contentCreate('collection Name',collectionName, ...
     'type','scene', ...
     'name','low-poly-taxi',...
     'category','iset3d',...
@@ -123,11 +121,11 @@ thisScene = ourDB.contentFind(collectionName, queryStruct);
 
 queryString = sprintf("{""hash"": ""%s""}", thisID);
 % find the document with hash query
-doc = find(ourDB.connection, colName, Query = queryString);
+doc = find(ourDB.connection, collectionName, Query = queryString);
 
 ourDB.upload(sceneFolder, dstDir) % source and destinated directory
 % remove the document with hash query
-n = remove(ourDB.connection, colName, queryString);
+n = remove(ourDB.connection, collectionName, queryString);
 
 % Delete the scene in the database
 

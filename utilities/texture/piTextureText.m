@@ -84,7 +84,7 @@ for ii=1:numel(textureParams)
             oDir = thisR.get('output dir');
 
             if remoteRender
-                remoteWorkDir = getpref('ISETDockerPrefs','remoteWorkDir');
+                remoteWorkDir = getpref('ISETDocker','remoteWorkDir');
                 texturePath = fullfile(remoteWorkDir,texturePath);  
             end
             if exist(fullfile(oDir,thisVal),'file')
@@ -123,7 +123,7 @@ for ii=1:numel(textureParams)
                 % Check whether we have it a texture file
                 if remoteRender
                     % We trust that the texture will be there on the server
-                    remoteWorkDir = getpref('ISETDockerPrefs','remoteWorkDir');
+                    remoteWorkDir = getpref('ISETDocker','remoteWorkDir');
                     imgFile = fullfile(remoteWorkDir,'textures',thisVal);
                 else
                     imgFile = piResourceFind('texture',thisVal);

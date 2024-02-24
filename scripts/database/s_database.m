@@ -22,7 +22,7 @@ isetDocker = idocker();
 % See /iset3d/tutorials/remote/s_remoteSet.m for remote server
 % configuration
 
-% getpref('ISETDockerPrefs')
+% getpref('ISETDocker')
 
 localFolder = '/Users/zhenyi/git_repo/dev/iset3d/data/V4/low-poly-taxi';
 
