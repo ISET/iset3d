@@ -155,6 +155,9 @@ classdef idocker < handle
                 remoteItemPath = fullfile(remoteDir, itemName);
 
                 if localItems(i).isdir
+                    if strcmpi(itemName,'renderings')
+                        continue;
+                    end
                     % Item is a directory, recursively call upload for the directory
                     disp(['[INFO] Entering directory: ', localItemPath]);
                     upload(obj, localItemPath, remoteItemPath); % Recursive call
@@ -238,7 +241,8 @@ classdef idocker < handle
                         if (remoteItems(i).datenum > localFileInfo.datenum && ...
                                 (remoteItems(i).datenum - localFileInfo.datenum)/24/60 > 1)||...
                                 remoteItems(i).bytes ~= localFileInfo.bytes
-                            mget(obj.sftpSession, remoteItemPath, localDir);
+                            cd(obj.sftpSession, remoteDir);
+                            mget(obj.sftpSession, itemName, localDir);
                             disp(['[INFO]: Updated: ', remoteItemPath, ' to ', localItemPath]);
                         end
                     else
