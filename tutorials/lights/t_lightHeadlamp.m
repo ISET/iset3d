@@ -97,7 +97,7 @@ thisR.show('lights');
 thisR.set('render type',{'radiance','depth','albedo'});
 if ~ismac %code to add denoising for benchmarking
     piWrite(thisR);
-    scene = piRender(thisR,'mean luminance',-1, 'do_denoise','exr_albedo');
+    scene = piRender(thisR,'mean luminance',-1);
     sceneWindow(scene)
 else
     piWRS(thisR);

@@ -26,16 +26,24 @@ isetDocker = idocker();
 
 localFolder = '/Users/zhenyi/git_repo/dev/iset3d/data/V4/low-poly-taxi';
 
-pbrtFile = fullfile(sceneFolder, 'low-poly-taxi.pbrt');
+pbrtFile = fullfile(localFolder, 'low-poly-taxi.pbrt');
+thisR = piRead(pbrtFile);
 
-% list the data in a collection
-% thisCollection = ourDB.docList(collectionName);
+piWrite(thisR,'remoterender',true);
 
+scene = piRender(thisR,'docker',isetDocker);
+% In this case, we sync the files over to user's remote working directory
+
+
+
+
+
+
+%%
 % Add the scene to the database
 % if we need to add a local scene to the database, a directory is
 % needed.
-
-remoteDir = '/acorn/data/iset/PBRTResources/scenes/low-poly-taxi';
+remoteDBDir = '/acorn/data/iset/PBRTResources/scenes/low-poly-taxi';
 % or some local directory 
 % dstDir = 'your/local/path/to/scenes'
 

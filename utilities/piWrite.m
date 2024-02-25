@@ -85,13 +85,15 @@ thisR.sampler.subtype = 'sobol';
 thisR.set('aperture diameter',3);
 oi = piWRS(thisR,'remote resources',true);
 %}
-
+%% Init ISET prefs
+piPrefsInit
 %% Parse inputs
 varargin = ieParamFormat(varargin);
 p = inputParser;
 
 p.addRequired('thisR',@(x)isequal(class(x),'recipe'));
 p.addParameter('verbose', 0, @isnumeric);
+p.addParameter('remoterender',true); % idocker object
 p.addParameter('mainfileonly',false, @islogical);
 p.addParameter('overwriteresources', true, @islogical);
 p.addParameter('overwritematerials', true, @islogical);
@@ -102,18 +104,21 @@ p.addParameter('overwritelensfile', false, @islogical);
 
 p.parse(thisR,varargin{:});
 
-% Most resources are on the server.  Hence, setting 'remote resources' to
-% true generally works for remote rendering.
-
 overwriteresources  = p.Results.overwriteresources;
 
+remoteRender        = p.Results.remoterender;
+
 % Render on remote machine
-if ~isempty(getpref('ISETDocker','remoteHost'))
-    remoteRender = 1;
-    remoteWorkDir_default = getpref('ISETDocker','remoteWorkDir');
-    [~,sceneName]=fileparts(thisR.get('output dir'));
-    setpref('ISETDocker','remoteWorkDir',fullfile(remoteWorkDir_default,sceneName));
+if remoteRender
+    if ~isempty(getpref('ISETDocker','remoteHost'))
+        [~,sceneName]=fileparts(thisR.get('output dir'));
+        setpref('ISETDocker','remoteSceneDir', ...
+            fullfile(getpref('ISETDocker','workDir'),sceneName));
+    else
+        idocker.setUserPrefs;
+    end
 end
+setpref('ISET3d','remoteRender',remoteRender);
 
 overwritelensfile   = p.Results.overwritelensfile;
 overwritepbrtfile   = true;
@@ -164,18 +169,8 @@ if max(ismember(thisR.metadata.rendertype,'radiance')) && min(~ismember(thisR.me
     preRender = thisR.get('rendertype');
     preRender{end+1} = 'depth';
     thisR.set('rendertype', preRender);
-    warning("Your recipe is coded to ask for only radiance. As of pbrt-v4 we default to more channels, so better to remove the rendertype from your recipe.\n");
 end
-% if  max(ismember(thisR.metadata.rendertype,'radiance')) && min(~ismember(thisR.metadata.rendertype,'albedo'))
-%     preRender = thisR.get('rendertype');
-%     preRender{end+1} = 'albedo';
-%     thisR.set('rendertype', preRender);
-% end
-% if  max(ismember(thisR.metadata.rendertype,'radiance')) && min(~ismember(thisR.metadata.rendertype,'normal'))
-%     preRender = thisR.get('rendertype');
-%     preRender{end+1} = 'normal';
-%     thisR.set('rendertype', preRender);
-% end
+
 
 %% Selectively copy data from the input to the output directory.
 piWriteCopy(thisR,overwriteresources,overwritepbrtfile, verbosity)
@@ -240,22 +235,18 @@ fclose(fileID);
 % Even if this is the copy type scene, we parse the materials and
 % texture maps and make sure the files are copied to 'local/'.
 if ~isempty(thisR.materials.list) && overwritematerials
-    % Make sure that the texture files are in PNG format
-    %     piTextureFileFormat(thisR); % We did this in piRead, no need to do
-    %     this again
-
     % Write critical files.
-    piWriteMaterials(thisR, remoteRender);
+    piWriteMaterials(thisR);
 end
 
 %% Write the scene_geometry.pbrt
 if ~isequal(exporter,'Copy') && overwritegeometry && ~isempty(thisR.assets)
-    piGeometryWrite(thisR, 'remoteRender', remoteRender);
+    piGeometryWrite(thisR);
 end
 
 
-% set remoteWorkDir back to the default
-setpref('ISETDocker','remoteWorkDir',remoteWorkDir_default);
+% set workDir back to the default
+rmpref('ISETDocker','remoteSceneDir');
 end   % End of piWrite
 
 %% ---------  Helper functions
@@ -798,7 +789,7 @@ end
 end
 
 %%
-function piWriteMaterials(thisR, remoteRender)
+function piWriteMaterials(thisR)
 % Write both materials and textures files into the output directory
 
 % We create the materials file.  Its name is the same as the output pbrt
@@ -808,7 +799,7 @@ basename   = thisR.get('output basename');
 % [~,n] = fileparts(thisR.inputFile);
 fname_materials = sprintf('%s_materials.pbrt',basename);
 thisR.set('materials output file',fullfile(outputDir,fname_materials));
-piMaterialWrite(thisR, 'remoteRender', remoteRender);
+piMaterialWrite(thisR);
 
 
 end
@@ -831,9 +822,3 @@ end
 
 end
 
-%% Write the scene_geometry file
-
-% function piWriteGeometry(thisR, remoteRender)
-% % Write the geometry file into the output dir
-% piGeometryWrite(thisR, 'remoteRender', remoteRender);
-% end

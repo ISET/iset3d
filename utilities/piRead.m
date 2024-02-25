@@ -110,7 +110,8 @@ thisR = recipe;
 thisR.version = 4;
 
 infile = fname;
-
+%% Init ISET prefs
+piPrefsInit
 %% Exist checks on the whole path.
 if exist(infile,'file')
     if ~isempty(which(infile))

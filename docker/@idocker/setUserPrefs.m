@@ -65,10 +65,10 @@ switch renderContextChoice
 end
 
 % Additional prompts based on selected renderContext
-if ~strcmpi(renderContext, 'Type yours') && ~isempty(renderContext)
+if ~strcmpi(renderContext, 'Use my own') && ~isempty(renderContext)
     remoteUser = input('Enter remote user name: ', 's');
-    remoteWorkDir = ['/home/' remoteUser '/ISETRemoteRender'];
-
+    workDir = ['/home/' remoteUser '/ISETRemoteRender'];
+    
     switch renderContext
         case 'remote-orange'
             remoteHost = 'orange.stanford.edu';
@@ -93,10 +93,11 @@ end
 setpref(prefGroupName, 'device', lower(device));
 setpref(prefGroupName, 'deviceID', deviceID);
 setpref(prefGroupName, 'dockerImage', dockerImage);
+setpref(prefGroupName, 'workDir', workDir);
 setpref(prefGroupName, 'renderContext', renderContext);
 setpref(prefGroupName, 'remoteHost', remoteHost);
 setpref(prefGroupName, 'remoteUser', remoteUser);
-setpref(prefGroupName, 'remoteWorkDir', remoteWorkDir);
+
 if ~isempty(remoteHost)
     if strcmpi(renderContext,'remote-orange') || strcmpi(renderContext,'remote-mux')
         remotePBRTResources = '/acorn/data/iset/PBRTResources';
@@ -112,7 +113,7 @@ obj.deviceID = deviceID;
 obj.dockerImage = dockerImage;
 obj.remoteHost = remoteHost;
 obj.remoteUser = remoteUser;
-obj.remoteWorkDir = remoteWorkDir;
+obj.workDir = workDir;
 obj.renderContext = renderContext;
 
 disp('[INFO]: User preferences have been set.');

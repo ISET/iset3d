@@ -83,9 +83,9 @@ for ii=1:numel(textureParams)
             % need to copy it.
             oDir = thisR.get('output dir');
 
-            if remoteRender
-                remoteWorkDir = getpref('ISETDocker','remoteWorkDir');
-                texturePath = fullfile(remoteWorkDir,texturePath);  
+            if getpref('ISET3d','remoteRender')
+                remoteSceneDir = getpref('ISETDocker','remoteSceneDir');
+                texturePath = fullfile(remoteSceneDir,texturePath);  
             end
             if exist(fullfile(oDir,thisVal),'file')
                 % If the file is in the root of the scene, move it
@@ -121,10 +121,10 @@ for ii=1:numel(textureParams)
                 % directories. I am worried how often this happens. (BW)
 
                 % Check whether we have it a texture file
-                if remoteRender
+                if getpref('ISET3d','remoteRender')
                     % We trust that the texture will be there on the server
-                    remoteWorkDir = getpref('ISETDocker','remoteWorkDir');
-                    imgFile = fullfile(remoteWorkDir,'textures',thisVal);
+                    remoteSceneDir = getpref('ISETDocker','remoteSceneDir');
+                    imgFile = fullfile(remoteSceneDir,'textures',thisVal);
                 else
                     imgFile = piResourceFind('texture',thisVal);
                 end

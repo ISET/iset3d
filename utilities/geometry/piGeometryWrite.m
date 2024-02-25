@@ -31,10 +31,8 @@ p = inputParser;
 varargin = ieParamFormat(varargin);
 
 p.addRequired('thisR',@(x)isequal(class(x),'recipe'));
-p.addParameter('remoterender', '');
 p.parse(thisR,varargin{:});
 
-remoterender = p.Results.remoterender;
 
 %% Create the default file name
 
@@ -75,7 +73,7 @@ if ~isempty(obj)
     % for all of the assets, including objects and lights.
     lvl = 0;
     writeGeometryFlag = 0;
-    recursiveWriteAttributes(fid_obj, obj, rootID, lvl, thisR.outputFile, writeGeometryFlag, thisR, 'remoterender', remoterender);
+    recursiveWriteAttributes(fid_obj, obj, rootID, lvl, thisR.outputFile, writeGeometryFlag, thisR);
 else
     % if the tree object is empty, copy the world slot into the geometry
     % file.
@@ -229,7 +227,7 @@ end
 end
 
 %% Recursive write for attributes?
-function recursiveWriteAttributes(fid, obj, thisNode, lvl, outFilePath, writeGeometryFlag, thisR, varargin)
+function recursiveWriteAttributes(fid, obj, thisNode, lvl, outFilePath, writeGeometryFlag, thisR)
 % Print out information in the geometry file about the nodes
 %
 % Information for branches, objects, and lights are managed
@@ -245,8 +243,6 @@ function recursiveWriteAttributes(fid, obj, thisNode, lvl, outFilePath, writeGeo
 %                     to write.  Not sure why.
 %  thisR - The recipe
 %
-% Optional key/val
-%  remoterender
 %
 % Outputs
 %   N/A
@@ -258,11 +254,7 @@ function recursiveWriteAttributes(fid, obj, thisNode, lvl, outFilePath, writeGeo
 %
 % See also
 %   recursiveWriteNodes
-%
 
-% TODO:  We are not sure why we have the varargin here.
-% The remote resources does not seem to be used in here
-%
 
 %% Get children of this node
 children = obj.getchildren(thisNode);
@@ -561,34 +553,12 @@ for nMat = 1:numel(thisNode.material)
             % If the shape has a file specification, we do this
 
             % The file can be a ply or a pbrt file.
-            % Figure out the extension.
             [~, ~, fileext] = fileparts(thisShape.filename);
 
-            % We seem to be testing these here.
             pbrtName = strrep(thisShape.filename,'.ply','.pbrt');
             if ~isfile(fullfile(rootPath, pbrtName))
-                % No PBRT file matching the shape.  Go to line 493.
-
                 plyName = strrep(thisShape.filename,'.pbrt','.ply');
                 if ~isfile(fullfile(rootPath, plyName))
-                    % No PLY file matching the shape
-
-                    % In the past, we allowed for meshes to be along
-                    % our path This is expensive. We are now expecting
-                    % meshes to be where they belong, I think
-                    % [~, shapeFile, shapeExtension] = fileparts(thisShape.filename);
-                    %     if false % which([shapeFile shapeExtension])
-                    %         thisShape.filename = plyName;
-                    %         thisShape.meshshape = 'plymesh';
-                    %         shapeText = piShape2Text(thisShape);
-                    %      else
-                    %         shapeText = piShape2Text(thisShape);
-                    %      end
-                    %
-                    % We no longer care, as resources can be remote
-                    % error('%s not exist',thisShape.filename);
-                    % Instead we'll just leave it along to be
-                    % passed to the renderer
                     shapeText = piShape2Text(thisShape);
                 else
                     thisShape.filename = plyName;
@@ -605,7 +575,9 @@ for nMat = 1:numel(thisNode.material)
                     fileext = '.pbrt';
                 end
             end
-
+            if getpref('ISET3d','remoteRender') && thisR.useDB
+                % use full path
+            end
             % Write out the PBRT text line for this shape (edited)
             if isequal(fileext, '.ply')
                 str = sprintf('%s%s %s',shapeText);
@@ -637,25 +609,12 @@ for nMat = 1:numel(thisNode.material)
 
             % Include the file in the scene_geometry.pbrt file
             str = sprintf('%s%s Include "geometry/%s.pbrt"',spacing,indentSpacing,name);
-            fprintf(fid, '%s\n',str); % strcat(spacing, indentSpacing, sprintf('Include "geometry/%s.pbrt"', name)),'\n');
+            fprintf(fid, '%s\n',str); 
 
         end
         % fprintf(fid,'\n');  % Enjoy a carriage return.
     else
         % thisShape is empty. Do nothing.
-        %
-        % On 4/4/2023 this code deletion for ChessSet, SimpleScene,
-        % and the fixed up 'kitchen' scene with AttributeBegin/End.
-        % Also with Macbeth Check via piRecipeCreate.  So a decent set
-        % of tests.
-        %
-        % We get this awkward situation in our Auto @recipes. That might
-        % indicate an issue with the recipe creation, but for now we need
-        % to let it through in order to render them.
-        %
-        % BW deleted the commented out code that used to be here 09/14/2023.
-        %
-        % fprintf('Note: processed empty shape for material %d in %s\n',nMat,thisNode.name);
     end
 end
 

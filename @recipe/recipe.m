@@ -50,6 +50,8 @@ classdef recipe < matlab.mixin.Copyable
 
         hasActiveTransform = false; % flag to allow CPU rendering until GPU support works
         verbose = 2;    % default for how much debugging output to emit.
+
+        useDB = 0;
     end
 
     properties (Dependent)

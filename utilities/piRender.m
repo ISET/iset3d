@@ -1,4 +1,4 @@
-function [ieObject, result, thisD] = piRender(thisR,varargin)
+function [ieObject, result, thisD] = piRender(thisR, varargin)
 % Read a PBRT scene file, run the docker command, return the ieObject.
 %
 % Synopsis
@@ -14,7 +14,7 @@ function [ieObject, result, thisD] = piRender(thisR,varargin)
 %
 %  {oi or scene} params - Parameters from sceneSet or oiSet that will
 %                         be applied to the rendered ieObject prior to
-%                         return. 
+%                         return.
 %
 %  mean luminance -  If a scene, this mean luminance. If set to a negative
 %            value values returned by the renderer are used.
@@ -54,11 +54,11 @@ function [ieObject, result, thisD] = piRender(thisR,varargin)
 %              text also contains parameters about the optics,
 %              including the distance from the back of the lens to
 %              film and the in-focus distance given the lens-film distance.
-%   thisD    - the dockerWrapper used for the rendering.  Useful if
+%   thisD    - the idocker used for the rendering.  Useful if
 %              you want to use it next as the ourdocker specification.
-%              
+%
 % See also
-%   s_piReadRender*.m, piRenderResult, dockerWrapper
+%   s_piReadRender*.m, piRenderResult, idocker
 
 % Examples:
 %{
@@ -86,73 +86,56 @@ function [ieObject, result, thisD] = piRender(thisR,varargin)
 %{
 % Render locally with your CPU machine
   thisR = piRecipeDefault('scene name', 'ChessSet');
-  thisDocker = dockerWrapper;
+  thisDocker = idocker;
   thisDocker.gpuRendering = false;
   thisDocker.localRender = true; 
-  thisDocker = dockerWrapper('localRender',true,'gpuRendering', false,'verbosity',0);
+  thisDocker = idocker('localRender',true,'gpuRendering', false,'verbosity',0);
   scene = piWRS(thisR,'our docker',thisDocker);
 %}
-
+%% Init ISET prefs
+piPrefsInit
 %%  Name of the pbrt scene file and whether we use a pinhole or lens model
 
 p = inputParser;
 p.KeepUnmatched = true;
 
-% p.addRequired('pbrtFile',@(x)(exist(x,'file')));
 p.addRequired('recipe',@(x)(isequal(class(x),'recipe') || ischar(x)));
 
 varargin = ieParamFormat(varargin);
-p.addParameter('meanluminance',100,@isnumeric);    % Cd/m2
-p.addParameter('meanilluminance',10,@isnumeric);   % Lux
-
-% p.addParameter('meanilluminanceperm2',[],@isnumeric);
+p.addParameter('meanluminance',getpref('ISET3d','meanluminance'),@isnumeric);   % radiance
+p.addParameter('meanilluminance',getpref('ISET3d','meanilluminance'),@isnumeric);  % irradiance
 p.addParameter('scalepupilarea',true,@islogical);
 p.addParameter('reuse',false,@islogical);
-
-% Only one of these should be sent in.
-p.addParameter('ourdocker','',@(x)(isa(x,'dockerWrapper')) || isempty(x));    % to specify a docker image
-p.addParameter('dockerwrapper','',@(x)(isa(x,'dockerWrapper')) || isempty(x));    % to specify a docker image
-
+p.addParameter('docker',@(x)(isa(x,'idocker'))); % idocker object
 % This passed to piDat2ISET, which is where we do the construction.
-p.addParameter('wave', 400:10:700, @isnumeric); 
+p.addParameter('wave', getpref('ISET3d','wave'), @isnumeric);
 
-p.addParameter('verbose', getpref('docker','verbosity',1), @isnumeric);
+p.addParameter('verbose', 1, @isnumeric);
 
-% If you would to render on your local machine, set this to true.  And
-% make sure that 'ourdocker' is set to the container you want to run.
-p.addParameter('localrender',false,@islogical);
+p.addParameter('remote',true,@islogical);
 
 % Optional denoising -- OIDN-based for now
-p.addParameter('do_denoise','none',@ischar);
+p.addParameter('denoise','none',@ischar);
 
-% Allow passthrough of arguments
 p.KeepUnmatched = true;
 
 p.parse(thisR,varargin{:});
-ourDocker        = p.Results.ourdocker;
-dWrapper    = p.Results.dockerwrapper;
-scalePupilArea   = p.Results.scalepupilarea;    % Fix this
-meanLuminance    = p.Results.meanluminance;     % And this
-meanIlluminance  = p.Results.meanilluminance;   % And this
-
+renderDocker     = p.Results.docker;
+scalePupilArea   = p.Results.scalepupilarea;    
+meanLuminance    = p.Results.meanluminance;     
+meanIlluminance  = p.Results.meanilluminance;   
 wave             = p.Results.wave;
 
-%% Set up the dockerWrapper
-
-% If the user has sent in a dockerWrapper or an ourDocker we use it.
-% We object if both are sent in.
-if ~isempty(ourDocker) && ~isempty(dWrapper)
-    error('Bad docker arguments to piRender.  Specify only one.');
-elseif ~isempty(ourDocker) && isempty(dWrapper), renderDocker = ourDocker;
-elseif ~isempty(dWrapper) && isempty(ourDocker), renderDocker = dWrapper;
-else, renderDocker = dockerWrapper();
+%% Set up the idocker
+if ~ispref('ISETDocker')
+    renderDocker = idocker();
+else
+    if isempty(renderDocker)
+        disp('[INFO]: Render Locally.');
+    end
 end
 
-%% We have a radiance recipe and we have written the pbrt radiance file
-
-% Set up the output folder.  This folder will be mounted by the Docker
-% image if run locally.  When run remotely, we are using rsync and
-% different mount points.
+%% Set up the output folder.  
 outputFolder = fileparts(thisR.outputFile);
 if(~exist(outputFolder,'dir'))
     % local doesn't always exist for this recipe
@@ -170,55 +153,12 @@ pbrtFile = thisR.outputFile;
 
 outFile = fullfile(outputFolder,'renderings',[currName,'.exr']);
 
-if ispc  % Windows
-    currFile = pbrtFile; % in v3 we could process several files, not sure about v4
+outF = strcat('renderings/',currName,'.exr');
 
-    % Hack to reverse \ to / for _depth files, for compatibility
-    % with Linux-based Docker pbrt container
-    pFile = fopen(currFile,'rt');
-    tFileName = tempname;
-    tFile = fopen(tFileName,'Wt');
-    while true
-        thisline = fgets(pFile);
-        if ~ischar(thisline); break; end  %end of file
-        % pc definitely needs some path massaging. Not sure about Mac/Linux
-        if ispc && (contains(thisline, "C:\") || contains(thisline, "B:\"))
-            thisline = strrep(thisline, piRootPath, '');
-            % in some cases local has a trailing slash
-            thisline = strrep(thisline, ['\local\' currName '\'], '');
-            thisline = strrep(thisline, '\local', '');
-            thisline = strrep(thisline, '\', '/');
-        end
-        fprintf(tFile,  '%s', thisline);
-    end
-    fclose(pFile);
-    fclose(tFile);
-    copyfile(tFileName, currFile);
-    delete(tFileName);
-
-    % With V4 the output is EXR not Dat
-    outF = strcat('renderings/',currName,'.exr');
-    renderCommand = sprintf('pbrt --outfile %s %s', outF, strcat(currName, '.pbrt'));
-        
-    if ~isempty(outputFolder)
-        if ~exist(outputFolder,'dir'), error('Need full path to %s\n',outputFolder); end
-    end
-
-else  % Linux & Mac
-
-    % With V4 the output is EXR not Dat
-    outF = strcat('renderings/',currName,'.exr');
-    renderCommand = sprintf('pbrt --outfile %s %s', outF, strcat(currName, '.pbrt'));
-
-    if ~isempty(outputFolder)
-        if ~exist(outputFolder,'dir'), error('Need full path to %s\n',outputFolder); end
-    end
-end
-
-% renderDocker is a dockerWrapper object.  The parameters control which
+% renderDocker is a idocker object.  The parameters control which
 % machine and with what parameters the docker image/containter is invoked.
 preRender = tic;
-[status, result] = renderDocker.render(renderCommand, outputFolder, varargin{:});
+[status, result] = renderDocker.render(thisR);
 
 % Lots of output when verbosity is 2.
 % Append the renderCommand and output file
@@ -233,48 +173,46 @@ if renderDocker.verbosity > 0
     fprintf('*** Rendering time (%s) was %.1f sec ***\n\n',currName,elapsedTime);
 end
 
-% The user wants the dockerWrapper.
+% The user wants the idocker.
 if nargout > 2, thisD = renderDocker; end
 
 %% Check the returned rendering image.
 
 if status
     warning('Docker did not run correctly');
-    
+
     % The status may contain a useful error message that we should
     % look up.  The ones we understand should offer help here.
     fprintf('Status:\n'); disp(status);
     fprintf('Result:\n'); disp(result);
     ieObject = [];
-    
+
     % Did not work, so we might as well return.
     return;
 end
 
 %% EXR-based denoising option here
-if ~isequal(p.Results.do_denoise, 'none')
-    piEXRDenoise(outFile,'channels', p.Results.do_denoise);
+if ~isequal(p.Results.denoise, 'none')
+    piEXRDenoise(outFile,'channels', p.Results.denoise);
 end
 
 %% Convert the returned data to an ieObject
 
 % renderType is a cell array, typically with radiance and depth. But
-% it can also be instance or material.  
+% it can also be instance or material.
 ieObject = piEXR2ISET(outFile, 'recipe',thisR,...
     'label',thisR.metadata.rendertype, ...
     'mean luminance',    meanLuminance, ...
     'mean illuminance',  meanIlluminance, ...
-    'scale pupil area', scalePupilArea);
+    'scale pupil area',  scalePupilArea);
 
 % If it is not a struct, it is metadata (instance, material, ....)
 if isstruct(ieObject)
-    % It might be helpful to preserve the recipe used    
+    % It might be helpful to preserve the recipe used
     ieObject.recipeUsed = thisR;
-    
+
     switch ieObject.type
         case 'scene'
-            % names = strsplit(fileparts(thisR.inputFile),'/');
-            % ieObject = sceneSet(ieObject,'name',names{end});
             curWave = sceneGet(ieObject,'wave');
             if ~isequal(curWave(:),wave(:))
                 ieObject = sceneSet(ieObject, 'wave', wave);
@@ -283,16 +221,12 @@ if isstruct(ieObject)
             ieObject = sceneSet(ieObject,'distance',dist);
 
         case 'opticalimage'
-            % names = strsplit(fileparts(thisR.inputFile),'/');
-            % ieObject = oiSet(ieObject,'name',names{end});
             curWave = oiGet(ieObject,'wave');
             if ~isequal(curWave(:),wave(:))
                 ieObject = oiSet(ieObject,'wave',wave);
             end
-
         case 'metadata'
             % Probably instanceID data
-
         otherwise
             error('Unknown struct type %s\n',ieObject.type);
     end
