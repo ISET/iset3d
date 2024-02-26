@@ -1,4 +1,4 @@
-classdef idocker < handle
+classdef isetdocker < handle
     properties (GetAccess=public, SetAccess = public)
         % common
         name = 'ISET Docker Controls'
@@ -19,7 +19,7 @@ classdef idocker < handle
     end
 
     methods
-        function obj = idocker(varargin)
+        function obj = isetdocker(varargin)
             % Constructor to initialize the remote manager
             varargin = ieParamFormat(varargin);
 
@@ -36,6 +36,7 @@ classdef idocker < handle
             p.addParameter('rendercontext', '', @ischar);
             p.addParameter('remotemachine','',@ischar);
             p.addParameter('verbosity',1,@isnumeric);
+
 
             % set user preferences
             if ~ispref('ISETDocker')
@@ -348,8 +349,25 @@ classdef idocker < handle
         function reset(obj)
             iDockerPrefs = getpref('ISETDocker');
             if isfield(iDockerPrefs,'PBRTContainer')
-                if ~isempty(getpref('ISETDocker','PBRTContainer'))
-                    obj.cleanup(getpref('ISETDocker','PBRTContainer'));
+                containerName = getpref('ISETDocker','PBRTContainer');
+                if ~isempty(containerName)
+                    
+                    if isempty(getpref('ISETDocker','remoteHost'))
+                        contextFlag = ' --context default ';
+                    else
+                        contextFlag = [' --context ' getpref('ISETDocker','renderContext')];
+                    end
+
+                    % Removes the Docker container in renderContext
+                    cleanupCmd = sprintf('docker %s rm -f %s', ...
+                        contextFlag, containerName);
+                    [status, result] = system(cleanupCmd);
+
+                    if status == 0
+                        sprintf('[INFO]: Removed container %s\n',containerName);
+                    else
+                        warning("[WARNING]: Failed to cleanup.\n System message:\n %s", result);
+                    end
                 end
                 rmpref('ISETDocker','PBRTContainer');
             end
@@ -358,24 +376,6 @@ classdef idocker < handle
             obj.disconnect();
         end
 
-        function cleanup(containerName)
-            if isempty(getpref('ISETDocker','remoteHost'))
-                contextFlag = ' --context default ';
-            else
-                contextFlag = [' --context ' getpref('ISETDocker','renderContext')];
-            end
-
-            % Removes the Docker container in renderContext
-            cleanupCmd = sprintf('docker %s rm -f %s', ...
-                contextFlag, containerName);
-            [status, result] = system(cleanupCmd);
-
-            if status == 0
-                sprintf('[INFO]: Removed container %s\n',containerName);
-            else
-                warning("[WARNING]: Failed to cleanup.\n System message:\n %s", result);
-            end
-        end
         %% utilities
         function output = pathToLinux(inputPath)
 

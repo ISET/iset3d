@@ -17,7 +17,7 @@ function setUserPrefs(obj)
 %   and saves preferences using MATLAB's setpref function.
 %
 % Example:
-%   myObj = idocker();
+%   myObj = isetdocker();
 %   setUserPrefs(myObj);
 %
 % Zhenyi, Stanford, 2024

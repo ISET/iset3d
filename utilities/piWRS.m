@@ -100,7 +100,7 @@ end
 if ~isempty(p.Results.docker)
     thisD = p.Results.docker;
 else
-    thisD = idocker();
+    thisD = isetdocker();
 end
 
 name = p.Results.name;

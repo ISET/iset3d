@@ -6,17 +6,15 @@ piDockerConfig;
 % Question: 
 %   1. How to figure out the port number if we are not.
 %   2. What if the data is not on acorn?
-% 
-setpref('db','port',49153);
-ourDB = idb.ISETdb();
-remoteHost = 'orange.stanford.edu';
-remoteUser = 'zhenyiliu';
-remoteServer = sftp('orange.stanford.edu','zhenyiliu');
-if ~isopen(ourDB.connection),error('No connection to database.');end
-collectionName = 'PBRTResources'; % ourDB.collectionCreate(colName);
 
 % docker for rendering scenes 
-isetDocker = idocker();
+thisDocker = isetdocker();
+
+setpref('db','port',49153);
+ourDB = idb.ISETdb();
+
+if ~isopen(ourDB.connection),error('No connection to database.');end
+collectionName = 'PBRTResources'; % ourDB.collectionCreate(colName);
 
 %% Render local scene with remote PBRT
 % Make sure you have configured your computer according to this:
@@ -24,16 +22,16 @@ isetDocker = idocker();
 % See /iset3d/tutorials/remote/s_remoteSet.m for remote server
 % configuration
 
-% getpref('ISETDocker') % set up by idocker.setUserPrefs()
+% getpref('ISETDocker') % set up by isetdocker.setUserPrefs()
 
-localFolder = '/Users/zhenyi/git_repo/dev/iset3d/data/scenes/ChessSet';
+localFolder = '/Users/zhenyi/git_repo/dev/iset3d/data/scenes/materialball';
 
-pbrtFile = fullfile(localFolder, 'ChessSet.pbrt');
+pbrtFile = fullfile(localFolder, 'materialball.pbrt');
 thisR = piRead(pbrtFile);
 thisR.set('spatial resolution',[100,100]);
 piWrite(thisR);
 
-scene = piRender(thisR,'docker',isetDocker);
+scene = piRender(thisR,'docker',thisDocker);
 sceneWindow(scene);
 
 %% Add a scene to the database, and render it remotely
@@ -59,7 +57,7 @@ ourDB.contentCreate('collection Name',collectionName, ...
     'format','pbrt');
 
 % upload files to the remote server
-isetDocker.upload(localFolder,remoteDBDir);
+thisDocker.upload(localFolder,remoteDBDir);
 % remove the mat file from local folder
 delete(recipeMATFile);
 
@@ -67,13 +65,13 @@ delete(recipeMATFile);
 % Find it
 thisScene = ourDB.contentFind(collectionName, 'name',sceneName, 'show',true);
 % Get recipe mat
-recipeDB = piRead(thisScene,'docker',isetDocker);
+recipeDB = piRead(thisScene,'docker',thisDocker);
 % 
 recipeDB.set('spatial resolution',[100,100]);
 %
 piWrite(recipeDB);
 %
-scene = piRender(recipeDB,'docker',isetDocker);
+scene = piRender(recipeDB,'docker',thisDocker);
 sceneWindow(scene);
 
 
