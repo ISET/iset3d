@@ -1,28 +1,20 @@
 %%
-ieInit; 
-clear ISETdb;
+ieInit; clear ISETdb;
 piDockerConfig;
-
-%%
 % set up connection to the database, it's 49153 if we are in Stanford
 % Network. 
 % Question: 
 %   1. How to figure out the port number if we are not.
 %   2. What if the data is not on acorn?
-% 
+
+% docker for rendering scenes 
+thisDocker = isetdocker();
+
 setpref('db','port',49153);
 ourDB = idb.ISETdb();
-%{
-remoteHost = 'orange.stanford.edu';
-remoteUser = 'zhenyiliu';
-remoteServer = sftp('orange.stanford.edu','zhenyiliu');
-%}
 
 if ~isopen(ourDB.connection),error('No connection to database.');end
 collectionName = 'PBRTResources'; % ourDB.collectionCreate(colName);
-
-% docker for rendering scenes 
-isetDocker = idocker();
 
 %% Render local scene with remote PBRT
 % Make sure you have configured your computer according to this:
@@ -30,26 +22,17 @@ isetDocker = idocker();
 % See /iset3d/tutorials/remote/s_remoteSet.m for remote server
 % configuration
 
-% getpref('ISETDocker') % set up by idocker.setUserPrefs()
+% getpref('ISETDocker') % set up by isetdocker.setUserPrefs()
 
-localFolder = '/Users/wandell/Documents/MATLAB/iset3d-v4/data/scenes/Sphere';
-if ~exist(localFolder,'dir'), error('No folder found. %s',localFolder); end
+localFolder = '/Users/zhenyi/git_repo/dev/iset3d/data/scenes/materialball';
 
-pbrtFile = fullfile(localFolder, 'Sphere.pbrt');
+pbrtFile = fullfile(localFolder, 'materialball.pbrt');
 thisR = piRead(pbrtFile);
 thisR.set('spatial resolution',[100,100]);
 piWrite(thisR);
 
-scene = piRender(thisR,'docker',isetDocker);
+scene = piRender(thisR,'docker',thisDocker);
 sceneWindow(scene);
-
-thisR.set('spatial resolution',[200,200]);
-piWrite(thisR);
-scene = piRender(thisR,'docker',isetDocker);
-sceneWindow(scene);
-
-%%
-piWRS(thisR,'docker',isetDocker);
 
 %% Add a scene to the database, and render it remotely
 
@@ -73,43 +56,23 @@ ourDB.contentCreate('collection Name',collectionName, ...
     'size',piDirSizeGet(localFolder)/1024^2,... % MB
     'format','pbrt');
 
-%% upload files to the remote server
-isetDocker.upload(localFolder,remoteDBDir);
+% upload files to the remote server
+thisDocker.upload(localFolder,remoteDBDir);
 % remove the mat file from local folder
 delete(recipeMATFile);
 
-%% Render the scene from data base
-
+% render the scene from data base
 % Find it
-sceneName       = 'ChessSet';
 thisScene = ourDB.contentFind(collectionName, 'name',sceneName, 'show',true);
-
 % Get recipe mat
-recipeDB = piRead(thisScene,'docker',isetDocker);
-
+recipeDB = piRead(thisScene,'docker',thisDocker);
 % 
 recipeDB.set('spatial resolution',[100,100]);
 %
 piWrite(recipeDB);
 %
-scene = piRender(recipeDB,'docker',isetDocker);
+scene = piRender(recipeDB,'docker',thisDocker);
 sceneWindow(scene);
-
-%%
-recipeDB.set('spatial resolution',[200,200]);
-piWRS(recipeDB,'docker',isetDocker);
-
-
-%% Use a different remote working directory
-
-% docker for rendering scenes 
-% isetDocker.workDir = '/home/wandell/isetRemote';
-setpref('ISETDocker','workDir','/home/wandell/isetRemote')
-isetDocker = idocker();
-
-% We need a reset, like dockerWrapper.reset;
-
-piWRS(recipeDB,'docker',isetDocker);
 
 
 

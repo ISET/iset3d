@@ -93,7 +93,7 @@ p = inputParser;
 
 % Parse the scene from server
 if isstruct(fname) && isfield(fname, 'hash')
-    p.addParameter('docker',[],@(x)(isa(x,'idocker'))); % idocker object
+    p.addParameter('docker',[],@(x)(isa(x,'isetdocker'))); % isetdocker object
     p.parse(varargin{:});
     isetDocker = p.Results.docker;
     remoteFile = strrep(fname.mainfile,'.pbrt','.mat');

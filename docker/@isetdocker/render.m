@@ -92,7 +92,7 @@ if ~isempty(getpref('ISETDocker','remoteHost'))
     end
 else
     % Running locally. -- TODO
-    shortOut = idocker.pathToLinux(fullfile(obj.relativeScenePath,sceneDir));
+    shortOut = isetdocker.pathToLinux(fullfile(obj.relativeScenePath,sceneDir));
     outF = fullfile(outputFolder,'renderings',[currName,'.exr']);
     renderCommand = sprintf('pbrt --outfile %s %s', outF, pbrtFile);
     % Add support for 'remoteResources' even in local case

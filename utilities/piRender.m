@@ -54,11 +54,11 @@ function [ieObject, result, thisD] = piRender(thisR, varargin)
 %              text also contains parameters about the optics,
 %              including the distance from the back of the lens to
 %              film and the in-focus distance given the lens-film distance.
-%   thisD    - the idocker used for the rendering.  Useful if
+%   thisD    - the isetdocker used for the rendering.  Useful if
 %              you want to use it next as the ourdocker specification.
 %
 % See also
-%   s_piReadRender*.m, piRenderResult, idocker
+%   s_piReadRender*.m, piRenderResult, isetdocker
 
 % Examples:
 %{
@@ -86,10 +86,10 @@ function [ieObject, result, thisD] = piRender(thisR, varargin)
 %{
 % Render locally with your CPU machine
   thisR = piRecipeDefault('scene name', 'ChessSet');
-  thisDocker = idocker;
+  thisDocker = isetdocker;
   thisDocker.gpuRendering = false;
   thisDocker.localRender = true; 
-  thisDocker = idocker('localRender',true,'gpuRendering', false,'verbosity',0);
+  thisDocker = isetdocker('localRender',true,'gpuRendering', false,'verbosity',0);
   scene = piWRS(thisR,'our docker',thisDocker);
 %}
 %% Init ISET prefs
@@ -106,7 +106,7 @@ p.addParameter('meanluminance',getpref('ISET3d','meanluminance'),@isnumeric);   
 p.addParameter('meanilluminance',getpref('ISET3d','meanilluminance'),@isnumeric);  % irradiance
 p.addParameter('scalepupilarea',true,@islogical);
 p.addParameter('reuse',false,@islogical);
-p.addParameter('docker',[],@(x)(isa(x,'idocker'))); % idocker object
+p.addParameter('docker',[],@(x)(isa(x,'isetdocker'))); % isetdocker object
 % This passed to piDat2ISET, which is where we do the construction.
 p.addParameter('wave', getpref('ISET3d','wave'), @isnumeric);
 
@@ -126,9 +126,9 @@ meanLuminance    = p.Results.meanluminance;
 meanIlluminance  = p.Results.meanilluminance;   
 wave             = p.Results.wave;
 
-%% Set up the idocker
+%% Set up the isetdocker
 if ~ispref('ISETDocker')
-    renderDocker = idocker();
+    renderDocker = isetdocker();
 else
     if isempty(renderDocker)
         disp('[INFO]: Render Locally.');
@@ -155,7 +155,7 @@ outFile = fullfile(outputFolder,'renderings',[currName,'.exr']);
 
 outF = strcat('renderings/',currName,'.exr');
 
-% renderDocker is a idocker object.  The parameters control which
+% renderDocker is a isetdocker object.  The parameters control which
 % machine and with what parameters the docker image/containter is invoked.
 preRender = tic;
 [status, result] = renderDocker.render(thisR);
@@ -173,7 +173,7 @@ if renderDocker.verbosity > 0
     fprintf('*** Rendering time (%s) was %.1f sec ***\n\n',currName,elapsedTime);
 end
 
-% The user wants the idocker.
+% The user wants the isetdocker.
 if nargout > 2, thisD = renderDocker; end
 
 %% Check the returned rendering image.

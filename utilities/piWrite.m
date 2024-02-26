@@ -112,7 +112,7 @@ if remoteRender
         setpref('ISETDocker','remoteSceneDir', ...
             fullfile(getpref('ISETDocker','workDir'),sceneName));
     else
-        idocker.setUserPrefs;
+        isetdocker.setUserPrefs;
     end
 end
 

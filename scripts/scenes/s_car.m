@@ -11,7 +11,7 @@ ieInit;
 if ~piDockerExists, piDockerConfig; end
 
 % docker
-isetDocker = idocker('preset','remote orange');
+isetDocker = isetdocker('preset','remote orange');
 
 % database
 isetDB     = idb.ISETdb();
