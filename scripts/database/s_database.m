@@ -1,6 +1,9 @@
 %%
-ieInit; clear ISETdb;
+ieInit; 
+clear ISETdb;
 piDockerConfig;
+
+%%
 % set up connection to the database, it's 49153 if we are in Stanford
 % Network. 
 % Question: 
@@ -9,9 +12,12 @@ piDockerConfig;
 % 
 setpref('db','port',49153);
 ourDB = idb.ISETdb();
+%{
 remoteHost = 'orange.stanford.edu';
 remoteUser = 'zhenyiliu';
 remoteServer = sftp('orange.stanford.edu','zhenyiliu');
+%}
+
 if ~isopen(ourDB.connection),error('No connection to database.');end
 collectionName = 'PBRTResources'; % ourDB.collectionCreate(colName);
 
@@ -26,15 +32,24 @@ isetDocker = idocker();
 
 % getpref('ISETDocker') % set up by idocker.setUserPrefs()
 
-localFolder = '/Users/zhenyi/git_repo/dev/iset3d/data/scenes/ChessSet';
+localFolder = '/Users/wandell/Documents/MATLAB/iset3d-v4/data/scenes/Sphere';
+if ~exist(localFolder,'dir'), error('No folder found. %s',localFolder); end
 
-pbrtFile = fullfile(localFolder, 'ChessSet.pbrt');
+pbrtFile = fullfile(localFolder, 'Sphere.pbrt');
 thisR = piRead(pbrtFile);
 thisR.set('spatial resolution',[100,100]);
 piWrite(thisR);
 
 scene = piRender(thisR,'docker',isetDocker);
 sceneWindow(scene);
+
+thisR.set('spatial resolution',[200,200]);
+piWrite(thisR);
+scene = piRender(thisR,'docker',isetDocker);
+sceneWindow(scene);
+
+%%
+piWRS(thisR,'docker',isetDocker);
 
 %% Add a scene to the database, and render it remotely
 
@@ -58,16 +73,20 @@ ourDB.contentCreate('collection Name',collectionName, ...
     'size',piDirSizeGet(localFolder)/1024^2,... % MB
     'format','pbrt');
 
-% upload files to the remote server
+%% upload files to the remote server
 isetDocker.upload(localFolder,remoteDBDir);
 % remove the mat file from local folder
 delete(recipeMATFile);
 
-% render the scene from data base
+%% Render the scene from data base
+
 % Find it
+sceneName       = 'ChessSet';
 thisScene = ourDB.contentFind(collectionName, 'name',sceneName, 'show',true);
+
 % Get recipe mat
 recipeDB = piRead(thisScene,'docker',isetDocker);
+
 % 
 recipeDB.set('spatial resolution',[100,100]);
 %
@@ -75,6 +94,22 @@ piWrite(recipeDB);
 %
 scene = piRender(recipeDB,'docker',isetDocker);
 sceneWindow(scene);
+
+%%
+recipeDB.set('spatial resolution',[200,200]);
+piWRS(recipeDB,'docker',isetDocker);
+
+
+%% Use a different remote working directory
+
+% docker for rendering scenes 
+% isetDocker.workDir = '/home/wandell/isetRemote';
+setpref('ISETDocker','workDir','/home/wandell/isetRemote')
+isetDocker = idocker();
+
+% We need a reset, like dockerWrapper.reset;
+
+piWRS(recipeDB,'docker',isetDocker);
 
 
 

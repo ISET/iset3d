@@ -39,6 +39,7 @@ classdef idocker < handle
 
             % set user preferences
             if ~ispref('ISETDocker')
+                % First time through, this is called.
                 obj.setUserPrefs();
             end
 

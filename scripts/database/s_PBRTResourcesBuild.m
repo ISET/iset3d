@@ -10,6 +10,7 @@ setpref('db','port',49153);
 ourDB = idb.ISETdb();
 
 if ~isopen(ourDB.connection),error('No connection to database.');end
+
 %% Database description
 % assets: Contains reusable components like models, textures, or animations
 %         that can be used across various scenes or projects.
