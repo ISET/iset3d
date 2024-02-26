@@ -79,7 +79,7 @@ for ii=1:numel(textureParams)
             % need to copy it.
             oDir = thisR.get('output dir');
 
-            if getpref('ISET3d','remoteRender')
+            if ~isempty(getpref('ISETDocker','remoteHost'))
                 remoteSceneDir = getpref('ISETDocker','remoteSceneDir');
                 texturePath = fullfile(remoteSceneDir,texturePath);  
             end
@@ -117,7 +117,7 @@ for ii=1:numel(textureParams)
                 % directories. I am worried how often this happens. (BW)
 
                 % Check whether we have it a texture file
-                if getpref('ISET3d','remoteRender')&& thisR.useDB ...
+                if ~isempty(getpref('ISETDocker','remoteHost'))&& thisR.useDB ...
                         && ~strncmpi(thisVal,'/',1)
                     % We trust that the texture will be there on the server
                     remoteFolder = fileparts(thisR.inputFile);
@@ -142,7 +142,7 @@ for ii=1:numel(textureParams)
                         thisText = strrep(thisText, imgFile, ['textures/',thisVal]);
                     end
 
-                    if ~getpref('ISET3d','remoteRender')
+                    if isempty(getpref('ISETDocker','remoteHost'))
                         texturesDir = [thisR.get('output dir'),'/textures'];
                         if ~exist(texturesDir,'dir'), mkdir(texturesDir); end
                         copyfile(imgFile,texturesDir);

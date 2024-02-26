@@ -576,7 +576,7 @@ for nMat = 1:numel(thisNode.material)
                     fileext = '.pbrt';
                 end
             end
-            if getpref('ISET3d','remoteRender') && thisR.useDB && ...
+            if ~isempty(getpref('ISETDocker','remoteHost')) && thisR.useDB && ...
                     ~strncmpi(thisShape.filename,'/',1)
                 remoteFolder = fileparts(thisR.inputFile);
                 switch fileext

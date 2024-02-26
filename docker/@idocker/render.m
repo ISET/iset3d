@@ -83,7 +83,7 @@ if ~isempty(getpref('ISETDocker','remoteHost'))
     end
 
     if status == 0
-        if thisR.useDB && getpref('ISET3d','remoteRender')
+        if thisR.useDB && ~isempty(getpref('ISETDocker','remoteHost'))
             % obj.download(remoteDIR, localDIR,  {'excludes','cellarray'}})
             obj.download(remoteSceneDir, outputFolder, {'geometry','textures','spds','lens','bsdfs'});
         else

@@ -12,9 +12,6 @@ function workingDir = piWrite(thisR,varargin)
 %   thisR: a recipe object describing the rendering parameters.
 %
 % Optional key/value parameters
-%   remote resources - Use the remote resources on the server (boolean,
-%     default false, can be set using
-%         setpref('ISET3d','remoteRender',true or false)
 %   verbose -- how chatty to be in this routine.
 %
 % Return
@@ -93,7 +90,7 @@ p = inputParser;
 
 p.addRequired('thisR',@(x)isequal(class(x),'recipe'));
 p.addParameter('verbose', 0, @isnumeric);
-p.addParameter('remoterender', getpref('ISET3d','remoteRender')); 
+p.addParameter('remoterender', ~isempty(getpref('ISETDocker','remoteHost'))); 
 p.addParameter('mainfileonly',false, @islogical);
 p.addParameter('overwriteresources', true, @islogical);
 p.addParameter('overwritematerials', true, @islogical);
@@ -118,7 +115,6 @@ if remoteRender
         idocker.setUserPrefs;
     end
 end
-setpref('ISET3d','remoteRender',remoteRender);
 
 overwritelensfile   = p.Results.overwritelensfile;
 overwritepbrtfile   = true;
@@ -143,7 +139,7 @@ exporter = thisR.get('exporter');
 % from the recipe alone.  Unless we need to copy something.
 inputDir   = thisR.get('input dir');
 
-if ~exist(inputDir,'dir') && ~getpref('ISET3d','remoteRender')
+if ~exist(inputDir,'dir') && isempty(getpref('ISETDocker','remoteHost'))
     warning('Could not find local inputDir: %s\n',inputDir);
 end
 

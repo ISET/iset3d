@@ -31,7 +31,7 @@ localFolder = '/Users/zhenyi/git_repo/dev/iset3d/data/scenes/ChessSet';
 pbrtFile = fullfile(localFolder, 'ChessSet.pbrt');
 thisR = piRead(pbrtFile);
 thisR.set('spatial resolution',[100,100]);
-piWrite(thisR,'remoterender', getpref('ISET3d','remoteRender'));
+piWrite(thisR);
 
 scene = piRender(thisR,'docker',isetDocker);
 sceneWindow(scene);
@@ -71,7 +71,7 @@ recipeDB = piRead(thisScene,'docker',isetDocker);
 % 
 recipeDB.set('spatial resolution',[100,100]);
 %
-piWrite(recipeDB,'remoterender', getpref('ISET3d','remoteRender') );
+piWrite(recipeDB);
 %
 scene = piRender(recipeDB,'docker',isetDocker);
 sceneWindow(scene);

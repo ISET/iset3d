@@ -13,13 +13,13 @@ switch presetName
     case {'humaneye'}
         obj.dockerImage = 'digitalprodev/pbrt-v4-cpu';
         obj.device = 'cpu';
-        return;
 
     % for use on Linux servers with their own GPU
     case {'localgpu', 'localgpu-alt'}
         % Render locally on Fastest GPU
-        obj.device = 'cpu';
+        obj.device = 'gpu';
         obj.remoteHost = '';
+        obj.remoteUser = '';
         obj.renderContext = 'default';
 
         % Different machines have diffrent GPU configurations
@@ -47,6 +47,7 @@ switch presetName
             otherwise
                 obj.deviceID=-1;
         end
+        
     case {'remotemux', 'remoteorange', 'remoteorange-0', 'remoteorange-1','remotemux-0','remotemux-1'}
         % Render remotely on GPU
         obj.device = 'gpu';
@@ -80,6 +81,17 @@ switch presetName
         validNames_str = string(validNames);
         validNames_str{end+1} = ' ';
         warning('Preset Name is not valid. Consider using these valid names: %s',strjoin(flip(validNames_str),'\n'));
+
+    
+end
+
+setpref('ISETDocker','device',  obj.device);
+setpref('ISETDocker','deviceID',obj.deviceID);
+setpref('ISETDocker','dockerImage',  obj.dockerImage);
+setpref('ISETDocker','remoteHost',  obj.remoteHost);
+setpref('ISETDocker','remoteUser',  obj.remoteUser);
+setpref('ISETDocker','renderContext',  obj.renderContext);
+
 end
 
 

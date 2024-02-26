@@ -218,7 +218,7 @@ for ii = 1:numel(thisR.lights)
             else                
                 % V4 uses filename.  (We used to use mapname.)
                 [mapName, mapnameTxt] = piLightGet(thisLight, 'filename val', 'pbrt text', true);
-                if getpref('ISET3d','remoteRender') && thisR.useDB && ...
+                if ~isempty(getpref('ISETDocker','remoteHost')) && thisR.useDB && ...
                         ~strncmpi(mapName,'/',1)
                     remoteFolder = fileparts(thisR.inputFile);
                     mapNameFullpath = fullfile(remoteFolder,mapName);
