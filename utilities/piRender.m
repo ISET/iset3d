@@ -106,7 +106,7 @@ p.addParameter('meanluminance',getpref('ISET3d','meanluminance'),@isnumeric);   
 p.addParameter('meanilluminance',getpref('ISET3d','meanilluminance'),@isnumeric);  % irradiance
 p.addParameter('scalepupilarea',true,@islogical);
 p.addParameter('reuse',false,@islogical);
-p.addParameter('docker',@(x)(isa(x,'idocker'))); % idocker object
+p.addParameter('docker',[],@(x)(isa(x,'idocker'))); % idocker object
 % This passed to piDat2ISET, which is where we do the construction.
 p.addParameter('wave', getpref('ISET3d','wave'), @isnumeric);
 

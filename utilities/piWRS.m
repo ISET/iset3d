@@ -44,7 +44,7 @@ function [obj, results, thisD] = piWRS(thisR,varargin)
 % Returns
 %   obj     - a scene or oi
 %   results - The piRender text outputs
-%   thisD   - a dockerWrapper with the parameters for this run
+%   thisD   - a docker with the parameters for this run
 %
 % Description
 %   
@@ -62,8 +62,7 @@ p.addRequired('thisR',@(x)(isa(x,'recipe')));
 % You can over-ride the render type with this argument
 p.addParameter('rendertype','',@(x)(ischar(x) || iscell(x)));
 
-% p.addParameter('ourdocker','');
-p.addParameter('dockerwrapper','');
+p.addParameter('docker','');
 p.addParameter('name','',@ischar);
 p.addParameter('show',true,@islogical);
 p.addParameter('gamma',[],@isnumeric);
@@ -98,13 +97,10 @@ if isempty(renderType)
     renderType = [{'radiance'},{'depth'},{'albedo'}];
 end
 
-if ~isempty(p.Results.dockerwrapper)
-    thisD = p.Results.dockerwrapper;
-    % Eliminate dockerwrapper from varargin
-    [~,idx] = find(strcmp('dockerwrapper',varargin));
-    varargin = cellDelete(varargin,[idx,idx+1]);
+if ~isempty(p.Results.docker)
+    thisD = p.Results.docker;
 else
-    thisD = dockerWrapper();
+    thisD = idocker();
 end
 
 name = p.Results.name;
@@ -131,12 +127,9 @@ thisR.set('render type',renderType);
 
 % Write the local/pbrt directory being aware about whether the resources
 % are expected to be present remotely.
-piWrite(thisR, ...
-    'remoteResources', thisD.remoteResources,...
-    'push resources', p.Results.pushresources, ...
-    'main file only', p.Results.mainfileonly);
+piWrite(thisR,'remoterender',true);
 
-[obj, results, thisD] = piRender(thisR, 'ourdocker', thisD, varargin{:});
+[obj, results, thisD] = piRender(thisR, 'docker', thisD);
 
 if isempty(obj),  error('Render failed.'); end
 

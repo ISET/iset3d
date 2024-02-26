@@ -218,10 +218,17 @@ for ii = 1:numel(thisR.lights)
             else                
                 % V4 uses filename.  (We used to use mapname.)
                 [mapName, mapnameTxt] = piLightGet(thisLight, 'filename val', 'pbrt text', true);
+                if getpref('ISET3d','remoteRender') && thisR.useDB && ...
+                        ~strncmpi(mapName,'/',1)
+                    remoteFolder = fileparts(thisR.inputFile);
+                    mapNameFullpath = fullfile(remoteFolder,mapName);
+                    mapnameTxt = strrep(mapnameTxt, mapName, mapNameFullpath);
+                end
                 if ~isempty(mapnameTxt)
                     lghtDef = strcat(lghtDef, mapnameTxt);
 
-                    if ~exist(fullfile(thisR.get('output dir'),'skymaps',mapName),'file')
+                    if ~exist(fullfile(thisR.get('output dir'),'skymaps',mapName),'file') ...
+                            || ~ thisR.useDB
                         % mapFile = which(mapName);
                         mapFile = fullfile(piDirGet('skymaps'),mapName);
                         if isfile(mapFile)

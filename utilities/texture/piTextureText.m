@@ -18,12 +18,8 @@ p = inputParser;
 p.addRequired('texture', @isstruct);
 p.addRequired('thisR', @(x)(isa(x,'recipe')));
 
-% remote should be passed in to us if needed
-p.addParameter('remoteRender', false);
-
 p.parse(texture, thisR, varargin{:});
 
-remoteRender = p.Results.remoteRender;
 
 %% String starts with Texture name
 
@@ -121,10 +117,13 @@ for ii=1:numel(textureParams)
                 % directories. I am worried how often this happens. (BW)
 
                 % Check whether we have it a texture file
-                if getpref('ISET3d','remoteRender')
+                if getpref('ISET3d','remoteRender')&& thisR.useDB ...
+                        && ~strncmpi(thisVal,'/',1)
                     % We trust that the texture will be there on the server
-                    remoteSceneDir = getpref('ISETDocker','remoteSceneDir');
-                    imgFile = fullfile(remoteSceneDir,'textures',thisVal);
+                    remoteFolder = fileparts(thisR.inputFile);
+                    imgFile = fullfile(remoteFolder,'textures',thisVal);
+                    thisText = sprintf(' "%s %s" "%s" ',...
+                        thisType, textureParams{ii}, imgFile);
                 else
                     imgFile = piResourceFind('texture',thisVal);
                 end
@@ -139,13 +138,11 @@ for ii=1:numel(textureParams)
                         imgFile = pathToLinux(imgFile);
                     end
 
-                    if isempty(texturePath) || isequal('/',texturePath(1))
-                        % Replaced this text Jan 4 2023 (BW)
-                        % thisText = strrep(thisText, thisVal, ['textures/',thisVal]);
+                    if isempty(texturePath) 
                         thisText = strrep(thisText, imgFile, ['textures/',thisVal]);
                     end
 
-                    if ~remoteRender
+                    if ~getpref('ISET3d','remoteRender')
                         texturesDir = [thisR.get('output dir'),'/textures'];
                         if ~exist(texturesDir,'dir'), mkdir(texturesDir); end
                         copyfile(imgFile,texturesDir);

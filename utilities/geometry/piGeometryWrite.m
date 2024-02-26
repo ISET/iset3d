@@ -430,7 +430,8 @@ for ii = 1:numel(children)
         tmpR = recipe;
         tmpR.outputFile = outFilePath;
         tmpR.lights = thisNode.lght;
-
+        tmpR.inputFile = thisR.inputFile;
+        tmpR.useDB = thisR.useDB;
         lightText = piLightWrite(tmpR, 'writefile', false);
 
         for jj = 1:numel(lightText)
@@ -575,13 +576,22 @@ for nMat = 1:numel(thisNode.material)
                     fileext = '.pbrt';
                 end
             end
-            if getpref('ISET3d','remoteRender') && thisR.useDB
-                % use full path
+            if getpref('ISET3d','remoteRender') && thisR.useDB && ...
+                    ~strncmpi(thisShape.filename,'/',1)
+                remoteFolder = fileparts(thisR.inputFile);
+                switch fileext
+                    case '.ply'
+                        % input file is the filepath on the server
+                        thisShape.filename = fullfile(remoteFolder,thisShape.filename);
+                        shapeText = piShape2Text(thisShape);
+                    case '.pbrt'
+                        pbrtName = fullfile(remoteFolder,pbrtName);
+                end
             end
             % Write out the PBRT text line for this shape (edited)
             if isequal(fileext, '.ply')
-                str = sprintf('%s%s %s',shapeText);
-                fprintf(fid, '%s\n',str); % strcat(spacing, indentSpacing, sprintf('%s\n',shapeText)));
+                str = sprintf('%s%s %s',spacing, indentSpacing, shapeText);
+                fprintf(fid, '%s\n',str); 
             else
                 str = sprintf('%s%s Include "%s"',spacing, indentSpacing, pbrtName);
                 fprintf(fid, '%s\n',str);

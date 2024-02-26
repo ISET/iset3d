@@ -32,9 +32,23 @@ end
 if ~isempty(getpref('ISETDocker','remoteHost'))
     remoteSceneDir = fullfile(getpref('ISETDocker','workDir'),currName);
     % sync files from local folder to remote
-    obj.upload(outputFolder, remoteSceneDir);
+    % obj.upload(localDIR, remoteDIR, {'excludes','cellarray'}})
+    obj.upload(outputFolder, remoteSceneDir,{'renderings',[currName,'.mat']});
 
     outF = fullfile(remoteSceneDir,'renderings',[currName,'.exr']);
+    
+    % check if there is renderings folder
+    sceneFolder = dir(obj.sftpSession,fullfile(remoteSceneDir));
+    renderingsDir = true;
+    for ii = 1:numel(sceneFolder)
+        if sceneFolder(ii).isdir && strcmp(sceneFolder(ii).name,'renderings')
+            renderingsDir = false;
+        end
+    end
+    if renderingsDir
+        mkdir(obj.sftpSession,fullfile(remoteSceneDir,'renderings'));
+    end
+
     if strcmpi(obj.device,'gpu')
         device = ' --gpu ';
     else
@@ -69,7 +83,12 @@ if ~isempty(getpref('ISETDocker','remoteHost'))
     end
 
     if status == 0
-        obj.download(remoteSceneDir, outputFolder);
+        if thisR.useDB && getpref('ISET3d','remoteRender')
+            % obj.download(remoteDIR, localDIR,  {'excludes','cellarray'}})
+            obj.download(remoteSceneDir, outputFolder, {'geometry','textures','spds','lens','bsdfs'});
+        else
+            obj.download(remoteSceneDir, outputFolder);
+        end
     end
 else
     % Running locally. -- TODO

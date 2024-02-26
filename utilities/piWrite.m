@@ -14,7 +14,7 @@ function workingDir = piWrite(thisR,varargin)
 % Optional key/value parameters
 %   remote resources - Use the remote resources on the server (boolean,
 %     default false, can be set using
-%         setpref('docker','remoteRender',true or false)
+%         setpref('ISET3d','remoteRender',true or false)
 %   verbose -- how chatty to be in this routine.
 %
 % Return
@@ -93,7 +93,7 @@ p = inputParser;
 
 p.addRequired('thisR',@(x)isequal(class(x),'recipe'));
 p.addParameter('verbose', 0, @isnumeric);
-p.addParameter('remoterender',true); % idocker object
+p.addParameter('remoterender', getpref('ISET3d','remoteRender')); 
 p.addParameter('mainfileonly',false, @islogical);
 p.addParameter('overwriteresources', true, @islogical);
 p.addParameter('overwritematerials', true, @islogical);
@@ -143,15 +143,15 @@ exporter = thisR.get('exporter');
 % from the recipe alone.  Unless we need to copy something.
 inputDir   = thisR.get('input dir');
 
-if ~exist(inputDir,'dir') 
+if ~exist(inputDir,'dir') && ~getpref('ISET3d','remoteRender')
     warning('Could not find local inputDir: %s\n',inputDir);
 end
 
 % Make working dir if it does not already exist
 workingDir = thisR.get('output dir');
-
-mkdir(workingDir);
-
+if ~exist(workingDir,'dir')
+    mkdir(workingDir);
+end
 % Make a geometry directory
 geometryDir = thisR.get('geometry dir');
 if ~exist(geometryDir, 'dir'), mkdir(geometryDir); end

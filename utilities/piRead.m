@@ -88,9 +88,25 @@ function thisR = piRead(fname,varargin)
 %}
 
 %% Parse the inputs
-
 varargin =ieParamFormat(varargin);
 p = inputParser;
+
+% Parse the scene from server
+if isstruct(fname) && isfield(fname, 'hash')
+    p.addParameter('docker',[],@(x)(isa(x,'idocker'))); % idocker object
+    p.parse(varargin{:});
+    isetDocker = p.Results.docker;
+    remoteFile = strrep(fname.mainfile,'.pbrt','.mat');
+    localDir   = fullfile(piRootPath,'local',[fname.name]);
+    cd(isetDocker.sftpSession,fname.filepath)
+    mget(isetDocker.sftpSession, remoteFile, localDir);
+    recipeMat = fullfile(localDir, strrep(fname.mainfile,'.pbrt','.mat'));
+    thisload = matfile(recipeMat);
+    thisR = thisload.thisR;
+    thisR.set('input file',fullfile(fname.filepath, fname.mainfile));
+    thisR.set('output file',strrep(recipeMat,'.mat','.pbrt'));
+    return
+end
 
 p.addRequired('fname', @(x)(exist(fname,'file')));
 validExporters = {'Copy','PARSE'};

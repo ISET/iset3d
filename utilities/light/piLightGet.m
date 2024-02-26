@@ -167,7 +167,6 @@ if pbrtText && ~isempty(val) &&...
             elseif ~contains(val,'skymaps/'), prefix = 'skymaps/';
             else,                             prefix = '';
             end
-
             % in v4 this changed to filename from mapname
             txt = sprintf(' "string filename" "%s%s"', prefix, val);
         case 'fov'

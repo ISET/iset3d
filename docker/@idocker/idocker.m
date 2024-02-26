@@ -111,8 +111,10 @@ classdef idocker < handle
                 try
                     mkdir(obj.sftpSession,getpref('ISETDocker', 'workDir'));
                 catch ME
-                    disp('Error Message:')
-                    disp(ME.message)
+                    if ~contains(ME.message,"It already exists")
+                        disp('Error Message:')
+                        disp(ME.message)
+                    end
                 end
             else
                 disp('[INFO]:Remote Host is empty, use local.')
@@ -131,12 +133,18 @@ classdef idocker < handle
         end
 
         % similar with rsync and filesSyncRemote
-        function upload(obj, localDir, remoteDir)
+        function upload(obj, localDir, remoteDir, exclude)
             % Ensure the remote directory exists
+            cd(obj.sftpSession, '/');
             try
                 mkdir(obj.sftpSession, remoteDir);
-            catch
+
+            catch ME
+                if ~contains(ME.message,"It already exists")
+                    error(ME.message)
+                end
             end
+
             cd(obj.sftpSession, remoteDir);
 
             % List local items (files and directories)
@@ -153,11 +161,14 @@ classdef idocker < handle
 
                 localItemPath = fullfile(localDir, itemName);
                 remoteItemPath = fullfile(remoteDir, itemName);
+               
+                if exist('exclude','var') && ...
+                        iscell(exclude) && ...
+                        contains(itemName,exclude)
+                    continue;
+                end
 
                 if localItems(i).isdir
-                    if strcmpi(itemName,'renderings')
-                        continue;
-                    end
                     % Item is a directory, recursively call upload for the directory
                     disp(['[INFO] Entering directory: ', localItemPath]);
                     upload(obj, localItemPath, remoteItemPath); % Recursive call
@@ -204,7 +215,8 @@ classdef idocker < handle
         end
 
 
-        function download(obj, remoteDir, localDir)
+        function download(obj, remoteDir, localDir, exclude)
+            cd(obj.sftpSession, '/');
             % Ensure local directory exists
             if ~exist(localDir, 'dir')
                 mkdir(localDir);
@@ -224,6 +236,12 @@ classdef idocker < handle
 
                 remoteItemPath = fullfile(remoteDir, itemName);
                 localItemPath = fullfile(localDir, itemName);
+
+                if exist('exclude','var') && ...
+                        iscell(exclude) && ...
+                        contains(itemName,exclude)
+                    continue;
+                end
 
                 if remoteItems(i).isdir
                     % Item is a directory, create it locally if it doesn't exist
