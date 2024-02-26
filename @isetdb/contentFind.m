@@ -1,8 +1,19 @@
 function documents = contentFind(obj, collection, varargin)
+% Return documents stored in the ISETDB (mongo) database
+%
+
+% Zhenyi Liu
+%
+
+%%
 varargin = ieParamFormat(varargin);
 p = inputParser;
-p.addParameter('collectionname', '',@ischar);
-p.addParameter('type', '',@ischar);
+p.addRequired('obj',@(x)(isa(x,'isetdb')));
+p.addRequired('collection');  % For the future it can be other
+
+% There is a valid list of types.
+resourceTypes = {'asset','scene','bsdf','skymap','spd','lens','texture'};
+p.addParameter('type', '',@(x)(ismember(x,resourceTypes)));
 p.addParameter('name', '',@ischar);
 p.addParameter('filepath', '',@ischar);
 p.addParameter('category', '',@ischar);
@@ -22,7 +33,8 @@ p.addParameter('source','',@ischar);
 
 p.addParameter('show',false,@islogical);
 
-p.parse(varargin{:});
+p.parse(obj,collection,varargin{:});
+
 %% Generate SHA256 hash for the content
 contentStruct = contentSet(p.Results);
 fieldNames = fieldnames(contentStruct);
@@ -55,8 +67,11 @@ if p.Results.show
    elseif numel(documents)>50
         disp('[INFO]: Number of requested items is larger than 20, showing only the first 20 here.')
         disp(struct2table(documents(1:20)));
+   elseif isempty(documents)
+       return;
    else
-        disp(struct2table(documents));
+       % Print it
+       disp(struct2table(documents));
    end
    disp('---------------------------------------------------------------');
 end

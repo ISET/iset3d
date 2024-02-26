@@ -69,9 +69,9 @@ function status = piDockerConfig(varargin)
 p = inputParser;
 p.addParameter('machine', 'default', @ischar);
 p.addOptional('debug', false, @islogical);
-p.addOptional('gpuRendering', 'true', @boolean);
-p.addOptional('remoteHost', '', @ischar); % experimental
-p.addOptional('remoteImage', '', @ischar); % image to use for remote render
+% p.addOptional('gpuRendering', 'true', @boolean);
+% p.addOptional('remoteHost', '', @ischar); % experimental
+% p.addOptional('remoteImage', '', @ischar); % image to use for remote render
 
 p.parse(varargin{:})
 

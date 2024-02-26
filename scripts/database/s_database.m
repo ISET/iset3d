@@ -7,13 +7,14 @@ piDockerConfig;
 %   1. How to figure out the port number if we are not.
 %   2. What if the data is not on acorn?
 
+%%
 % docker for rendering scenes 
 thisDocker = isetdocker();
 
 setpref('db','port',49153);
-ourDB = idb.ISETdb();
+ourDB = isetdb;
 
-if ~isopen(ourDB.connection),error('No connection to database.');end
+% if ~isopen(ourDB.connection),error('No connection to database.');end
 collectionName = 'PBRTResources'; % ourDB.collectionCreate(colName);
 
 %% Render local scene with remote PBRT
@@ -24,7 +25,8 @@ collectionName = 'PBRTResources'; % ourDB.collectionCreate(colName);
 
 % getpref('ISETDocker') % set up by isetdocker.setUserPrefs()
 
-localFolder = '/Users/zhenyi/git_repo/dev/iset3d/data/scenes/materialball';
+% localFolder = '/Users/zhenyi/git_repo/dev/iset3d/data/scenes/materialball';
+localFolder = '/Users/wandell/Documents/MATLAB/iset3d-v4/data/scenes/materialball';
 
 pbrtFile = fullfile(localFolder, 'materialball.pbrt');
 thisR = piRead(pbrtFile);
@@ -36,6 +38,8 @@ sceneWindow(scene);
 
 %% Add a scene to the database, and render it remotely
 
+% Use the database.  We need a thisR.set('use db',true);
+%
 thisR.useDB = 1;
 remoteDBDir     = '/acorn/data/iset/PBRTResources/scene/ChessSet';
 remoteSceneFile = fullfile(remoteDBDir,'ChessSet.pbrt');
@@ -61,19 +65,22 @@ thisDocker.upload(localFolder,remoteDBDir);
 % remove the mat file from local folder
 delete(recipeMATFile);
 
-% render the scene from data base
+%% Render a scene from data base
+
 % Find it
 thisScene = ourDB.contentFind(collectionName, 'name',sceneName, 'show',true);
+
 % Get recipe mat
 recipeDB = piRead(thisScene,'docker',thisDocker);
 % 
-recipeDB.set('spatial resolution',[100,100]);
+recipeDB.set('spatial resolution',[127,127]);
 %
 piWrite(recipeDB);
 %
 scene = piRender(recipeDB,'docker',thisDocker);
 sceneWindow(scene);
 
+%% END
 
 
 
