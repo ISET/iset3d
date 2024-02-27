@@ -98,13 +98,14 @@ if isstruct(fname) && isfield(fname, 'hash')
     isetDocker = p.Results.docker;
     remoteFile = strrep(fname.mainfile,'.pbrt','.mat');
     localDir   = fullfile(piRootPath,'local',[fname.name]);
-    cd(isetDocker.sftpSession,fname.filepath)
+    cd(isetDocker.sftpSession,fname.filepath);
     mget(isetDocker.sftpSession, remoteFile, localDir);
     recipeMat = fullfile(localDir, strrep(fname.mainfile,'.pbrt','.mat'));
     thisload = matfile(recipeMat);
     thisR = thisload.thisR;
     thisR.set('input file',fullfile(fname.filepath, fname.mainfile));
     thisR.set('output file',strrep(recipeMat,'.mat','.pbrt'));
+    fprintf('[INFO]: Use a database scene: [%s].\n',[fname.filepath,'/',fname.mainfile]);
     return
 end
 

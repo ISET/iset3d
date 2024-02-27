@@ -167,10 +167,14 @@ switch ieParamFormat(cameraType)
         else
             % Partial path ways specified.  So, use the filename and
             % assume it is in the default location (isecam/data/lens).
-            % We always copy dependent lens file to output folder (Zhenyi)
+            lensFile = fullfile(isetRootPath,'data','lens',[name, '.json']);
+            if isfile(lensFile)
             camera.lensfile.value = fullfile(isetRootPath,'data','lens',[name, '.json']);
+            else
+                error('Lens file is not found: %s.\n',lensFile);
+            end
         end
-
+        
         % Why are we setting these values here?  We should fix.
         % TODO:  Change this.
         camera.aperturediameter.type = 'float';

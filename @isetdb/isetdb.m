@@ -3,47 +3,11 @@ classdef isetdb < handle
     % 
     % This object interacts with the MongoDB that we maintain with
     % scenes, assets and such. At Stanford these are stored on acorn.
-    
-    % methods (Static)
-    %     function defaultDB = ISETdb()
-    %         persistent ISETdb;
-    %         if ~exist('ISETdb', 'var')
-    %             ISETdb = [];
-    %         end
-    %         if isempty(ISETdb)
-    %             defaultDB = isetdb();
-    %             ISETdb = defaultDB;
-    %         else
-    %             defaultDB = ISETdb;
-    %         end
-    %     end
-    % end
-
     properties
-        % dbDataFolder = fullfile(piRootPath,'data','db'); % database volume to mount
-        % dbContainerFolder = '/data/db'; % where mongo db is in container
-        % dbContainerName = 'mongodb';
-
-        % Read this from prefs or just use a local instance.  This is
-        % how we communicate with the mongoc object.  At Stanford
-        % there is a different port number:  49153.
         dbServer  = getpref('db','server','localhost');
-        dbPort    = getpref('db','port',27017); % port to use and connect to
-
-        % we don't support username or password yet
-        % dbUserName  = getpref('db','username','');
-        % dbPassword  = getpref('db','password','');
-        
+        dbPort    = getpref('db','port',27017); % port to use and connect to      
         dbName = 'iset';
         dbImage = 'mongo';
-
-        % Need an explanation of the docker container usage
-        % Sometimes we need a subsequent conversion command
-        % dockerCommand = 'docker run'; 
-        % dockerFlags = '';
-        % dockerContainerName = '';
-        % dockerContainerID = '';
-
         connection;
     end
 
@@ -131,28 +95,6 @@ classdef isetdb < handle
                 documents = [];
             end
         end
-
-        % function thisCollection = docList(obj,collectionName)
-        %     % list documents inside a collection
-        %
-        %     thisCollection = find(obj.connection,collectionName);
-        % end
-
-        % function [status,out] = upload(localpath,remotedir)
-        %     % this function rsync the local data to a remote dir by default, and only
-        %     % updates the changed files if exists.
-        %
-        %     commandline = sprintf('rsync -avz --update %s %s',localpath,remotedir);
-        %
-        %     [status,out] = system(commandline);
-        %
-        %     if status
-        %         error(out);
-        %     end
-        %
-        % end
-
-
 
     end
 end

@@ -485,11 +485,16 @@ switch ieParamFormat(param)  % lower case, no spaces
                         % directory.
                         [~,name,ext] = fileparts(lensfile);
                         baseName = [name,ext];
-
                         % Check it is there.
-                        val = fullfile(piDirGet('lens'),baseName);
-                        if ~exist(val,'file')
-                            error('Cannot find the lens file %s in isetcam/data/lens.\n',baseName);
+                        % Firstly, check in the output local folder.
+                        if exist(fullfile(thisR.get('output dir'),lensfile),'file')
+                            val  = fullfile(thisR.get('output dir'),lensfile);
+                        else
+                            % check in isetcam/lens folder
+                            val = fullfile(piDirGet('lens'),baseName);
+                            if ~exist(val,'file')
+                                error('Cannot find the lens file %s in isetcam/data/lens.\n',baseName);
+                            end
                         end
                     end
                 end
@@ -1954,12 +1959,11 @@ switch ieParamFormat(param)  % lower case, no spaces
                             val(2) = (max(pts(2:3:end))-min(pts(2:3:end)))*thisScale(2);
                             val(3) = (max(pts(3:3:end))-min(pts(3:3:end)))*thisScale(3);
                         elseif ~isempty(theShape.filename)
-                            % Read a shape file.  The shape file needs to
-                            % be in the output directory. (BW).
+                            % Read a shape file. 
                             [~,~,ext] = fileparts(theShape.filename);
                             if isequal(ext,'.ply')
                                 fname = fullfile(thisR.get('inputdir'),theShape.filename);
-                                if ~exist(fname,'file')
+                                if ~exist(fname,'file') && ~thisR.useDB
                                     warning('Can not find the ply file %s\n',fname);
                                     return;
                                 end

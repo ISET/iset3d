@@ -182,9 +182,16 @@ if isequal(thisR.get('optics type'),'lens')
         % We have a nominal lens file.  Check that it exists, or that we
         % have insisted on overwriting it.
         if ~exist(lensFile,'file') || overwritelensfile
-            % piWriteLens(thisR,overwritelensfile);
             piWriteLens(thisR);
         end
+
+        if exist(lensFile,'file') && ~isempty(getpref('ISETDocker','remoteHost'))
+            % if we render the scene remotely, we need to rewrite the lens
+            % path from absolute to relative.
+            [~,lensName,ext] = fileparts(lensFile);
+            thisR.set('lensfile',fullfile('lens',[lensName, ext]));
+        end
+
     end
 end
 
