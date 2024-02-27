@@ -106,7 +106,7 @@ function [thisR, out] = recipeSet(thisR, param, val, varargin)
 %    'autofocus'
 %
 %  Assets
-%    Big set of options.  
+%    Big set of options.
 %
 %  Lights
 %
@@ -171,8 +171,8 @@ switch param
     % Object metadata
     case {'name'}
         thisR.name = val;
-        
-    % Rendering and Docker related
+
+        % Rendering and Docker related
     case {'outputfile'}
         % thisR.set('outputfile',fullfilepath);
         % This file may not yet exist.  It is where PBRT will write the
@@ -200,7 +200,7 @@ switch param
         % Scene parameters
     case {'fromtodistance','objectdistance'}
         % thisR.set('object distance',val);
-        % 
+        %
         % The 'from' spot, is the camera location.  The 'to' spot is
         % the point the camera is looking at.  Both are specified in
         % meters.
@@ -243,18 +243,18 @@ switch param
         %
         %  to = from + fromto
         from = thisR.get('from');
-        fromto = thisR.get('fromto');        
+        fromto = thisR.get('fromto');
         thisR.set('to',from + fromto*val);
 
     case {'accommodation'}
         % We allow specifying accommodation rather than focal distance.
         % For typical lenses, accommodation is 1/focaldistance.
-        % 
+        %
         % For the human eye models, we need to change the whole lens model
-        % using setNavarroAccommodation or setArizonaAccommodation. 
-        % 
+        % using setNavarroAccommodation or setArizonaAccommodation.
+        %
         % There is no way to adjust the LeGrand eye.
-        %        
+        %
         subType = thisR.get('camera subtype');
         switch subType
             case {'humaneye'}
@@ -276,7 +276,7 @@ switch param
                         % comments.
                         navarroWrite(thisR,val);
                     case 'arizona'
-                        arizonaWrite(thisR,val);                        
+                        arizonaWrite(thisR,val);
                     case 'legrand'
                         warning('The LeGrand eye does not allow accommodation adjustment.')
                     otherwise
@@ -290,8 +290,8 @@ switch param
         % For cameras, we do not usually set accommodation. Rather, we
         % adjust the distance from the lens to the film (sensor).  We
         % store the focal distance in the recipe (inside the camera
-        % slot) here.  
-        thisR.set('focal distance',1/val);        
+        % slot) here.
+        thisR.set('focal distance',1/val);
 
     case {'focusdistance','focaldistance'}
         % lens.set('focus distance',m)
@@ -307,7 +307,7 @@ switch param
         % as this focus distance. That is because it is possible to
         % look at an object but have it not be the object that is in
         % focus.
-        
+
         % Depending on the camera subtype, the parameter name is either
         % focusdistance or focaldistance. Historical annoyance in PBRT.
 
@@ -327,7 +327,7 @@ switch param
                 % the Navarro or Arizona eye functions, such as
                 %
                 %    [na,txt] = navarroLensCreate(accommodation)) or by
-                %    thisR = setNavarroAccommodation(thisR, accommodation, workingFolder) 
+                %    thisR = setNavarroAccommodation(thisR, accommodation, workingFolder)
                 %    [az, columnDescription]  = arizonaLensCreate(1);
                 %
                 % We store the focaldistance in the camera slot.
@@ -563,7 +563,7 @@ switch param
         %
         thisR.camera.fov.value = val;
         thisR.camera.fov.type = 'float';
-    
+
     case 'diffraction'
         % thisR.set('diffraction');
         %
@@ -581,9 +581,9 @@ switch param
         % This set adjust the integrator and the number of CA bands.
         %
         % If true, set the integrator to spectralpath and the number of
-        % bands to 8. 
+        % bands to 8.
         % If an integer between 1 and 30, set the integrator
-        % to spectralpath and the number of bands to that integer. 
+        % to spectralpath and the number of bands to that integer.
         % If false, set the integrator to 'path' and the number of CA bands
         % to 1.
         %
@@ -610,7 +610,7 @@ switch param
             % This is the integrator that manages chromatic aberration.
             thisR.set('integrator subtype','spectralpath');
 
-            % Set the number of bands.  
+            % Set the number of bands.
             if islogical(val), val = 8; end  % Default number of bands
 
             % The bands are divided evenly the 31 wavelength samples,
@@ -658,7 +658,7 @@ switch param
             % When multiple bounces are needed, use this integrator
             thisR.integrator.subtype = 'bdpt';
         end
-        
+
         thisR.integrator.maxdepth.value = val;
         thisR.integrator.maxdepth.type = 'integer';
 
@@ -708,7 +708,7 @@ switch param
         % thisR.set('microlens sensor offset',val) - Units meters.
         %
         % Printed out in 'camera' subfield of PBRT file for use by
-        % omni camera.         
+        % omni camera.
         thisR.camera.microlenssensoroffset.type = 'float';
         thisR.camera.microlenssensoroffset.value = val;
     case 'nsubpixels'
@@ -743,14 +743,14 @@ switch param
         thisR.set('film diagonal',filmdiagonal);
 
         nRowCol = round([val(1),val(2)]/spacing);
-        thisR.set('film resolution',nRowCol);        
+        thisR.set('film resolution',nRowCol);
 
     case {'filmdistance'}
         % Set in meters. Sigh again.
         thisR.camera.filmdistance.type = 'float';
         thisR.camera.filmdistance.value = val;
     case {'filmshapefile'}
-        % thisR.set('film shape file') = JSONFile;        
+        % thisR.set('film shape file') = JSONFile;
         %
         % Used for making arbitrary film shapes, as in the examples in
         % the ISETBio directory retinaShape.
@@ -827,7 +827,7 @@ switch param
         %  varargin{1} action ('add','replace','delete'), or
         %              a parameter ('scatter')
         %              a medium
-        %  varargin{2} parameter 
+        %  varargin{2} parameter
         %
         % thisR.set('media', 'add', newMedium);
         % thisR.set('media', 'delete', mediumName);
@@ -876,7 +876,7 @@ switch param
                 thisR.media.order{idx} = varargin{2}.name;
                 return;
             otherwise
-                % Should be the medium name.                
+                % Should be the medium name.
                 thisMedium = thisR.media.list(val);
 
                 % We adjust the parameter of the medium.  All this
@@ -893,16 +893,16 @@ switch param
                         % Set absorption to varargin{2}
                         tmp = [varargin{2}.wave;varargin{2}.absorption];
                         thisMedium.sigma_a.value = tmp(:)';
-                        thisR.set('media','replace',val,thisMedium);                    
+                        thisR.set('media','replace',val,thisMedium);
                     case 'scale'
                     case 'Le'
                     case 'preset'
                     otherwise
                         disp('Unknown.')
-                end        
+                end
         end
 
-        
+
         % Materials should be built up here.
     case {'materials', 'material'}
         % Act on the list of materials
@@ -1010,7 +1010,7 @@ switch param
     case {'materialsoutputfile'}
         % Deprecated?
         thisR.materials.outputfile = val;
-        
+
     case {'mediaoutputfile'}
         % Deprecated?
         thisR.media.outputfile = val;
@@ -1099,61 +1099,66 @@ switch param
             thisR.set('textures', textureName, thisTexture);
         end
 
-    case {'skymap'} 
+    case {'skymap'}
         % thisR.set('skypmap',filename)
         % add a skymap by filename
         % See piDockerImgtool for creating skymaps
+        if isstruct(val) && strcmp(val.type,'skymap')
+            % use a database skymap
+            skymapFileName = val.filepath;
+        else
 
-        % If no extension passed, we assume an 'exr' extension
-        [~,n,e] = fileparts(val);
-        if isempty(e), e = '.exr'; end
-        skymapFileName = [n,e];
-        
-        % if the map isn't already in the output dir, we have to copy it
-        if ~isfolder(fullfile(thisR.get('output dir')))
-            mkdir(fullfile(thisR.get('output dir')));
-        end
-        if ~isfile(fullfile(thisR.get('output dir'),skymapFileName))
-            % We keep all skymap files in this folder now.
-            skymapdir = fullfile(thisR.get('output dir'),'skymaps');
-            % If it is not in the local directory, check the data/skymaps
-            if isfile(fullfile(piDirGet('skymaps'), skymapFileName))
-                if ~isfolder(skymapdir), mkdir(skymapdir); end
-                copyfile(fullfile(piDirGet('skymaps'), skymapFileName),...
-                    skymapdir);
-            else
-                % Not found yet, look for it anywhere on the path
-                exrFile = which(skymapFileName);
-                if ~isempty(exrFile)
-                    fprintf('Using skymap file: %s\n',exrFile);
+            % If no extension passed, we assume an 'exr' extension
+            [~,n,e] = fileparts(val);
+            if isempty(e), e = '.exr'; end
+            skymapFileName = [n,e];
+
+            % if the map isn't already in the output dir, we have to copy it
+            if ~isfolder(fullfile(thisR.get('output dir')))
+                mkdir(fullfile(thisR.get('output dir')));
+            end
+
+            if ~isfile(fullfile(thisR.get('output dir'),skymapFileName))
+                % We keep all skymap files in this folder now.
+                skymapdir = fullfile(thisR.get('output dir'),'skymaps');
+                % If it is not in the local directory, check the data/skymaps
+                if isfile(fullfile(piDirGet('skymaps'), skymapFileName))
                     if ~isfolder(skymapdir), mkdir(skymapdir); end
-                    copyfile(exrFile, skymapdir);
+                    copyfile(fullfile(piDirGet('skymaps'), skymapFileName),...
+                        skymapdir);
                 else
-                    % BW is confused by this. But moving on.
-                    % If skymapFileName exists at different location, we
-                    % move it to the output folder.
-                    if exist(skymapFileName,"file")
-                        [~, filename, ext] = fileparts(skymapFileName);
-                        fprintf('Using skymap:  %s\n',[filename,ext]);
-                        copyfile(skymapFileName,thisR.get('output dir'));
-                        skymapFileName = [filename,ext];
-                    elseif exist(val, "file")
-                        [~, filename, ext] = fileparts(skymapFileName);
-                        fprintf('Using skymap:  %s\n',[filename,ext]);
-                        copyfile(val, thisR.get('output dir'));
-                        skymapFileName = [filename, ext];
+                    % Not found yet, look for it anywhere on the path
+                    exrFile = which(skymapFileName);
+                    if ~isempty(exrFile)
+                        fprintf('Using skymap file: %s\n',exrFile);
+                        if ~isfolder(skymapdir), mkdir(skymapdir); end
+                        copyfile(exrFile, skymapdir);
                     else
-                        warning("Unable to find skymap: %s\n", skymapFileName);
-                        return % can't create the light
+                        % BW is confused by this. But moving on.
+                        % If skymapFileName exists at different location, we
+                        % move it to the output folder.
+                        if exist(skymapFileName,"file")
+                            [~, filename, ext] = fileparts(skymapFileName);
+                            fprintf('Using skymap:  %s\n',[filename,ext]);
+                            copyfile(skymapFileName,thisR.get('output dir'));
+                            skymapFileName = [filename,ext];
+                        elseif exist(val, "file")
+                            [~, filename, ext] = fileparts(skymapFileName);
+                            fprintf('Using skymap:  %s\n',[filename,ext]);
+                            copyfile(val, thisR.get('output dir'));
+                            skymapFileName = [filename, ext];
+                        else
+                            warning("Unable to find skymap: %s\n", skymapFileName);
+                            return % can't create the light
+                        end
+
                     end
-                    
                 end
             end
         end
-        
         % Create a sky light with default params.
         [~, f, ~] = fileparts(skymapFileName);
-        
+
         lName = f; % in case we want to get fancy later
         envLight = piLightCreate(lName, ...
             'type', 'infinite',...
@@ -1166,7 +1171,7 @@ switch param
             % For V4 we do not usually need the -90 rotation as we did
             % for V3. For V4 the 'up' direction seems to mainly be
             % z-up. But scenes where it is y-up, we need the rotation.
-            % (Check with Zhenyi). 
+            % (Check with Zhenyi).
             up = thisR.get('up');
             if up(2) > up(3)
                 % This is a y-up recipe, so by default we rotate the skypmap
@@ -1175,7 +1180,7 @@ switch param
         end
 
         out = envLight;
-        
+
     case {'light', 'lights'}
         % Calling convention
         %
@@ -1195,7 +1200,7 @@ switch param
         % thisR.set('light', lightname, 'specscale', val);
         % thisR.set('light', lightName, 'spread val',20);
         % thisR.set('light', lightName, 'spd',[0.5 0.3 1]);
-        
+
         % TODO:  We need additional cases for the area light
 
         if isnumeric(val)
@@ -1211,11 +1216,11 @@ switch param
         else
             error('Unknown light parameter!');
         end
-        
+
         param = varargin{1};
-        
+
         if numel(varargin) == 2, val = varargin{2}; end
-        
+
         switch ieParamFormat(param)
             case 'add'
                 % thisR.set('light', newLight, 'add')
@@ -1263,7 +1268,7 @@ switch param
                 return;
             case 'replace'
                 % thisR.set('light', lightName, 'replace', newLight);
-                % 
+                %
                 % The light asset has a type, name and struct called
                 % lght{1}.
                 oldLight = thisR.get('light', lghtName);
@@ -1285,7 +1290,7 @@ switch param
                 thisR.set('asset', lghtName, newLight);
                 thisR.assets.uniqueNames;
                 return;
-                
+
             case {'worldrotation', 'worldrotate'}
                 thisR.set('asset', lghtName, 'world rotation', val);
                 return;
@@ -1296,7 +1301,7 @@ switch param
                 return;
             case {'worldposition'}
                 thisR.set('asset', lghtName, 'world position', val);
-                return;   
+                return;
             case {'worldorientation'}
                 thisR.set('asset', lghtName, 'world orientation', val);
                 return;
@@ -1309,7 +1314,7 @@ switch param
                 id = thisR.get('node',lghtName,'id');
                 thisR.set('node',id,'scale',val);
                 return;
-                
+
             case {'rotate', 'rotation'}
                 % Rotate the direction, angle in degrees
                 % We should use the same approach as for shapescale.
@@ -1317,16 +1322,16 @@ switch param
                 % See piLightRotate
                 lghtAsset = thisR.get('light', lghtName);
                 lght = lghtAsset.lght{1};
-                
+
                 % If the light (asset) has no from field, then the
                 % transformation will be applied to the branch node.  This
                 % applies to  the skymap (infinite, environment) and area
-                % light. 
+                % light.
                 if ~isfield(lght, 'from')
                     thisR.set('asset', lghtName, 'rotate', val);
                     return;
                 end
-                
+
                 % It has a 'from' field so we apply a real rotation.  The
                 % parameters specify the amount of the rotation and the
                 % order of w.r.t X,Y,Z
@@ -1343,7 +1348,7 @@ switch param
                 else
                     order = ['x', 'y', 'z'];
                 end
-                
+
                 lght = piLightRotate(lght, 'xrot', xRot,...
                     'yrot', yRot,...
                     'zrot', zRot,...
@@ -1356,29 +1361,29 @@ switch param
                 %
                 lghtAsset = thisR.get('light', lghtName);
                 lght = lghtAsset.lght{1};
-                
+
                 % If it has no from field, then the transformation will
                 % be applied to the branch node (for infinite and area
                 % light). An area light has no from field, for
-                % example. 
+                % example.
                 if ~isfield(lght, 'from')
                     % No 'from' field.  So translate with the branch.
                     thisR.set('asset', lghtName, 'translate', varargin{2});
                     return;
                 end
-                
+
                 % This light has a 'from' field.  Here is the shift.
                 if numel(varargin) == 2
                     xSft = varargin{2}(1);
                     ySft = varargin{2}(2);
-                    zSft = varargin{2}(3);                    
+                    zSft = varargin{2}(3);
                 end
 
                 if numel(varargin) == 3, fromto = varargin{3};
                 else,                    fromto = 'both';
                 end
                 up = thisR.get('up');
-                
+
                 % If the light is at the same position of camera
                 if lght.cameracoordinate
                     if isfield(lght, 'from')
@@ -1401,14 +1406,14 @@ switch param
                 thisLightAsset = thisR.get('light', lghtName);
                 thisLight = thisLightAsset.lght{1};
         end
-        
+
         % At this point we have the light.
         if numel(varargin{1}) == 1
             % thisR.set('light', lghtName, lightStruct);
             %
             % A light struct was sent in as the only argument.  We
             % should check it, make sure its name is unique, and then set
-            % it. We are not checking enough.            
+            % it. We are not checking enough.
             thisR.set('light', lghtName, 'replace', varargin{1});
         else
             % thisR.set('light', lightName, param, val)
@@ -1419,11 +1424,11 @@ switch param
             if isequal(param,'name')
                 % There are two places where light names are stored.
                 % We keep them the same, which is goofy.  But there is
-                % it is for now.  
+                % it is for now.
                 thisR.set('asset',lghtName,'name',val);
             end
         end
-        
+
     case {'asset', 'assets','node','nodes'}
         % Typical:    thisR.set(param,val)
         % This case:  thisR.set('asset',assetNameOrID, param, val);
@@ -1502,7 +1507,7 @@ switch param
             case {'rotate', 'rotation'}
                 % Figures out the rotation from the angles in val and sets
                 % the rotation matrix
-                % val 
+                % val
                 out = piAssetRotate(thisR, assetName, val);
             case {'rotationmatrix'}
                 % Just set the rotation matrix
@@ -1526,13 +1531,13 @@ switch param
                 % thisR.set('asset','assetID,'world rotate',vecDeg)
                 %
                 % Change the rotation in the world space
-                
+
                 % Get current rotation matrix
-                curRotM = thisR.get('asset', assetName, 'world rotation matrix'); 
-                
+                curRotM = thisR.get('asset', assetName, 'world rotation matrix');
+
                 % Compute new axis rotation (orientation)
                 [~, rotDeg] = piTransformRotationInAbsSpace(val, curRotM);
-                
+
                 % Set the rotation parameter PBRT will use
                 out = thisR.set('asset', assetName, 'rotate', rotDeg);
 
@@ -1599,9 +1604,9 @@ switch param
                 id = thisR.get('asset',assetName,'path to root');
                 if (numel(id)-1 == 0)
                     % Adding a geometry node above the object but
-                    % below the root node 
+                    % below the root node
                     geometryNode = piAssetCreate('type','branch');
-                    
+
                     % Branch name is object or light name with _B replaced
                     % This could be switch on asset type.
                     geometryNode.name = strrep(assetName,'_O','_B');
@@ -1611,11 +1616,11 @@ switch param
                     thisR.set('asset','root_B','add',geometryNode);
                     thisR.set('asset',assetName,'parent',geometryNode.name);
                 end
-                
+
                 % Set the position and other parameters.
                 piAssetSet(thisR, geometryNode.name, 'translate',wpos);
                 piAssetSet(thisR, geometryNode.name, 'scale',wscale);
-                
+
                 % rotMatrix = [wrotate; fliplr(eye(3))];
                 % piAssetSet(thisR, geometryNode.name, 'rotation', rotMatrix);
 
@@ -1741,7 +1746,7 @@ switch param
         thisR.materials.list.(matName).floatconcentration = val{2};
     case {'rendertype','filmrendertype'}
         % piRender(thisR,'render type',{list of types});
-        % piRender(thisR,'render type',{'radiance','depth','instance'});        
+        % piRender(thisR,'render type',{'radiance','depth','instance'});
         thisR.metadata.rendertype = val;
         for ii = 1:numel(val)
             switch val{ii}
@@ -1759,7 +1764,7 @@ switch param
                     % depth
                     thisR.film.saveDepth.type  = 'bool';
                     thisR.film.saveDepth.value = true;
-                % Added for gbuffer in pbrt-v4
+                    % Added for gbuffer in pbrt-v4
                 case 'normal'
                     thisR.film.saveNormal.type  = 'bool';
                     thisR.film.saveNormal.value = true;

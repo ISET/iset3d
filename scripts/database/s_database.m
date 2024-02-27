@@ -68,7 +68,7 @@ delete(recipeMATFile);
 %% Render a scene from data base
 
 % Find it
-thisScene = ourDB.contentFind(collectionName, 'name',sceneName, 'show',true);
+thisScene = ourDB.contentFind('PBRTResources', 'name',sceneName, 'show',true);
 
 % Get recipe mat
 recipeDB = piRead(thisScene,'docker',thisDocker);
@@ -79,6 +79,17 @@ piWrite(recipeDB);
 %
 scene = piRender(recipeDB,'docker',thisDocker);
 sceneWindow(scene);
+
+
+%% change the skymap to a skymap in the database
+remoteSkymaps = ourDB.contentFind('PBRTResources','type','skymap', 'show',true);
+
+% need a function to remove skymap using type rather than name.
+recipeDB.set('light','all','delete');
+
+recipeDB.set('skymap',remoteSkymaps(1));
+
+scene = piWRS(recipeDB);
 
 %% END
 

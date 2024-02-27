@@ -159,12 +159,11 @@ if pbrtText && ~isempty(val) &&...
             %
             % We for goniometric in v4 this changed to filename from mapname
             % Below, mapname is for skymaps
-            txt = sprintf(' "string filename" "%s"', val);
 
             % Use skymaps only where they belong
             % or in the instanced folder
             if contains(val,'instanced/'),    prefix = '';
-            elseif ~contains(val,'skymaps/'), prefix = 'skymaps/';
+            elseif ~contains(val,'skymaps/') && ~strncmp(val,'/',1), prefix = 'skymaps/';
             else,                             prefix = '';
             end
             % in v4 this changed to filename from mapname

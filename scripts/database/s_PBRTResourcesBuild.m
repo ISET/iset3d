@@ -7,10 +7,7 @@ ieInit; clear ISETdb
 %   2. What if the data is not on acorn?
 % 
 setpref('db','port',49153);
-ourDB = idb.ISETdb();
-
-if ~isopen(ourDB.connection),error('No connection to database.');end
-
+ourDB = isetdb();
 %% Database description
 % assets: Contains reusable components like models, textures, or animations
 %         that can be used across various scenes or projects.
@@ -99,42 +96,39 @@ filesSyncRemote(remoteServer, localFolder, remoteDir);
     'mainfile','low-poly-taxi.pbrt',...
     'source','blender',...
     'tags','test',...
-    'size',piDirSizeGet(sceneFolder,remoteServer)/1024^2,... % MB
+    'sizeInMB',piDirSizeGet(sceneFolder,remoteServer)/1024^2,... % MB
     'format','pbrt'); 
 
 queryStruct.hash = thisID;
 thisScene = ourDB.contentFind(collectionName, queryStruct);
 
-%% scenes
+%% textures
+assetDir = fullfile(remoteDir,'skymap');
+skymaps = dir(remoteServer, assetDir);
+
+for ii = 1:numel(skymaps) % first one is '@eaDir'
+    if strcmp(skymaps(ii).name, '@eaDir')
+        continue
+    end
+
+    thisSkymap = fullfile(skymaps(ii).folder, skymaps(ii).name);
+
+    ourDB.contentCreate('collection Name','PBRTResources', ...
+        'type','skymap', ...
+        'filepath',thisSkymap,...
+        'name',skymaps(ii).name,...
+        'category','outdoor',... % indoor or outdoor
+        'mainfile',thisSkymap,...
+        'source','real',... % real or synthetic
+        'tags','',... % time of day
+        'sizeInMB',piDirSizeGet(thisSkymap,remoteServer)/1024^2,... % MB
+        'description','min: 0; mean: 0.291; max: 1',...
+        'format','exr');
+    fprintf('[INFO]: %s is added.\n', skymaps(ii).name);
+
+end
+remoteSkymaps = ourDB.contentFind('PBRTResources','type','skymap', 'show',true);
 
 
 
 
-[thisID, contentStruct] = ourDB.contentCreate('collection Name',collectionName, ...
-    'type','scene', ...
-    'name','low-poly-taxi',...
-    'category','iset3d',...
-    'mainfile','low-poly-taxi.pbrt',...
-    'source','blender',...
-    'tags','test',...
-    'size',piDirSizeGet(sceneFolder)/1024^2,... % MB
-    'format','pbrt'); 
-
-queryString = sprintf("{""hash"": ""%s""}", thisID);
-% find the document with hash query
-doc = find(ourDB.connection, collectionName, Query = queryString);
-
-ourDB.upload(sceneFolder, dstDir) % source and destinated directory
-% remove the document with hash query
-n = remove(ourDB.connection, collectionName, queryString);
-
-% Delete the scene in the database
-
-
-
-%% Render remote scene with remote PBRT
-
-
-
-
-%% Render local scene with local PBRT
