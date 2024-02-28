@@ -3,6 +3,7 @@ local
 *.asv
 *.mexmaci64
 *.mexmaci64
+external/oidn*
 docker/build/pbrt-v4
 docker/build/libs
 docker/build/NVIDIA-OptiX-SDK-7.2.0-linux64-x86_64

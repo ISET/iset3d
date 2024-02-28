@@ -80,7 +80,7 @@ doBatch = p.Results.batch;
 oidn_dir = oidn_fetch('OpenImageDenoise', 'oidn');
 
 if ~p.Results.useNvidia
-    oidn_pth  = fullfile(piRootPath, 'external', string(oidn_dir), 'bin');
+    oidn_pth  = fullfile(string(oidn_dir), 'bin');
 else
     if ispc
         oidn_pth = fullfile(piRootPath, 'external', 'nvidia_denoiser.windows');
