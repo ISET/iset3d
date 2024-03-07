@@ -117,7 +117,6 @@ elseif(pbrtVer == 3)
     imageData = permute(imageData,[2 1 3]);
 end
 
-% fprintf('OK.\n');
 
 end
 

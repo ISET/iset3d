@@ -49,7 +49,6 @@ fname_obj = fullfile(Filepath,sprintf('%s%s',n,e));
 
 % Open the file and write out the assets
 fid_obj = fopen(fname_obj,'W');
-% fprintf(fid_obj,'# Exported by piGeometryWrite on %i/%i/%i %i:%i:%f \n  \n',clock);
 fprintf(fid_obj,'# Exported by piGeometryWrite %s \n  \n',string(datetime));
 
 % Traverse the asset tree beginning at the root
@@ -418,7 +417,6 @@ for ii = 1:numel(children)
             %[p,n,e ] = fileparts(thisNode.shape{1}.filename);
             %thisNode.shape{1}.filename = fullfile(p, [n e]);
             ObjectWrite(fid, thisNode, rootPath, spacing, indentSpacing, thisR);
-            % fprintf(fid,'\n');
         else
             % use reference object
             fprintf(fid, strcat(spacing, indentSpacing, ...
@@ -622,7 +620,6 @@ for nMat = 1:numel(thisNode.material)
             fprintf(fid, '%s\n',str); 
 
         end
-        % fprintf(fid,'\n');  % Enjoy a carriage return.
     else
         % thisShape is empty. Do nothing.
     end

@@ -251,7 +251,6 @@ end
 % each components is assigned the global name, but given a different shape.
 % It happens for the Macbeth case. Ugh.
 
-% fprintf('Fixing object names...')
 if ~isempty(thisR.assets)
     oNames = thisR.get('object names no id');
 
@@ -287,7 +286,6 @@ if ~isempty(thisR.assets)
         thisR.assets = thisR.assets.uniqueNames;
     end
 end
-% fprintf('\n');
 
 end
 
@@ -373,7 +371,6 @@ end
 % Because PBRT is a LHS and many object models are exported with a RHS,
 % sometimes we stick in a Scale -1 1 1 to flip the x-axis. If this scaling
 % is already in the PBRT file, we want to keep it around.
-% fprintf('Reading scale\n');
 [~, scaleBlock] = piParseOptions(pbrtOptions,'Scale');
 if(isempty(scaleBlock))
     thisR.scale = [];

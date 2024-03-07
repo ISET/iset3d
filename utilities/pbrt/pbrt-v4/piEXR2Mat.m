@@ -14,7 +14,7 @@ function data = piEXR2Mat(inputFile, channelname)
 % Output
 %   data - Matlab data.
 %
-% Zhenyi,ß 2021
+% Zhenyi, 2021
 % dockerWrapper Support, D. Cardinal, 2022
 %
 
@@ -159,7 +159,6 @@ else
         delete(filename);
     end
 
-    % fprintf('piEXR2Mat: %s\n',toc());
 
 end
 

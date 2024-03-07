@@ -37,7 +37,7 @@ classdef isetdocker < handle
             p.addParameter('remotemachine','',@ischar);
             p.addParameter('verbosity',1,@isnumeric);
 
-
+            piDockerConfig;
             % set user preferences
             if ~ispref('ISETDocker')
                 % First time through, this is called.
@@ -172,7 +172,6 @@ classdef isetdocker < handle
 
                 if localItems(i).isdir
                     % Item is a directory, recursively call upload for the directory
-                    disp(['[INFO] Entering directory: ', localItemPath]);
                     upload(obj, localItemPath, remoteItemPath); % Recursive call
                 else
                     % Item is a file, upload if it doesn't exist remotely or is modified
@@ -180,7 +179,7 @@ classdef isetdocker < handle
                 end
             end
 
-            disp('[INFO] Synchronization complete.');
+            % disp('[INFO] Synchronization complete.');
         end
 
         function uploadFile(obj, localFile, localFilePath, remoteFilePath)
@@ -274,7 +273,7 @@ classdef isetdocker < handle
                 end
             end
 
-            disp('[INFO]: Synchronization complete.');
+            % disp('[INFO]: Synchronization complete.');
         end
 
 

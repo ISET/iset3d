@@ -157,9 +157,9 @@ for ii = 1:numel(label)
             otherData.materialID = piReadEXR(inputFile, 'data type','material');
 
         case 'normal'
-            normalImage = piReadEXR(inputFile, 'data type','albedo');
+            normalImage = piReadEXR(inputFile, 'data type','normal');
         case 'albedo'
-            albedoImage = piReadEXR(inputFile, 'data type','normal');
+            albedoImage = piReadEXR(inputFile, 'data type','albedo');
         case 'instance'
             % Should the instanceID be ieObject?
             otherData = piReadEXR(inputFile, 'data type','instanceId');

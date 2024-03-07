@@ -25,7 +25,6 @@ for i = 1:numel(releaseData.assets)
         fileName = fullfile(piRootPath,'external',asset.name);
         folderName = strrep(fileName, '.tar.gz', '');
         if isfolder(folderName)
-            disp(['Folder already exists: ', folderName]);
             return;
         end
 

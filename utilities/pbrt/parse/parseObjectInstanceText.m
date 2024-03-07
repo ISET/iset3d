@@ -122,7 +122,6 @@ else
         trees = trees.graft(1, subtree);
     end
 end
-% fprintf('\n');
 
 % We first parsed all of the lines in txt between ObjectBegin/End. We
 % then parsed the remaining lines in newWorld.  parsedUntil should

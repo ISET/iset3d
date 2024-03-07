@@ -157,21 +157,18 @@ outF = strcat('renderings/',currName,'.exr');
 
 % renderDocker is a isetdocker object.  The parameters control which
 % machine and with what parameters the docker image/containter is invoked.
-preRender = tic;
+
 [status, result] = renderDocker.render(thisR);
 
 % Lots of output when verbosity is 2.
 % Append the renderCommand and output file
 if renderDocker.verbosity > 0
-    fprintf('Output file:  %s\n',outF);
+    fprintf('[INFO]: Output file:  %s\n',outF);
 elseif renderDocker.verbosity > 1
     fprintf('PBRT result info:  %s\n',result);
 end
 
-elapsedTime = toc(preRender);
-if renderDocker.verbosity > 0
-    fprintf('*** Rendering time (%s) was %.1f sec ***\n\n',currName,elapsedTime);
-end
+
 
 % The user wants the isetdocker.
 if nargout > 2, thisD = renderDocker; end

@@ -54,7 +54,7 @@ function [object, results, outputHDR] = piAIdenoise(object,varargin)
 %% Parse
 p = inputParser;
 p.addRequired('object',@(x)(isequal(x.type,'scene') || isequal(x.type,'opticalimage') ));
-p.addParameter('quiet',false,@islogical);
+p.addParameter('quiet',true,@islogical);
 
 % Try using Nvidia GPU de-noiser
 p.addParameter('useNvidia',false,@islogical);
@@ -72,11 +72,7 @@ doBatch = p.Results.batch;
 
 %% Set up the denoiser path information and check
 % get the latest release for oidn denoiser
-% pyenv(ExecutionMode="InProcess");
-% % the function returns the folder name for different platform
-% 
-% insert(py.sys.path,int32(0),fullfile(piRootPath,'external/oidn_fetch.py'));
-% oidn_dir = py.oidn_fetch.main();
+
 oidn_dir = oidn_fetch('OpenImageDenoise', 'oidn');
 
 if ~p.Results.useNvidia

@@ -25,10 +25,10 @@ collectionName = 'PBRTResources'; % ourDB.collectionCreate(colName);
 
 % getpref('ISETDocker') % set up by isetdocker.setUserPrefs()
 
-% localFolder = '/Users/zhenyi/git_repo/dev/iset3d/data/scenes/materialball';
-localFolder = '/Users/wandell/Documents/MATLAB/iset3d-v4/data/scenes/materialball';
+localFolder = '/Users/zhenyi/git_repo/dev/iset3d/data/scenes/slantedEdge';
+% localFolder = '/Users/wandell/Documents/MATLAB/iset3d-v4/data/scenes/materialball';
 
-pbrtFile = fullfile(localFolder, 'materialball.pbrt');
+pbrtFile = fullfile(localFolder, 'slantedEdge.pbrt');
 thisR = piRead(pbrtFile);
 thisR.set('spatial resolution',[100,100]);
 piWrite(thisR);
@@ -90,6 +90,9 @@ recipeDB.set('light','all','delete');
 recipeDB.set('skymap',remoteSkymaps(1));
 
 scene = piWRS(recipeDB);
+
+%% Use a texture in the database
+
 
 %% END
 

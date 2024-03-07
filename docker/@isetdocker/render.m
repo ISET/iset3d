@@ -61,7 +61,7 @@ if ~isempty(getpref('ISETDocker','remoteHost'))
         contextFlag, flags, ourContainer, renderCommand);
 
     if verbose > 0
-        fprintf('[INFO]:USE Docker: %s\n', containerCommand);
+        fprintf('[INFO]: USE Docker: %s\n', containerCommand);
     end
 
     renderStart = tic;

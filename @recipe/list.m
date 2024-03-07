@@ -24,7 +24,6 @@ names = cell(numel(lst)-2,1);
 kk = 1;
 for ii = 1:numel(lst)
     if isequal(lst(ii).name(1),'.')
-        % fprintf('skipping %s\n',lst(ii).name);
         continue;
     else
         names{kk} = lst(ii).name;

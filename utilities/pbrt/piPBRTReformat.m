@@ -169,7 +169,6 @@ for ii = 1:numel(PLYmeshFiles)
         break;
     end
 end
-% fprintf('Formatted file is in %s \n', outputDir);
 
 
 

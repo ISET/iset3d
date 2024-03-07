@@ -368,7 +368,6 @@ while cnt <= length(txt)
     end % AttributeBegin
 
     % We get here if we are starting the next Block. 
-    % fprintf('Next AttributeBegin block starts at %d\n',cnt);
     cnt = cnt+1;
 
 end

@@ -17,8 +17,6 @@ function output = piReadEXR(filename, varargin)
 %
 % Zhenyi, 2020
 % 
-% Make sure openexr functions are compiled: 
-%               (run make.m in ~/iset3d/ext/openexr)
 % 
 % Get exr channel information
 %{

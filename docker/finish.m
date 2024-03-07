@@ -9,7 +9,7 @@
 try
     fprintf("Removing remote docker containers used by PBRT V4\n")
     
-    dockerWrapper.reset();
+    isetdocker.reset();
     
     disp("Docker reset completed.")
 catch

@@ -74,14 +74,12 @@ switch str
         fprintf('Input:  %s\n',thisR.get('input file'));
         fprintf('Output: %s\n',thisR.get('output file'));
         if isfield(thisR,'exporter'), fprintf('Exported by %s\n',thisR.exporter); end
-        % fprintf('\n');
         
     case 'render'
         fprintf('\nRenderer information\n-----------\n');
         fprintf('Rays per pixel %d\n',thisR.get('rays per pixel'));
         fprintf('Bounces %d\n',thisR.get('n bounces'));
         namelist = thisR.world;  % Abusive.  Change variable name.
-        % fprintf('\n');
         
     case {'camera','film'}
         fprintf('\nCamera\n-----------\n');
@@ -95,10 +93,6 @@ switch str
                 % No aperture, focal distance or film distance for
                 % pinhole.  Only a diagonal fov.
                 fprintf(' Film distance, diagonal, aperture and object distance\n are not used for pinhole rendering.\n\n')
-                %                 fprintf('Aperture diam:\tpinhole\n');
-                %                 fprintf('Focal distance:\tpinhole\n');
-                %                 fprintf('Film distance (mm):\tpinhole\n');
-                %                 fprintf('Film diagonal (mm):\tpinhole\n');
             otherwise
                 fprintf('Aperture diameter (mm): %0.2f\n',thisR.get('aperture diameter'));
                 fprintf('Focal distance (m):\t%0.2f\n',thisR.get('focal distance'));
@@ -109,7 +103,6 @@ switch str
         fprintf('Exposure time (s):\t%.4f\n',thisR.get('exposure time'));
         fprintf('FOV (deg):\t\t%.1f\n',thisR.get('fov'));
         fprintf('Spatial samples:\t%d %d\n',thisR.get('spatial samples'));
-        % fprintf('\n');
                 
     case 'lookat'
         fprintf('\nLookat parameters\n-----------\n');
@@ -119,7 +112,6 @@ switch str
         fprintf('to:\t%.3f %.3f %.3f\n',thisR.get('to'));
         fprintf('up:\t%.3f %.3f %.3f\n',thisR.get('up'));
         fprintf('object distance: %.3f (m)\n',thisR.get('object distance'));
-        % fprintf('\n');
         
     case 'assets'
         if isempty(thisR.assets)
@@ -154,7 +146,6 @@ switch str
         for ii=1:numel(namelist)
             fprintf('%d\t%s\n',ii,namelist{ii});
         end
-        % fprintf('\n');
         
     otherwise
         error('Unknown parameter %s\n',str);

@@ -89,9 +89,9 @@ if ~isempty(pixelSize)
 end
 
 
-% oiSize = oiGet(oi,'size');
-% sensor = sensorSet(sensor, 'size', oiSize);
-sensor = sensorSetSizeToFOV(sensor, oi.wAngular, oi);
+oiSize = oiGet(oi,'size');
+sensor = sensorSet(sensor, 'size', oiSize);
+% sensor = sensorSetSizeToFOV(sensor, oi.wAngular, oi);
 
 %% Compute
 
