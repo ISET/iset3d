@@ -326,16 +326,13 @@ classdef isetdocker < handle
             % Split the output into lines
             lines = strsplit(cmdout, '\n');
 
-            % Display a header for clarity
-            % disp('Rsync Output Summary:');
-
             % Iterate through each line and selectively display relevant information
             for i = 1:length(lines)
                 line = strtrim(lines{i});
 
                 % Display only lines that indicate transferred files or important info
                 if contains(line, {'sent','bytes','bytes/sec'})
-                    disp(strcat('[INFO]:',' ',strrep(line,'sent','Sent')));
+                    disp(strcat('[INFO]:',' ',strrep(line,'sent',' Sent')));
                 end
             end
 
