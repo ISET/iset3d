@@ -169,7 +169,7 @@ switch ieParamFormat(cameraType)
             % assume it is in the default location (isecam/data/lens).
             lensFile = fullfile(isetRootPath,'data','lens',[name, '.json']);
             if isfile(lensFile)
-            camera.lensfile.value = fullfile(isetRootPath,'data','lens',[name, '.json']);
+                camera.lensfile.value = fullfile(isetRootPath,'data','lens',[name, '.json']);
             else
                 error('Lens file is not found: %s.\n',lensFile);
             end

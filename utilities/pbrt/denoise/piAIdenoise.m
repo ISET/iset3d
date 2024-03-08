@@ -150,7 +150,11 @@ if ~doBatch
             writePFM(img_sp, outputTmp);
 
             % construct the denoise command, can also use -d and -q if desired
-            cmd  = fullfile(oidn_pth, ['oidnDenoise --hdr ',outputTmp,' -o ',DNImg_pth]);
+            if strcmpi(computer,'maca64')
+                cmd = fullfile(oidn_pth, ['oidnDenoise --device metal --hdr ',outputTmp,' -o ',DNImg_pth]);
+            else
+                cmd  = fullfile(oidn_pth, ['oidnDenoise --hdr ',outputTmp,' -o ',DNImg_pth]);
+            end
         end
 
         % Run the executable.

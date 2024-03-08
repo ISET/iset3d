@@ -94,7 +94,7 @@ end
 
 % Fix empty rendertypes to be the default:
 if isempty(renderType)
-    renderType = [{'radiance'},{'depth'},{'albedo'}];
+    renderType = [{'radiance'},{'depth'},{'normal'}];
 end
 
 if ~isempty(p.Results.docker)
@@ -127,7 +127,7 @@ thisR.set('render type',renderType);
 
 % Write the local/pbrt directory being aware about whether the resources
 % are expected to be present remotely.
-piWrite(thisR,'remoterender',true);
+piWrite(thisR);
 
 [obj, results, thisD] = piRender(thisR, 'docker', thisD);
 

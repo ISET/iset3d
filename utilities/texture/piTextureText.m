@@ -90,7 +90,11 @@ for ii=1:numel(textureParams)
                 texturesDir = [thisR.get('output dir'),'/textures'];
                 if ~exist(texturesDir,'dir'), mkdir(texturesDir); end
                 movefile(fullfile(oDir,thisVal),fullfile(oDir,'textures'));
-                thisText = strrep(thisText, thisVal, ['textures/',thisVal]);
+                texPathString = ['textures/',thisVal];
+                if ~contains(thisText, texPathString)
+                    thisText = strrep(thisText, thisVal, ['textures/',thisVal]);
+                end
+
             elseif exist(fullfile(oDir,'textures',thisVal),'file')
                 % Do nothing.  It was already in the textures
                 % subdirectory.  We make sure that the string in the

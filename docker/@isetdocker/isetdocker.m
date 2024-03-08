@@ -134,147 +134,76 @@ classdef isetdocker < handle
             close(obj.sftpSession);
         end
 
-        % similar with rsync and filesSyncRemote
-        function upload(obj, localDir, remoteDir, exclude)
-            % Ensure the remote directory exists
-            cd(obj.sftpSession, '/');
-            try
-                mkdir(obj.sftpSession, remoteDir);
 
-            catch ME
-                if ~contains(ME.message,"It already exists")
-                    error(ME.message)
+        function upload(obj,localDir, remoteDir, excludePattern)
+            % Construct the rsync command
+            rsyncCommand = "rsync -avz --progress --update";
+
+            % Add exclusion patterns if specified
+            if exist('excludePattern', 'var') && iscell(excludePattern)
+                for i = 1:length(excludePattern)
+                    rsyncCommand = rsyncCommand + " --exclude='" + excludePattern{i} + "'";
                 end
             end
 
-            cd(obj.sftpSession, remoteDir);
-
-            % List local items (files and directories)
-            localItems = dir(localDir);
-
-            % Iterate through each item in the local directory
-            for i = 1:length(localItems)
-                itemName = localItems(i).name;
-
-                % Skip items starting with '.' (current and parent directory entries)
-                if startsWith(itemName, '.')
-                    continue;
-                end
-
-                localItemPath = fullfile(localDir, itemName);
-                remoteItemPath = fullfile(remoteDir, itemName);
-               
-                if exist('exclude','var') && ...
-                        iscell(exclude) && ...
-                        contains(itemName,exclude)
-                    continue;
-                end
-
-                if localItems(i).isdir
-                    % Item is a directory, recursively call upload for the directory
-                    upload(obj, localItemPath, remoteItemPath); % Recursive call
-                else
-                    % Item is a file, upload if it doesn't exist remotely or is modified
-                    uploadFile(obj, localItems(i), localItemPath, remoteItemPath);
-                end
+            % Ensure remote directory syntax is correct for rsync (e.g., user@host:/path)
+            remoteHostPath = sprintf('%s@%s:',obj.remoteUser, obj.remoteHost);
+            if ~startsWith(remoteDir, {strcat(obj.remoteUser,'@')})
+                remoteDir = strcat(remoteHostPath,remoteDir);
             end
 
-            % disp('[INFO] Synchronization complete.');
-        end
+            % Finalize the rsync command with source and destination paths
+            rsyncCommand = rsyncCommand + " '" + localDir + "/' '" + remoteDir + "/'";
 
-        function uploadFile(obj, localFile, localFilePath, remoteFilePath)
-            % List remote files to check if the file exists
-            [remoteDir, ~, ~] = fileparts(remoteFilePath);
-            cd(obj.sftpSession, remoteDir);
-            remoteFiles = dir(obj.sftpSession);
-            if ~isempty(remoteFiles)
-               remoteFileNames = {remoteFiles.name};
+            % Execute the rsync command
+            [status, cmdout] = system(rsyncCommand);
+
+            if status ~= 0
+                error(['Rsync failed with the following message: ', cmdout]);
             else
-                remoteFileNames = [];
-            end
-            
-
-            % Check if the file exists remotely and has been modified
-            if ~isempty(remoteFileNames) && ismember(localFile.name, remoteFileNames)
-                % File exists remotely, check if it has been modified
-                remoteFileIndex = find(strcmp(remoteFileNames, localFile.name));
-                remoteFile = remoteFiles(remoteFileIndex);
-
-                % Compare modification dates or sizes
-                if localFile.datenum > remoteFile.datenum ||...
-                        (localFile.datenum - remoteFile.datenum)/24/60 > 1||...
-                        localFile.bytes ~= remoteFile.bytes
-                    % File has been modified, upload it
-                    mput(obj.sftpSession, localFilePath);
-                    disp(['[INFO] Updated: ', localFilePath, ' to ', remoteFilePath]);
-                end
-            else
-                % File does not exist remotely, upload it
-                mput(obj.sftpSession, localFilePath);
-                disp(['[INFO] Uploaded: ', localFilePath, ' to ', remoteFilePath]);
+                obj.formatAndPrint(string(cmdout));
+                disp('[INFO]: Data uploaded successfully.');
             end
         end
 
 
-        function download(obj, remoteDir, localDir, exclude)
-            cd(obj.sftpSession, '/');
-            % Ensure local directory exists
+
+        function download(obj,remoteDir, localDir, excludePattern)
+            % Construct the rsync command
+            rsyncCommand = "rsync -avz --progress";
+
+            % Add exclusion patterns if specified
+            if exist('excludePattern', 'var') && iscell(excludePattern)
+                for i = 1:length(excludePattern)
+                    rsyncCommand = rsyncCommand + " --exclude='" + excludePattern{i} + "'";
+                end
+            end
+
+            % Ensure the local directory exists
             if ~exist(localDir, 'dir')
                 mkdir(localDir);
             end
-            cd(obj.sftpSession, remoteDir);
-            % List remote files and directories
-            remoteItems = dir(obj.sftpSession);
 
-            % Iterate through each item in the remote directory
-            for i = 1:length(remoteItems)
-                itemName = remoteItems(i).name;
-
-                % Skip items starting with '.' (like . and ..)
-                if startsWith(itemName, '.')
-                    continue;
-                end
-
-                remoteItemPath = fullfile(remoteDir, itemName);
-                localItemPath = fullfile(localDir, itemName);
-
-                if exist('exclude','var') && ...
-                        iscell(exclude) && ...
-                        contains(itemName,exclude)
-                    continue;
-                end
-
-                if remoteItems(i).isdir
-                    % Item is a directory, create it locally if it doesn't exist
-                    if ~exist(localItemPath, 'dir')
-                        mkdir(localItemPath);
-                    end
-                    % Recursively download the contents of the directory
-                    download(obj, remoteItemPath, localItemPath);
-                else
-                    % Item is a file, download it
-                    % Check if local file exists and compare modification dates
-                    if exist(localItemPath, 'file')
-                        localFileInfo = dir(localItemPath);
-                        % Download if remote file is newer or sizes differ
-                        if (remoteItems(i).datenum > localFileInfo.datenum && ...
-                                (remoteItems(i).datenum - localFileInfo.datenum)/24/60 > 1)||...
-                                remoteItems(i).bytes ~= localFileInfo.bytes
-                            cd(obj.sftpSession, remoteDir);
-                            mget(obj.sftpSession, itemName, localDir);
-                            disp(['[INFO]: Updated: ', remoteItemPath, ' to ', localItemPath]);
-                        end
-                    else
-                        % Local file does not exist, download the remote file
-                        cd(obj.sftpSession, remoteDir);
-                        mget(obj.sftpSession, itemName, localDir);
-                        disp(['[INFO]: Downloaded: ', remoteItemPath, ' to ', localItemPath]);
-                    end
-                end
+            % Ensure remote directory syntax is correct for rsync (e.g., user@host:/path)
+            remoteHostPath = sprintf('%s@%s:',obj.remoteUser, obj.remoteHost);
+            if ~startsWith(remoteDir, {strcat(obj.remoteUser,'@')})
+                remoteDir = strcat(remoteHostPath,remoteDir);
             end
 
-            % disp('[INFO]: Synchronization complete.');
+            % Finalize the rsync command with source and destination paths
+            rsyncCommand = rsyncCommand + " '" + remoteDir + "/' '" + localDir + "/'";
+
+            % Execute the rsync command
+            [status, cmdout] = system(rsyncCommand);
+
+            if status ~= 0
+                error(['Rsync failed with the following message: ', cmdout]);
+            else
+                obj.formatAndPrint(cmdout);
+                disp('[INFO]: Data downloaded successfully.');
+            end
         end
+
 
 
 
@@ -351,7 +280,7 @@ classdef isetdocker < handle
             if isfield(iDockerPrefs,'PBRTContainer')
                 containerName = getpref('ISETDocker','PBRTContainer');
                 if ~isempty(containerName)
-                    
+
                     if isempty(getpref('ISETDocker','remoteHost'))
                         contextFlag = ' --context default ';
                     else
@@ -393,5 +322,25 @@ classdef isetdocker < handle
             end
         end
 
-    end
+        function formatAndPrint(obj,cmdout)
+            % Split the output into lines
+            lines = strsplit(cmdout, '\n');
+
+            % Display a header for clarity
+            % disp('Rsync Output Summary:');
+
+            % Iterate through each line and selectively display relevant information
+            for i = 1:length(lines)
+                line = strtrim(lines{i});
+
+                % Display only lines that indicate transferred files or important info
+                if contains(line, {'sent','bytes','bytes/sec'})
+                    disp(strcat('[INFO]:',' ',strrep(line,'sent','Sent')));
+                end
+            end
+
+        end
+
+
+end
 end

@@ -190,6 +190,10 @@ if isequal(thisR.get('optics type'),'lens')
             % path from absolute to relative.
             [~,lensName,ext] = fileparts(lensFile);
             thisR.set('lensfile',fullfile('lens',[lensName, ext]));
+            % also copy the file over to local/thisScene/lens
+            lensDir = fullfile(thisR.get('output dir'),'lens');
+            if ~exist(lensDir,'dir'), mkdir(lensDir);end
+            copyfile(lensFile,fullfile(lensDir,[lensName, ext]));
         end
 
     end
