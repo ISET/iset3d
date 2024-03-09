@@ -50,13 +50,13 @@ if ismember(ieParamFormat(fname),{'list','help'})
 end
 
 % Check the extension, make sure it is mat
-[p,n,e] = fileparts(fname);
+[filePath,n,e] = fileparts(fname);
 if isempty(e), e = '.mat'; end
-fname = fullfile(p,[n,e]);
+fname = fullfile(filePath,[n,e]);
 
 varargin = ieParamFormat(varargin);
 p = inputParser;
-p.addRequired('fname',@(x)(exist(x,'file')));
+p.addRequired('fname',@ischar);
 
 validTypes = {'scene','character'};
 p.addParameter('assettype','scene',@(x)(ismember(x,validTypes)));
@@ -66,15 +66,18 @@ assetType = p.Results.assettype;
 
 %% We need a mat-file, preferably from the data/assets directory
 
-
-
-if isempty(p)
+if isempty(filePath)
     % If the user specified a name, but not a path, look in the data/assets
     % directory
     switch assetType
         case 'scene'
             fname = fullfile(piDirGet('assets'),[n e]);
         case 'character'
+            downloadDir = piDirGet('assets');
+            if ~exist(fullfile(downloadDir,'characters',fname),'file')
+                ieWebGet('resourcename', 'characters', 'resourcetype', 'pbrtv4', ...
+                    'download dir',downloadDir,'unzip', true);
+            end
             fname = fullfile(piDirGet('character-assets'),[n e]);
         otherwise
             error('Unknown asset type %s',assetType);
