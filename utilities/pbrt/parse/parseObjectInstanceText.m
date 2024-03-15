@@ -46,16 +46,21 @@ objEndLocs   = find(contains(txt,'ObjectEnd'));
 % If there are objects, this block reads them and adds them to the
 % 'trees' variable.
 if ~isempty(objBeginLocs)
-    disp('Start Object processing.');
+    disp('[INFO]: Start Object processing.');
     for objIndex = 1:numel(objBeginLocs)
-        fprintf('Object %d: ',objIndex);
+        
 
         % Find its name.  Sometimes this is empty.  Hmm.
         objectName = erase(txt{objBeginLocs(objIndex)}(13:end),'"');
 
         % Parse the text to create the subnodes of the object tree
-        [subnodes, ~] = parseGeometryText(thisR,...
-            txt(objBeginLocs(objIndex)+1:objEndLocs(objIndex)-1), '');
+        thisTxt = txt(objBeginLocs(objIndex)+1:objEndLocs(objIndex)-1);
+        if isempty(thisTxt)
+            txt(objBeginLocs(objIndex):objEndLocs(objIndex)) = cell(objEndLocs(objIndex)-objBeginLocs(objIndex)+1,1);
+            continue; 
+        end
+        fprintf('Object %d: \n',objIndex);
+        [subnodes, ~] = parseGeometryText(thisR, 'txt',thisTxt);
 
         % If subnodes were returned, they always contain a root (1) and
         % two additional subnodes defining the transform (2) and the
@@ -64,7 +69,7 @@ if ~isempty(objBeginLocs)
         if ~isempty(subnodes)            
             % To make it easy to set the isObjectInstance, we extract
             % the node from the tree and then set it back.
-            subtree = subnodes.subtree(2);    % The tree below the root
+            subtree = subnodes;    % The tree below the root
             branchNode = subtree.Node{1};     % The branch node
             branchNode.isObjectInstance = 1;  % This is a reference object 
             % Name the branch to match the object name
@@ -80,32 +85,51 @@ if ~isempty(objBeginLocs)
 
         % Remove the object lines we processed, creating an empty cell
         txt(objBeginLocs(objIndex):objEndLocs(objIndex)) = cell(objEndLocs(objIndex)-objBeginLocs(objIndex)+1,1);
+        
     end
     
     % We remove the empty cells which were created as we removed the
     % objects.
-    txt = txt(~cellfun('isempty',txt));
-    disp('Finished Object processing.');
+    
+    disp('[INFO]: Finished Object processing.');
+end
+txt = txt(~cellfun(@isempty,txt));
 
-    % If we have any empty AttributeBegin/End blocks, remove them too.
-    attBeginLocs = find(contains(txt,'AttributeBegin'));
-    attEndLocs = find(contains(txt,'AttributeEnd'));
-    for ii=1:numel(attBeginLocs)
-        if attBeginLocs(ii) == attEndLocs(ii) - 1
-            fprintf('**** Empty AttBegin/End block %d',attBeginLocs(ii));
-        end
+% If we have any empty AttributeBegin/End blocks, remove them too.
+attBeginLocs = find(contains(txt,'AttributeBegin'));
+attEndLocs = find(contains(txt,'AttributeEnd'));
+
+for ii=1:numel(attBeginLocs)
+    if attBeginLocs(ii) == attEndLocs(ii) - 1
+        % fprintf('[INFO]: Empty AttBegin/End block %d \n',attBeginLocs(ii));
+        txt(attBeginLocs(ii):attEndLocs(ii)) = cell(2,1);
     end
-
 end
 
+txt = txt(~cellfun(@isempty,txt));
+
+curIndex = 2;txt_new = txt(1);insideFlag = false;
+while curIndex<=numel(txt)
+    curLine = txt(curIndex);
+    if contains(curLine,'AttributeBegin')
+        insideFlag = true;
+        txt_new(end+1)=curLine;
+    elseif contains(curLine,'AttributeEnd')
+        insideFlag = false;
+        txt_new(end+1)=curLine;
+    elseif insideFlag || ~contains(curLine,{'NamedMaterial','Texture','Material'})
+        txt_new(end+1)=curLine;
+    end
+    curIndex = curIndex+1;
+end
 %% Build the asset tree apart from the Object instances
 
 % The remaining txt has no ObjectBegin/End cases, those have been
 % processed and removed above. It does have AttributeBegin/End
 % sequences that we parse here, returning the subnodes of a tree.
-newWorld = txt;
-fprintf('Attribute processing: ');
-[subnodes, parsedUntil] = parseGeometryText(thisR, newWorld,'');
+newWorld = txt_new(:);
+fprintf('[INFO]: Attribute processing: \n');
+[subnodes, parsedUntil] = parseGeometryText(thisR, 'txt',newWorld);
 
 %% We assign the returned subnodes to the tree
 
@@ -118,8 +142,8 @@ else
     % We graft the returned subnodes onto a root.  I think this
     % happens in the case of ObjectInstances.    
     if ~isempty(subnodes)
-        subtree = subnodes.subtree(2);
-        trees = trees.graft(1, subtree);
+        % subtree = subnodes.subtree(2);
+        trees = trees.graft(1, subnodes);
     end
 end
 
@@ -145,3 +169,4 @@ if ~isempty(trees)
 end
 
 end
+

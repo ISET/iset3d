@@ -56,7 +56,7 @@ if find(piContains(keyWords, 'Shape '))
             shape.phimax = piParameterGet(txt, 'float phimax');
         case 'curve'
             % todo
-        case {'trianglemesh', 'plymesh'}
+        case {'trianglemesh', 'bilinearmesh','plymesh'}
 
             if find(piContains(keyWords, 'filename'))
                 shape.filename = piParameterGet(txt, 'string filename');

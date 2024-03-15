@@ -148,10 +148,8 @@ for ii = 1:numel(children)
 
         % do not write object instance repeatedly
         if isfield(thisNode,'isObjectInstance')
-            % Typically, this field does not exist.  So we do not
-            % execute the code below.  But some branches refer to an
-            % instance and we specifically write out the transforms
-            % separately for this instance.
+            % Refer to an instance and we specifically write out the 
+            % transforms separately for this instance.
             if thisNode.isObjectInstance == 1
                 indentSpacing = '    ';
                 fprintf(fid, 'ObjectBegin "%s"\n', thisNode.name(10:end-2));
@@ -387,11 +385,11 @@ for ii = 1:numel(children)
             end
         end
 
-        % Reference object section (also if an instance (object copy))
-        if ~isempty(referenceObjectExist) && isfield(thisNode,'referenceObject')
-            fprintf(fid, strcat(spacing, indentSpacing, ...
-                sprintf('ObjectInstance "%s"', thisNode.referenceObject), '\n'));
-        end
+        % % Reference object section (also if an instance (object copy))
+        % if ~isempty(referenceObjectExist) && isfield(thisNode,'referenceObject')
+        %     fprintf(fid, strcat(spacing, indentSpacing, ...
+        %         sprintf('ObjectInstance "%s"', thisNode.referenceObject), '\n'));
+        % end
 
         % (fid, obj, thisNode, lvl, outFilePath, writeGeometryFlag, thisR)
         recursiveWriteAttributes(fid, obj, children(ii), lvl + 1, ...
@@ -420,7 +418,7 @@ for ii = 1:numel(children)
         else
             % use reference object
             fprintf(fid, strcat(spacing, indentSpacing, ...
-                sprintf('ObjectInstance "%s"', thisNode.name), '\n'));
+                sprintf('%s%s ObjectInstance "%s"', spacing, indentSpacing,thisNode.referenceObject), '\n'));
         end
 
     elseif isequal(thisNode.type, 'light')
@@ -516,26 +514,34 @@ function ObjectWrite(fid, thisNode, rootPath, spacing, indentSpacing,thisR)
 % information.
 
 %% The participating media PBRT line.  More comments needed
-if ~isempty(thisNode.mediumInterface)
+if isfield(thisNode,'mediumInterface') && ~isempty(thisNode.mediumInterface)
     fprintf(fid, strcat(spacing, indentSpacing, sprintf("MediumInterface ""%s"" ""%s""\n", thisNode.mediumInterface.inside, thisNode.mediumInterface.outside)));
 end
 
 %% Write out material properties
 % An object can contain multiple material and shapes
+if ~isfield(thisNode, 'material')
+    return;
+end
 for nMat = 1:numel(thisNode.material)
 
     if iscell(thisNode.material), material = thisNode.material{nMat};
     else,                         material = thisNode.material;
     end
-
-    str = sprintf('%s%s NamedMaterial "%s" ',spacing,indentSpacing,material.namedmaterial);
+    if isfield(material,'namedmaterial') && isKey(thisR.materials.list,material.namedmaterial)
+        str = sprintf('%s%s NamedMaterial "%s" ',spacing,indentSpacing,material.namedmaterial);
+    else
+        % write out full material 
+        strMat = piMaterialText(material, thisR);
+        str = sprintf('%s%s %s ',spacing,indentSpacing,strMat);
+    end
     fprintf(fid, '%s\n',str); % strcat(spacing, indentSpacing, "NamedMaterial ", '"', material.namedmaterial, '"', '\n'));
 
     % Deal with possibility of a cell array for the shape.  This logic
     % seems off to me (BW, 4/4/2023)
     if ~iscell(thisNode.shape)
         thisShape = thisNode.shape;
-    elseif iscell(thisNode.shape) && numel(thisNode.shape)
+    elseif iscell(thisNode.shape) && (numel(thisNode.shape)==1)
         % At least one entry in the cell?
         thisShape = thisNode.shape{1};
     else
@@ -548,14 +554,43 @@ for nMat = 1:numel(thisNode.material)
 
         % There is a filename that will be included to define the
         % shape
-        if ~isempty(thisShape.filename)
+        if isempty(thisShape.filename)
+            % Write out shape txt
+            shapeText = piShape2Text(thisShape);
+            str = sprintf('%s%s %s',spacing,indentSpacing,shapeText);
+            fprintf(fid, '%s\n',str);
+        else
             % If the shape has a file specification, we do this
+            inputDir = thisR.get('input dir');
+            outputGeometryDir = fullfile(thisR.get('output dir'), 'geometry');
+            if ~exist(outputGeometryDir, 'dir'), mkdir(outputGeometryDir);end
+            
+            [~, fname, fileext] = fileparts(thisShape.filename);
+            pbrtName = [fname,fileext];
+            
+            % Make sure the file is in geometry/ .
+            % If file is not in current scene folder.
+            if strncmpi(thisShape.filename,'../',3)
+                fileFullPath = dir(fullfile(inputDir,thisShape.filename));
+                thisFullName = fullfile(fileFullPath.folder,fileFullPath.name);
+                folderParts = strsplit(fileFullPath.folder,'/');
+                if exist(thisFullName,'file')
+                    outputGeometryDirNew = [outputGeometryDir,'/',folderParts{end-1}];
+                    if ~exist(outputGeometryDirNew, 'dir'), mkdir(outputGeometryDirNew);end
+                    copyfile(thisFullName,outputGeometryDirNew); % this will be geometry/landscape, we might handle other cases, hopefully not
+                end
 
-            % The file can be a ply or a pbrt file.
-            [~, ~, fileext] = fileparts(thisShape.filename);
-
-            pbrtName = strrep(thisShape.filename,'.ply','.pbrt');
-            if ~isfile(fullfile(rootPath, pbrtName))
+                thisShape.filename = ['geometry/',folderParts{end-1},'/',fileFullPath.name];
+                pbrtName = fileFullPath.name;
+            
+                % If the file has an absolute path
+            elseif strncmpi(thisShape.filename, '/',1)
+                if exist(thisShape.filename,'file')
+                    copyfile(thisShape.filename,outputGeometryDir);
+                end
+            end
+            
+            if ~isfile(fullfile(rootPath, thisShape.filename))
                 plyName = strrep(thisShape.filename,'.pbrt','.ply');
                 if ~isfile(fullfile(rootPath, plyName))
                     shapeText = piShape2Text(thisShape);
@@ -567,61 +602,30 @@ for nMat = 1:numel(thisNode.material)
             else
                 % There is no filename.
                 % We are going to write one out based on the data in shape.
-                if isequal(fileext, '.ply')
-                    thisShape.filename = pbrtName;
-                    thisShape.meshshape = 'trianglemesh';
+                if ~endsWith(pbrtName, '.pbrt') && contains(pbrtName,'.ply') % could be .ply or .ply.zip/.ply.gz
                     shapeText = piShape2Text(thisShape);
-                    fileext = '.pbrt';
                 end
             end
             if ~isempty(getpref('ISETDocker','remoteHost')) && thisR.useDB && ...
                     ~strncmpi(thisShape.filename,'/',1)
                 remoteFolder = fileparts(thisR.inputFile);
-                switch fileext
-                    case '.ply'
-                        % input file is the filepath on the server
-                        thisShape.filename = fullfile(remoteFolder,thisShape.filename);
-                        shapeText = piShape2Text(thisShape);
-                    case '.pbrt'
-                        pbrtName = fullfile(remoteFolder,pbrtName);
+                if contains(thisShape.filename,'.ply')
+                    % input file is the filepath on the server
+                    thisShape.filename = fullfile(remoteFolder,thisShape.filename);
+                    shapeText = piShape2Text(thisShape);
+                elseif contains(thisShape.filename, '.pbrt')
+                    pbrtName = fullfile(remoteFolder,pbrtName);
                 end
             end
             % Write out the PBRT text line for this shape (edited)
-            if isequal(fileext, '.ply')
+            if contains(thisShape.filename,'.ply')
                 str = sprintf('%s%s %s',spacing, indentSpacing, shapeText);
-                fprintf(fid, '%s\n',str); 
+                fprintf(fid, '%s\n',str);
             else
-                str = sprintf('%s%s Include "%s"',spacing, indentSpacing, pbrtName);
+                str = sprintf('%s%s Include "%s"',spacing, indentSpacing, thisShape.filename);
                 fprintf(fid, '%s\n',str);
             end
-        else
-            % There is no shape file name, but there is a shape
-            % struct. That means the shapeText has points and nodes
-            % that define the shape.  We write those out into a PBRT
-            % file inside geometry/ and change the shapeText line to
-            % include the file name.
-            %
-            % We use an identifier for the file name based on the
-            % shape itself. Whenever we have the same points, we have
-            % the same name.
-            %
-
-            isNode = false;
-            name = piShapeNameCreate(thisShape,isNode, thisR.get('input basename'));
-            shapeText = piShape2Text(thisShape);
-
-            % Open the shape specification PBRT file and write the shape data
-            geometryFile = fopen(fullfile(rootPath,'geometry',sprintf('%s.pbrt',name)),'w');
-            fprintf(geometryFile,'%s',shapeText);
-            fclose(geometryFile);
-
-            % Include the file in the scene_geometry.pbrt file
-            str = sprintf('%s%s Include "geometry/%s.pbrt"',spacing,indentSpacing,name);
-            fprintf(fid, '%s\n',str); 
-
         end
-    else
-        % thisShape is empty. Do nothing.
     end
 end
 

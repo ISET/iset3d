@@ -68,7 +68,7 @@ end
 %% Needed rather than ieParamFormat because of PBRT syntax issues
 
 for ii=1:2:numel(varargin)
-    varargin{ii} = strrep(varargin{ii}, ' ', '_');
+    varargin{ii} = strrep(varargin{ii}, ' ', '');
 end
 
 %% Parse inputs
@@ -115,6 +115,17 @@ switch tp
         texture.amount.type = 'float';
         texture.amount.value = [];
 
+    case 'directionmix'
+        texture.type = 'directionmix';
+
+        texture.tex1.type = 'texture';
+        texture.tex1.value = [];
+
+        texture.tex2.type = 'texture';
+        texture.tex2.value = [];
+
+        texture.dir.type = 'vector3';
+        texture.dir.value = [];
     % 2D
     % Bilerp, Image, UV, Checkerboard, Dots
     case 'bilerp'
@@ -148,10 +159,10 @@ switch tp
         texture.vdelta.type = 'float';
         texture.vdelta.value = [];
 
-        texture.v1.type = 'vector';
+        texture.v1.type = 'vector3';
         texture.v1.value = [];
 
-        texture.v2.type = 'vector';
+        texture.v2.type = 'vector3';
         texture.v2.value = [];
     case 'imagemap'
         texture.type = 'imagemap';
@@ -212,11 +223,14 @@ switch tp
         texture.vdelta.type = 'float';
         texture.vdelta.value = [];
 
-        texture.v1.type = 'vector';
+        texture.v1.type = 'vector3';
         texture.v1.value = [];
 
-        texture.v2.type = 'vector';
+        texture.v2.type = 'vector3';
         texture.v2.value = [];
+
+        texture.invert.type = 'bool';
+        texture.invert.value = 'false';
     case 'checkerboard'
         texture.type = 'checkerboard';
 
@@ -261,10 +275,10 @@ switch tp
         texture.vdelta.type = 'float';
         texture.vdelta.value = [];
 
-        texture.v1.type = 'vector';
+        texture.v1.type = 'vector3';
         texture.v1.value = [];
 
-        texture.v2.type = 'vector';
+        texture.v2.type = 'vector3';
         texture.v2.value = [];
 
     case 'dots'
@@ -292,10 +306,10 @@ switch tp
         texture.vdelta.type = 'float';
         texture.vdelta.value = [];
 
-        texture.v1.type = 'vector';
+        texture.v1.type = 'vector3';
         texture.v1.value = [];
 
-        texture.v2.type = 'vector';
+        texture.v2.type = 'vector3';
         texture.v2.value = [];
 
     % 3D

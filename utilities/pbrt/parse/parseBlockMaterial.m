@@ -12,27 +12,62 @@ if iscell(thisLine)
 end
 
 % Substitute the spaces in material name with _
-dQuotePos = strfind(thisLine, '"');
-thisLine(dQuotePos(1):dQuotePos(2)) = strrep(thisLine(dQuotePos(1):dQuotePos(2)), ' ', '_');
+% dQuotePos = strfind(thisLine, '"');
+% thisLine(dQuotePos(1):dQuotePos(2)) = strrep(thisLine(dQuotePos(1):dQuotePos(2)), ' ', '-');
 
 % Continue processing
-thisLine = strsplit(thisLine, {' "', '" ', '"', '  '});
-switch thisLine{1}
+dQuotePos = strfind(thisLine, '"');
+tmpLine = strsplit(thisLine,{' "', '" ', '"', '  '});
+switch tmpLine{1}
     case 'Material'
         matName = '';
-        matType = thisLine{2};
+        matType = tmpLine{2};
     case 'MakeNamedMaterial'
-        matName = thisLine{2};
+        % Substitute the spaces in material name with _
+        thisLine(dQuotePos(1):dQuotePos(2)) = strrep(thisLine(dQuotePos(1):dQuotePos(2)), ' ', '_');
+        matName = thisLine(dQuotePos(1):dQuotePos(2));
+        matName = erase(matName,'"');
         matType = piParameterGet(currentLine,'string type');
 end
-newMat = piMaterialCreate(matName, 'type', matType);
+% thisLine = strsplit(thisLine, {' "', '" ', '"', '  '});
+thisLine = strsplit(thisLine(dQuotePos(2):end), {'" "','"'});
 
+if ~isempty(matType)
+    newMat = piMaterialCreate(matName, 'type', matType);
+else
+    newMat = [];
+    return;
+end
 % Split the text line with ' "', '" ' and '"' to get key/val pair
 
 thisLine = thisLine(~cellfun('isempty',thisLine));
 
+% deal with mix material
+stringTypeIndex = find(contains(thisLine, 'string type'));
+if ~isempty(stringTypeIndex)
+    if strcmp(thisLine{stringTypeIndex+1},'mix')
+        % only deal with two mixed materials here.
+        % https://pbrt.org/fileformat-v4#shapes
+        index = find(contains(thisLine, 'string materials'));
+        
+        if isempty(index)
+            error('String Materials are not defined!');
+        end
+        mat1 = strrep(thisLine{index+1}, ' ', '_');
+        mat2 = strrep(thisLine{index+2}, ' ', '_');
+
+        mixMaterials = {mat1,mat2};
+        thisLine{index+1}=mixMaterials;
+        thisLine{index+2}=[];
+        thisLine = thisLine(~cellfun('isempty', thisLine));
+    end
+end
+
+isOnlySpaces = cellfun(@(x) all(isspace(x)), thisLine);
+thisLine = thisLine(~isOnlySpaces);
+
 % For strings 3 to the end, parse
-for ss = 3:2:numel(thisLine)-1
+for ss = 1:2:numel(thisLine)-1
     % Get parameter type and name
     keyTypeName = strsplit(thisLine{ss}, ' ');
     keyType = ieParamFormat(keyTypeName{1});
@@ -51,18 +86,16 @@ for ss = 3:2:numel(thisLine)-1
 
     switch keyType
         case {'string', 'texture'}
-            if ~strcmp(keyName, 'materials')
-                thisVal = thisLine{ss + 1};
-            else
-                thisVal = {thisLine{ss+1},thisLine{ss+2}};
-            end
+              % handling mix materials   
+             thisVal = thisLine{ss+1};
+
         case {'float', 'rgb', 'color', 'photolumi'}
             % Parse a float number from string
             % str2num can convert string to vector. str2double can't.
             thisVal = str2num(thisLine{ss + 1});
         case {'spectrum'}
             [~, ~, e] = fileparts(thisLine{ss + 1});
-            if isequal(e, '.spd')
+            if isequal(e, '.spd') || isempty(str2num(thisLine{ss + 1}))
                 % Is a file
                 thisVal = thisLine{ss + 1};
             else

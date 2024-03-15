@@ -215,32 +215,53 @@ for ii = 1:numel(thisR.lights)
                 if ~isempty(spdTxt)
                     lghtDef = strcat(lghtDef, spdTxt);
                 end
-            else                
-                % V4 uses filename.  (We used to use mapname.)
-                [mapName, mapnameTxt] = piLightGet(thisLight, 'filename val', 'pbrt text', true);
-                if ~isempty(getpref('ISETDocker','remoteHost')) && thisR.useDB && ...
-                        ~strncmpi(mapName,'/',1)
-                    remoteFolder = fileparts(thisR.inputFile);
-                    mapNameFullpath = fullfile(remoteFolder,mapName);
-                    mapnameTxt = strrep(mapnameTxt, mapName, mapNameFullpath);
-                end
-                if ~isempty(mapnameTxt)
-                    lghtDef = strcat(lghtDef, mapnameTxt);
+            else
+                % Retrieve filename and pbrt text for thisLight, assuming 'true' specifies detailed retrieval
+                [mapNamePath, mapnameTxt] = piLightGet(thisLight, 'filename val', 'pbrt text', true);
 
-                    if ~exist(fullfile(thisR.get('output dir'),'skymaps',mapName),'file') ...
-                            || ~ thisR.useDB
-                        % mapFile = which(mapName);
-                        mapFile = fullfile(piDirGet('skymaps'),mapName);
+                % Define the directory path for skymaps
+                skymapDir = fullfile(thisR.get('output dir'), 'skymaps');
+                % Create the skymap directory if it doesn't already exist
+                if ~isfolder(skymapDir), mkdir(skymapDir); end
+
+                % Extract file parts for further use
+                [~, fileName, ext] = fileparts(mapNamePath);
+                mapName = [fileName, ext]; % Combine filename and extension
+
+                % Check if the skymap file exists in the output directory
+                if exist(fullfile(thisR.get('output dir'), mapNamePath), 'file')
+                    % Copy the file to skymap directory if it doesn't exist there
+                    destinationFile = fullfile(skymapDir, mapName);
+                    if ~exist(destinationFile, "file")
+                        copyfile(fullfile(thisR.get('output dir'), mapNamePath), skymapDir);
+                    end
+                    % Update mapnameTxt to reflect the new location
+                    mapnameTxt = sprintf(' "string filename" "skymaps/%s"', mapName);
+                else
+                    % Handle case where skymap might be in a different directory and useDB flag is off
+                    skymapDestination = fullfile(thisR.get('output dir'), 'skymaps', mapName);
+                    if ~exist(skymapDestination, 'file') || ~thisR.useDB
+                        % Attempt to find the skymap file in the skymaps directory
+                        mapFile = fullfile(piDirGet('skymaps'), mapName);
                         if isfile(mapFile)
-                            skymapDir = [thisR.get('output dir'),filesep,'skymaps'];
-                            if ~isfolder(skymapDir), mkdir(skymapDir); end
-                            copyfile(mapFile,skymapDir);
+                            copyfile(mapFile, skymapDir);
+                        else
+                            error('Skymap not found: %s\n', mapFile);
                         end
                     end
                 end
-            end
 
-            % lghtDef = sprintf('LightSource "infinite" "%s L" %s', spectrumType, lightSpectrum);
+                % Handle remote file path replacement for Docker preferences and database use
+                if ~isempty(getpref('ISETDocker', 'remoteHost')) && thisR.useDB && ~strncmpi(mapNamePath, '/', 1)
+                    remoteFolder = fileparts(thisR.inputFile);
+                    mapNameFullpath = fullfile(remoteFolder, mapNamePath);
+                    mapnameTxt = strrep(mapnameTxt, mapNamePath, mapNameFullpath);
+                end
+
+                % Append the updated mapname text to the light definition
+                lghtDef = strcat(lghtDef, mapnameTxt);
+
+            end
 
             % nsamples
             [~, nsamplesTxt] = piLightGet(thisLight, 'nsamples val', 'pbrt text', true);

@@ -138,7 +138,7 @@ classdef isetdocker < handle
         function upload(obj,localDir, remoteDir, excludePattern)
             % Construct the rsync command
             rsyncCommand = "rsync -avz --progress --update";
-
+            
             % Add exclusion patterns if specified
             if exist('excludePattern', 'var') && iscell(excludePattern)
                 for i = 1:length(excludePattern)
@@ -154,7 +154,7 @@ classdef isetdocker < handle
 
             % Finalize the rsync command with source and destination paths
             rsyncCommand = rsyncCommand + " '" + localDir + "/' '" + remoteDir + "/'";
-
+            disp('[INFO]: Uploading data:');
             % Execute the rsync command
             [status, cmdout] = system(rsyncCommand);
 
@@ -192,7 +192,7 @@ classdef isetdocker < handle
 
             % Finalize the rsync command with source and destination paths
             rsyncCommand = rsyncCommand + " '" + remoteDir + "/' '" + localDir + "/'";
-
+            disp('[INFO]: Downloading data:');
             % Execute the rsync command
             [status, cmdout] = system(rsyncCommand);
 
