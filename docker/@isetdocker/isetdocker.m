@@ -137,8 +137,11 @@ classdef isetdocker < handle
 
         function upload(obj,localDir, remoteDir, excludePattern)
             % Construct the rsync command
-            rsyncCommand = "rsync -avz --progress --update";
-            
+            if ispc
+                rsyncCommand = "wsl rsync -avz --progress --update";
+            else
+                rsyncCommand = "rsync -avz --progress --update";
+            end
             % Add exclusion patterns if specified
             if exist('excludePattern', 'var') && iscell(excludePattern)
                 for i = 1:length(excludePattern)
