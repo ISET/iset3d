@@ -8,9 +8,9 @@ verbose = 1; % 0, 1, 2
 %% Build up the render command
 pbrtFile = thisR.outputFile;
 outputFolder = fileparts(thisR.outputFile);
-[~,currName,~] = fileparts(pbrtFile);
-
-
+[sceneFolder,currName,~] = fileparts(pbrtFile);
+strparts = strsplit(sceneFolder,filesep);
+sceneFolder = strparts{end};
 iDockerPrefs = getpref('ISETDocker');
 if ~isfield(iDockerPrefs,'PBRTContainer')
     obj.startPBRT();
@@ -30,7 +30,11 @@ else
 end
 % Running remotely.
 if ~isempty(getpref('ISETDocker','remoteHost'))
-    remoteSceneDir = fullfile(getpref('ISETDocker','workDir'),currName);
+    if ispc
+        remoteSceneDir = [getpref('ISETDocker','workDir') '/' sceneFolder];
+    else
+        remoteSceneDir = fullfile(getpref('ISETDocker','workDir'),sceneFolder);
+    end
     % sync files from local folder to remote
     % obj.upload(localDIR, remoteDIR, {'excludes','cellarray'}})
     obj.upload(outputFolder, remoteSceneDir,{'renderings',[currName,'.mat']});
