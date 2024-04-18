@@ -171,33 +171,36 @@ pbrtOptions = piReadWorldText(thisR, txtLines);
 % Act on the pbrtOptions, setting the recipe slots (i.e., thisR).
 piReadOptions(thisR,pbrtOptions);
 
-%% Insert the text from the Include files
 
-% These are usually _geometry.pbrt and _materials.pbrt.  At this
-% point, we can have shapes that have no names.  These are defined in
-% thisR.world just by their points and normals.
-piReadWorldInclude(thisR);
 
 %% Read Materials and Textures
+if ~strcmpi(exporter, 'Copy')
+    %% Insert the text from the Include files
 
-% Read material and texture
-[materialLists, textureList, newWorld, matNameList, texNameList] = parseMaterialTexture(thisR);
-thisR.world = newWorld;
+    % These are usually _geometry.pbrt and _materials.pbrt.  At this
+    % point, we can have shapes that have no names.  These are defined in
+    % thisR.world just by their points and normals.
+    piReadWorldInclude(thisR);
+    % Read material and texture
+    [materialLists, textureList, newWorld, matNameList, texNameList] = parseMaterialTexture(thisR);
 
-thisR.materials.list = materialLists;
-thisR.materials.order = matNameList;
 
-% Add the material lib
-thisR.materials.lib = piMateriallib;
+    thisR.world = newWorld(~cellfun('isempty',newWorld));
 
-thisR.textures.list = textureList;
-thisR.textures.order = texNameList;
+    thisR.materials.list = materialLists;
+    thisR.materials.order = matNameList;
 
-% Convert texture file format to PNG
-thisR = piTextureFileFormat(thisR);
+    % Add the material lib
+    thisR.materials.lib = piMateriallib;
 
-fprintf('[INFO]: Read %d materials and %d textures.\n', materialLists.Count, textureList.Count);
+    thisR.textures.list = textureList;
+    thisR.textures.order = texNameList;
 
+    % Convert texture file format to PNG
+    thisR = piTextureFileFormat(thisR);
+
+    fprintf('[INFO]: Read %d materials and %d textures.\n', materialLists.Count, textureList.Count);
+end
 %% Decide whether to Copy or Parse to get the asset tree filled up
 
 if strcmpi(exporter, 'Copy')
@@ -523,6 +526,7 @@ while ii<=nline
             % thisLine is a cell of 1.
             % It contains a cell array with the individual words.
             thisLine = thisLine{1};
+            
             nStrings = length(thisLine);
             blockType = thisLine{1};
             blockSubtype = thisLine{2};
@@ -534,6 +538,9 @@ while ii<=nline
             % This builds the struct and assigns the values of the
             % parameters
             while dd <= nStrings
+                if strcmp(thisLine{dd},'#')
+                    break
+                end
                 if piContains(thisLine{dd},' ')
                     C = strsplit(thisLine{dd},' ');
                     valueType = C{1};

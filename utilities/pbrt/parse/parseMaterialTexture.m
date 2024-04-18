@@ -57,6 +57,7 @@ for ii = numel(txtLines):-1:1
         else
             t_index = t_index - 1;
         end
+        thisLine = [];
     elseif strncmp(thisLine,'MakeNamedMaterial',length('MakeNamedMaterial')) ||...
             strncmp(thisLine,'Material',length('Material'))
         % Assign the materialMap container
@@ -78,12 +79,16 @@ for ii = numel(txtLines):-1:1
         else
             m_index = max(m_index - 1, 0);
         end
+        if strncmp(thisLine,'MakeNamedMaterial',length('MakeNamedMaterial'))
+            thisLine = [];
+        end
     elseif strncmp(thisLine, 'NamedMaterial', length('NamedMaterial'))
         % We have removed ' ' with '_' in materials, so do the same thing
         % with NamedMaterial for assets.
         % Substitute the spaces in material name with _
         dQuotePos = strfind(thisLine, '"');
         thisLine(dQuotePos(1):dQuotePos(2)) = strrep(thisLine(dQuotePos(1):dQuotePos(2)), ' ', '_');
+        
     end
     txtLines{ii} = thisLine;
 end

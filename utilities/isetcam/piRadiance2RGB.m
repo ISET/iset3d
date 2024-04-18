@@ -71,8 +71,8 @@ end
 
 % Not sure why these aren't settable.  I think they are here to conform
 % with the ISETAuto generalization paper
-readnoise   = 0.2e-3;
-darkvoltage = 0.2e-3;
+readnoise   = 2e-3;
+darkvoltage = 2e-3;
 [electrons,~] = iePixelWellCapacity(pixelSize);  % Microns
 converGain = 1/electrons;         % voltage swing/electrons
 % 
