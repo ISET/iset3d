@@ -117,6 +117,9 @@ p.addParameter('remote',true,@islogical);
 % Optional denoising -- OIDN-based for now
 p.addParameter('denoise','none',@ischar);
 
+% Return render command only
+p.addParameter('commandonly',false);
+
 p.KeepUnmatched = true;
 
 p.parse(thisR,varargin{:});
@@ -158,7 +161,7 @@ outF = strcat('renderings/',currName,'.exr');
 % renderDocker is a isetdocker object.  The parameters control which
 % machine and with what parameters the docker image/containter is invoked.
 
-[status, result] = renderDocker.render(thisR);
+[status, result] = renderDocker.render(thisR, p.Results.commandonly);
 
 % Lots of output when verbosity is 2.
 % Append the renderCommand and output file

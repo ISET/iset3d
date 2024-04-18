@@ -38,21 +38,12 @@ if ispref(prefGroupName)
     end
 end
 
-% Prompt user for device preference
-device = input('Choose a device (GPU/CPU) [g/c]: ', 's');
-if strcmpi(device,'g')
-    device = 'gpu';
-elseif strcmpi(device,'c')
-    device = 'cpu';
-end
-% Prompt user for device ID
-deviceID = input('Enter device ID (-1 for none or CPU): ');
-
 % Define presets for the render context and prompt user to choose or type their own
 disp('Available render contexts:');
 disp('1. remote-orange');
 disp('2. remote-mux');
-disp('3. Use my own');
+disp('3. local');
+disp('4. Use my own');
 renderContextChoice = input('Choose a render context (1-3): ');
 
 switch renderContextChoice
@@ -60,12 +51,14 @@ switch renderContextChoice
         renderContext = 'remote-orange';
     case 2
         renderContext = 'remote-mux';
+    case 3
+        renderContext = 'local';
     otherwise
         renderContext = input('Enter your custom render context: ', 's');
 end
 
 % Additional prompts based on selected renderContext
-if ~strcmpi(renderContext, 'Use my own') && ~isempty(renderContext)
+if contains(renderContext,{'remote-orange','remote-mux'})&& ~isempty(renderContext)
     remoteUser = input('Enter remote user name: ', 's');
     workDir = ['/home/' remoteUser '/ISETRemoteRender'];
     
@@ -79,9 +72,30 @@ if ~strcmpi(renderContext, 'Use my own') && ~isempty(renderContext)
         otherwise
             remoteHost = input('Enter remote host address: ', 's');
     end
+elseif contains(renderContext,'local')
+    dockerImage = input('Enter docker image name: ', 's');
 end
 
-if strcmpi(device, 'cpu')
+% Prompt user for device preference
+device = input('Choose a device (GPU/CPU) [g/c]: ', 's');
+if strcmpi(device,'g')
+    device = 'gpu';
+    if ~isempty(remoteHost) && ~isempty(remoteUser)
+        [status, remoteGPUAttrs]=obj.getGpuAttrs(remoteUser, remoteHost);
+        if ~status
+            fprintf('Avaliable GPU on %s:\n',renderContext);
+            for ii  = 1:numel(remoteGPUAttrs)
+                disp(remoteGPUAttrs(ii));
+            end
+        else
+            disp('[INFO]: Could not get remote GPU information.');
+        end
+    end
+    % Prompt user for device ID
+    deviceID = input('Enter device ID: ');
+elseif strcmpi(device,'c')
+    device = 'cpu';
+    deviceID = -1;
     dockerImage = 'digitalprodev/pbrt-v4-cpu';
     customImageChoice = input('Use digitalprodev/pbrt-v4-cpu, do you want to set your own? [y/n]: ', 's');
     if strcmpi(customImageChoice, 'y')
