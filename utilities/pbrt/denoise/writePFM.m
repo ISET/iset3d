@@ -1,15 +1,21 @@
+function writePFM( image, filename, scale )
 % writePFM write an a matrix to a Portable Float Map Image.
 %
-% [] = writePFM( image, filename, scale )
+% Synopsis
+%   writePFM( image, filename, scale )
 %
-% When image is height x width x 3, the image is considered RGB.
-% When image is height x width, the image is considered grayscale.
-% scale must be a positive value indicating the overall intensity scale.
+% Input
+%   image - Image data
+%     When image is height x width x 3, the image is considered RGB.
+%     When image is height x width, the image is considered grayscale.
+%   filename
+%
+% Optional
+%   scale - a positive value indicating the overall intensity scale.
+%
 
-function [] = writePFM( image, filename, scale )
-
-if exist( 'scale', 'var' ),
-    if scale <= 0,
+if exist( 'scale', 'var' )
+    if scale <= 0
         error( 'scale must be positive' );
     end
 else
@@ -27,7 +33,6 @@ if size( image, 3 ) == 3
     tmp( :, :, 1 ) = image( :, :, 1 )';
     tmp( :, :, 2 ) = image( :, :, 2 )';
     tmp( :, :, 3 ) = image( :, :, 3 )';
-%     fwrite( fid, tmp, 'float32' );
     fwrite( fid, shiftdim( tmp, 2 ), 'float32' );
     fclose( fid );
 
