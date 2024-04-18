@@ -8,45 +8,42 @@ function [object, results, outputHDR] = piAIdenoise(object,varargin)
 %   object:  An ISETCam scene or oi
 %
 % Optional key/value
-%   quiet - Do not show the waitbar
+%   quiet     - Do not show the waitbar
 %   useNvidia - try to use GPU denoiser if available
-%
-%   batch -- write & read all channels at once
+%   batch     - write & read all channels at once
 %
 % Returns
 %   object: The ISETCam object (scene or optical image) with the photons
-%           denoised is returned
+%           denoised 
 %
 % Description
+%  Runs executable for the Intel denoiser in the oidn_pth/bin directory. %
+%  This is a Monte Carlo denoiser based on a trained model from intel open
+%  image denoise: 'https://www.openimagedenoise.org/'.
 %
-% Runs executable for the Intel denoiser (oidn_pth).  The executable
-% must be installed on your machine.
+%  The executable must be installed on your machine.  If we do not find it,
+%  we try to download it using oidn_fetch.
 %
-% This is a Monte Carlo denoiser based on a trained model from intel
-% open image denoise: 'https://www.openimagedenoise.org/'.  You can
-% download versions for various types of architectures from
+%   You can download versions for various types of architectures from the
+%   URL
 %
-% https://www.openimagedenoise.org/downloads.html
+%    https://www.openimagedenoise.org/downloads.html
 %
-% We expect the directory location on a Mac to be
+% The directory location is
 %
-%   fullfile(piRootPath, 'external', 'oidn-1.4.3.x86_64.macos', 'bin');
+%   fullfile(piRootPath, 'external', oidn_pth, 'bin');
 %
-% Otherwise, we expect the oidnDenoise command to be in
+% where oidn_pth will be something like oidn-2.2.2.arm64.macos, or
+% oidn-2.2.2.x86.macos, depending on your Mac.  Or something else if it is
+% a Windows machine.
 %
-%   fullfile(piRootPath, 'external', 'oidn-1.4.2.x86_64.linux', 'bin');
+% We have used the denoiser to clean up PBRT rendered images when we only
+% use a small number of rays.  We use it for show, not for accurate
+% simulations of scene or oi data.
 %
-% We plan to update this program (piAIdenoise) to allow other paths
-% and other versions in the future, after we get some experience with
-% people using the method.
-%
-% We have used the denoiser to clean up PBRT rendered images when we
-% only use a small number of rays.  We use it for show, not for
-% accurate simulations of scene or oi data.
-%
-% We may embed this denoiser in the PBRT docker image that can
-% integrate with PBRT.  We are also considering the denoiser that is
-% part of imgtool, distributed with PBRT.
+% We may embed this denoiser in the PBRT docker image that can integrate
+% with PBRT.  We are also considering the denoiser that is part of imgtool,
+% distributed with PBRT.
 %
 % See also
 %   sceneWindow, oiWindow
@@ -151,8 +148,10 @@ if ~doBatch
 
             % construct the denoise command, can also use -d and -q if desired
             if strcmpi(computer,'maca64')
+                % ARM
                 cmd = fullfile(oidn_pth, ['oidnDenoise --device metal --hdr ',outputTmp,' -o ',DNImg_pth]);
             else
+                % Intel
                 cmd  = fullfile(oidn_pth, ['oidnDenoise --hdr ',outputTmp,' -o ',DNImg_pth]);
             end
         end
@@ -247,3 +246,5 @@ if ~doBatch
 end
 
 fprintf("Denoised in: %2.3f\n", toc);
+
+end
