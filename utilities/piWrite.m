@@ -255,7 +255,9 @@ end
 
 
 % set workDir back to the default
-rmpref('ISETDocker','remoteSceneDir');
+if ~isempty(getpref('ISETDocker','remoteHost'))
+    rmpref('ISETDocker','remoteSceneDir');
+end
 end   % End of piWrite
 
 %% ---------  Helper functions

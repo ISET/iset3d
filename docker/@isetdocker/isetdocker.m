@@ -232,14 +232,16 @@ classdef isetdocker < handle
             else
                 ourContainer = ['pbrt-cpu-' uName];
             end
-            % save container name
-            setpref('ISETDocker','PBRTContainer',ourContainer);
+
             % attach all
-            remotePBRTResources = getpref('ISETDocker','remotePBRTResources');
+            
             workDirPBRT = getpref('ISETDocker','workDir');
-            volumeMap = sprintf("-v %s:%s -v %s:%s ", ...
-                workDirPBRT, workDirPBRT, ...
-                remotePBRTResources, remotePBRTResources);
+            volumeMap = sprintf("-v %s:%s", ...
+                workDirPBRT, workDirPBRT);
+            if ispref('ISETDocker','PBRTResources')
+                PBRTResources = getpref('ISETDocker','PBRTResources');
+                volumeMap = strcat(volumeMap,sprintf(" -v %s:%s ",PBRTResources, PBRTResources));
+            end
             placeholderCommand = 'bash';
 
             % We use the default context for local docker containers
@@ -276,6 +278,8 @@ classdef isetdocker < handle
                     fprintf("[INFO]: STARTED Docker successfully\n");
                 end
             end
+            % save container name
+            setpref('ISETDocker','PBRTContainer',ourContainer);
         end
         %% reset - Resets the running Docker containers
         function reset(obj)
