@@ -1,10 +1,12 @@
-function [status, result] = render(obj, thisR)
+function [status, result, containerCommand] = render(obj, thisR, commandonly)
 p = inputParser();
 
 p.KeepUnmatched = true;
 
 verbose = 1; % 0, 1, 2
-
+if ~exist('commandonly','var')
+    commandonly = false;
+end
 %% Build up the render command
 pbrtFile = thisR.outputFile;
 outputFolder = fileparts(thisR.outputFile);
@@ -69,31 +71,31 @@ if ~isempty(getpref('ISETDocker','remoteHost'))
     if verbose > 0
         fprintf('[INFO]: USE Docker: %s\n', containerCommand);
     end
-
-    renderStart = tic;
-    if verbose > 1
-        [status, result] = system(containerCommand, '-echo');
-        fprintf('[INFO]: Rendered remotely in: %4.2f sec\n', toc(renderStart))
-        fprintf('[INFO]: Returned parameter result is\n***\n%s', result);
-    elseif verbose == 1
-        
-        [status, result] = system(containerCommand);
-        if status == 0
+    if ~commandonly
+        renderStart = tic;
+        if verbose > 1
+            [status, result] = system(containerCommand, '-echo');
             fprintf('[INFO]: Rendered remotely in: %4.2f sec\n', toc(renderStart))
-        else
-            cprintf('red','[ERROR]: Docker Command: %s\n', containerCommand);
-            error('Error Rendering: %s', result);
-        end
-    else
-        [status, result] = system(containerCommand);
-    end
+            fprintf('[INFO]: Returned parameter result is\n***\n%s', result);
+        elseif verbose == 1
 
-    if status == 0
-        if thisR.useDB && ~isempty(getpref('ISETDocker','remoteHost'))
-            % obj.download(remoteDIR, localDIR,  {'excludes','cellarray'}})
-            obj.download(remoteSceneDir, outputFolder, {'geometry','textures','spds','lens','bsdfs'});
+            [status, result] = system(containerCommand);
+            if status == 0
+                fprintf('[INFO]: Rendered remotely in: %4.2f sec\n', toc(renderStart))
+            else
+                cprintf('red','[ERROR]: Docker Command: %s\n', containerCommand);
+                error('Error Rendering: %s', result);
+            end
+
         else
-            obj.download(remoteSceneDir, outputFolder);
+            [status, result] = system(containerCommand);
+        end
+
+        if status == 0
+            if ~isempty(getpref('ISETDocker','remoteHost'))
+
+                obj.download(fullfile(remoteSceneDir,'renderings'), fullfile(outputFolder,'renderings'));
+            end
         end
     end
 else
