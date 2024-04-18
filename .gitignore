@@ -18,3 +18,4 @@ data/.DS_Store
 data/.DS_Store
 data/scenes/testplane/dgauss.22deg.3.0mm+microlens.json
 data/assets/*
+/local
