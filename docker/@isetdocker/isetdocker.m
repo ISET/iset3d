@@ -345,6 +345,56 @@ classdef isetdocker < handle
 
         end
 
+        function [rStatus, gpuAttrs] = getGpuAttrs(obj, remoteUser, remoteHost)
+            % getGpuAttrs
+            % Get a vector of strings with descriptions of the GPU resources
+            %
+            % Synopsis
+            %   [status, gpuAttrs] = getGpuAttrs(system)
+            %
+            %arguments (Input)
+            %    string remoteMachine
+            %    string remoteUser
+            %end
 
-end
+            %arguments (Output)
+            %   rStatus int32
+            %   gpuAttrs() struct ???
+            %end
+
+            %  remoteMachine - a string containing the hostname of the target machine
+            %  remoteUser - User name on remote system
+            %
+            % Outputs
+            %  status - 0 means it worked well
+            %  gpuAttrs - An array of strucutres of text strings describing the GPUs on "system"
+
+
+            %% Build the query command
+            if ~exist('remoteUser','var'), remoteUser = obj.remoteUser;end
+            if ~exist('remoteHost','var'), remoteHost = obj.remoteHost;end
+
+            rShell = 'ssh';
+            remoteCommand = 'nvidia-smi --query-gpu="index","name","memory.total","driver_version" --format="csv","noheader"';
+            remoteCommand = sprintf('%s %s@%s %s',rShell, remoteUser, remoteHost, remoteCommand);
+
+            [rStatus, gpuString] = system(remoteCommand);
+
+            if rStatus ~= 0, error(gpuString);
+            end
+
+            gpuString = splitlines(gpuString);
+            gpuString = gpuString(strlength(gpuString) > 0);
+            gpuString = split(gpuString,', ');
+
+            for i=1:size(gpuString,1)
+                gpuAttrs(i).id = gpuString(i,1);
+                gpuAttrs(i).name = gpuString(i,2);
+                gpuAttrs(i).mem = gpuString(i,3);
+                gpuAttrs(i).driver = gpuString(i,4);
+            end
+
+        end
+
+    end
 end
