@@ -28,6 +28,13 @@ if isempty(getpref('ISETDocker','remoteHost'))
 else
     contextFlag = [' --context ' getpref('ISETDocker','renderContext')];
 end
+
+if strcmpi(obj.device,'gpu')
+    device = ' --gpu ';
+else
+    device = '';
+end
+
 % Running remotely.
 if ~isempty(getpref('ISETDocker','remoteHost'))
     if ispc
@@ -53,11 +60,6 @@ if ~isempty(getpref('ISETDocker','remoteHost'))
         mkdir(obj.sftpSession,fullfile(remoteSceneDir,'renderings'));
     end
 
-    if strcmpi(obj.device,'gpu')
-        device = ' --gpu ';
-    else
-        device = '';
-    end
     renderCommand = sprintf('pbrt %s --outfile %s %s', device, outF, ...
         fullfile(getpref('ISETDocker','workDir'),sceneDir,[currName, '.pbrt']));
 
@@ -96,22 +98,26 @@ if ~isempty(getpref('ISETDocker','remoteHost'))
     end
 else
     % Running locally. -- TODO
-    shortOut = isetdocker.pathToLinux(fullfile(obj.relativeScenePath,sceneDir));
+    % SceneDir = [getpref('ISETDocker','workDir') '/' sceneFolder]; % this should be local folder
+    % outF = fullfile(SceneDir,'renderings',[currName,'.exr']);
+    if ~exist(fullfile(outputFolder,'renderings'),'dir'),mkdir(fullfile(outputFolder,'renderings'));end
     outF = fullfile(outputFolder,'renderings',[currName,'.exr']);
-    renderCommand = sprintf('pbrt --outfile %s %s', outF, pbrtFile);
+    
     % Add support for 'remoteResources' even in local case
-    if obj.remoteResources
-        symLinkCommand = ['&&' getSymLinks()];
-        containerCommand = sprintf('docker --context default exec %s %s sh -c "cd %s && rm -rf renderings/{*,.*}  %s && %s "',...
-            flags, ourContainer, shortOut, symLinkCommand, renderCommand);
-    else
-        containerCommand = sprintf('docker --context default exec %s %s sh -c "cd %s && %s"', flags, ourContainer, shortOut, renderCommand);
-    end
+    renderCommand = sprintf('pbrt %s --outfile %s %s', device, outF, pbrtFile);
 
-    tic;
+    containerCommand = sprintf('docker %s exec %s %s sh -c " %s "',...
+        contextFlag, flags, ourContainer, renderCommand);
+
+    renderStart = tic;
     [status, result] = system(containerCommand);
     if verbose > 0
-        fprintf('[INFO]: Rendered time %6.2f\n', toc)
+        if status == 0
+            fprintf('[INFO]: Rendered remotely in: %4.2f sec\n', toc(renderStart))
+        else
+            cprintf('red','[ERROR]: Docker Command: %s\n', containerCommand);
+            error('Error Rendering: %s', result);
+        end
     end
 end
 

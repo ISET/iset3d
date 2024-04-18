@@ -90,7 +90,12 @@ end
 
 
 oiSize = oiGet(oi,'size');
-sensor = sensorSet(sensor, 'size', oiSize);
+samplesapce_oi = oiGet(oi,'width spatial resolution','microns');
+if pixelSize == samplesapce_oi
+    sensor = sensorSet(sensor, 'size', oiSize);
+else
+    sensor = sensorSet(sensor, 'size', oiSize*(samplesapce_oi/pixelSize));
+end
 % sensor = sensorSetSizeToFOV(sensor, oi.wAngular, oi);
 
 %% Compute
