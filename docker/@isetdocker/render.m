@@ -8,15 +8,25 @@ if ~exist('commandonly','var')
     commandonly = false;
 end
 %% Build up the render command
-pbrtFile = thisR.outputFile;
+pbrtFile     = thisR.outputFile;
 outputFolder = fileparts(thisR.outputFile);
 [sceneFolder,currName,~] = fileparts(pbrtFile);
-strparts = strsplit(sceneFolder,filesep);
-sceneFolder = strparts{end};
+strparts     = strsplit(sceneFolder,filesep);
+sceneFolder  = strparts{end};
 iDockerPrefs = getpref('ISETDocker');
-if ~isfield(iDockerPrefs,'PBRTContainer')
+
+% Check that the container is running remotely.  If not, start.
+if isfield(iDockerPrefs,'PBRTContainer')
+    cFlag = sprintf('--context %s ',obj.renderContext);
+    [~, result] = system(sprintf("docker %s ps | grep %s", cFlag, iDockerPrefs.PBRTContainer));
+
+    % Couldn't find it.  Restart.
+    if isempty(result), obj.startPBRT; end
+else
+    % No PBRTContainer, so restart.
     obj.startPBRT();
 end
+
 ourContainer = getpref('ISETDocker','PBRTContainer');
 
 if ispc,     flags = '-i ';
