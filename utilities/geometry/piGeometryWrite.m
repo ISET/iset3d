@@ -168,15 +168,12 @@ for ii = 1:numel(children)
                     for jj = 1:size(thisNode.translation, 2)
                         fprintf(fid, strcat(spacing, indentSpacing,...
                             'ActiveTransform EndTime \n'));
-
-                        % First write out the same translation and rotation
-                        piGeometryTransformWrite(fid, thisNode, spacing, indentSpacing);
+                        % 
+                        % % First write out the same translation and rotation
+                        % piGeometryTransformWrite(fid, thisNode, spacing, indentSpacing);
 
                         if isfield(thisNode.motion, 'translation')
-                            if isempty(thisNode.motion.translation(jj, :))
-                                fprintf(fid, strcat(spacing, indentSpacing,...
-                                    'Translate 0 0 0\n'));
-                            else
+                            if ~isempty(thisNode.motion.translation(jj, :))
                                 pos = thisNode.motion.translation(jj,:);
                                 fprintf(fid, strcat(spacing, indentSpacing,...
                                     sprintf('Translate %f %f %f', pos(1),...
@@ -322,7 +319,6 @@ for ii = 1:numel(children)
         if ~isempty(thisNode.motion)
             fprintf(fid, strcat(spacing, indentSpacing,...
                 'ActiveTransform StartTime \n'));
-            % thisR.hasActiveTransform = true;
         end
 
         % Transformation section
@@ -333,21 +329,7 @@ for ii = 1:numel(children)
         % the concat transform in
         %s
         if ~isempty(thisNode.rotation)
-            % Zheng: I think it is always this case, but maybe it is rarely
-            % the case below. Have no clue.
-            % If this way, we would write the translation, rotation and
-            % scale line by line based on the order of
-            % thisNode.transorder.
             piGeometryTransformWrite(fid, thisNode, spacing, indentSpacing);
-            %         else
-            %             % We think we never get here
-            %             warning('Surprised to be here.');
-            %             thisNode.concattransform(13:15) = thisNode.translation(:);
-            %             fprintf(fid, strcat(spacing, indentSpacing,...
-            %                 sprintf('ConcatTransform [%.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f]', thisNode.concattransform(:)), '\n'));
-            %             % Scale
-            %             fprintf(fid, strcat(spacing, indentSpacing,...
-            %                 sprintf('Scale %.10f %.10f %.10f', thisNode.scale), '\n'));
         end
 
         % Motion section
@@ -355,16 +337,8 @@ for ii = 1:numel(children)
             fprintf(fid, strcat(spacing, indentSpacing,...
                 'ActiveTransform EndTime \n'));
             for jj = 1:size(thisNode.translation, 2)
-
-
-                % First write out the same translation and rotation
-                piGeometryTransformWrite(fid, thisNode, spacing, indentSpacing);
-
                 if isfield(thisNode.motion, 'translation')
-                    if isempty(thisNode.motion.translation(jj, :))
-                        fprintf(fid, strcat(spacing, indentSpacing,...
-                            'Translate 0 0 0\n'));
-                    else
+                    if ~isempty(thisNode.motion.translation(jj, :))
                         pos = thisNode.motion.translation(jj,:);
                         fprintf(fid, strcat(spacing, indentSpacing,...
                             sprintf('Translate %f %f %f', pos(1),...
