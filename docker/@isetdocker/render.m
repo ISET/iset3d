@@ -17,13 +17,13 @@ iDockerPrefs = getpref('ISETDocker');
 
 % Check that the container is running remotely.  If not, start.
 if isfield(iDockerPrefs,'PBRTContainer')
-    cFlag = sprintf('--context %s ',obj.renderContext);
-    [~, result] = system(sprintf("docker %s ps | grep %s", cFlag, iDockerPrefs.PBRTContainer));
+    % Test that the container is running remotely
+    result = obj.dockercmd('psfind','string',iDockerPrefs.PBRTContainer);
 
     % Couldn't find it.  Restart.
     if isempty(result), obj.startPBRT; end
 else
-    % No PBRTContainer, so restart.
+    % No PBRTContainer specified, so restart.
     obj.startPBRT();
 end
 
