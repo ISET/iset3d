@@ -37,7 +37,19 @@ classdef isetdocker < handle
             p.addParameter('remotemachine','',@ischar);
             p.addParameter('verbosity',1,@isnumeric);
 
-            piDockerConfig;
+            % We only need the local docker command interface, not
+            % the whole docker engine.  This tests for the local
+            % docker command, which is normally installed on Apple.  A
+            % 0 means we are good.
+            [status, result] = system('docker -v');
+            assert(isequal(result(1:6),'Docker'));
+            if status
+                % status is not zero, so command failed. Maybe it is a
+                % path issue. 
+                disp('Configuring local docker path with piDockerConfig.');
+                piDockerConfig;
+            end
+
             % set user preferences
             if ~ispref('ISETDocker')
                 % First time through, this is called.
