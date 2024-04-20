@@ -24,7 +24,7 @@ function [ip,sensor] = piRadiance2RGB(radiance,varargin)
 %   sensor
 %
 % See also
-%   piMetadataSetSize
+%   piMetadataSetSize, piOI2IP
 
 %%
 varargin = ieParamFormat(varargin);
