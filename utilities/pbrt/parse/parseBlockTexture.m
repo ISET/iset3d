@@ -16,6 +16,9 @@ switch thisLine{1}
         return
 end
 
+thisLine = cellfun(@(x) strtrim(x), thisLine, 'UniformOutput', false);
+thisLine = thisLine(~cellfun(@(x) strncmp(x,'#',1),thisLine));
+
 newTexture = piTextureCreate(textName, 'type', textType, 'format', form);
 
 % Split the text line with ' "', '" ' and '"' to get key/val pair
@@ -31,7 +34,7 @@ for ss = 5:2:numel(thisLine)
         case {'string','texture'}
             
             thisVal = thisLine{ss + 1};
-        case {'float', 'rgb', 'color','float scale'}
+        case {'float', 'rgb', 'color','float scale','vector3'}
             
             thisVal = str2num(thisLine{ss + 1});
         case {'integer'}
@@ -72,7 +75,14 @@ for ss = 5:2:numel(thisLine)
             elseif exist(fullfile(thisR.get('input dir'),[n,e]),'file')
                 thisVal = [n e];
             else
-                error('Cannot find file %s\n',thisVal);
+                % handle mmp scenes with relative paths
+                sceneDir = thisR.get('input dir');
+                fullpath = fullfile(sceneDir,thisVal);
+                if exist(fullpath,'file')
+                    thisVal = fullpath;
+                else
+                    error('Cannot find file %s\n',thisVal);
+                end
             end
         end
     end

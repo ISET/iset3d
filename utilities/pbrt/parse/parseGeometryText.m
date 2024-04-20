@@ -1,4 +1,4 @@
-function [trees, parsedUntil] = parseGeometryText(thisR, txt, name, beBlock)
+function [trees, parsedUntil] = parseGeometryText(thisR, varargin)
 % function [trees, parsedUntil] = parseGeometryText(thisR, txt, name, beBlock)
 % Parse the text from a Geometry file, returning an asset subtree
 %
@@ -95,6 +95,32 @@ function [trees, parsedUntil] = parseGeometryText(thisR, txt, name, beBlock)
 %
 % See also
 %   parseObjectInstanceText, See helper routines below
+%%
+% varargin = ieParamFormat(varargin);
+
+p = inputParser;
+p.addRequired('thisR',@(x)(isa(x,'recipe')));
+
+p.addParameter('txt','');
+p.addParameter('name','');
+p.addParameter('beBlock',false);
+p.addParameter('material',[]);
+p.addParameter('translation',[]);
+p.addParameter('rotation',[]);
+p.addParameter('scale',[]);
+p.addParameter('mediumInterface',[]);
+
+p.parse(thisR, varargin{:});
+
+txt = p.Results.txt;
+name= p.Results.name;
+beBlock = p.Results.beBlock;
+
+mat = p.Results.material;
+translation = p.Results.translation;
+rotation = p.Results.rotation;
+scale = p.Results.scale;
+medium = p.Results.mediumInterface;
 
 % This routine processes the text and returns a cell array of trees that
 % will be part of the whole asset tree. In many cases the returned tree
@@ -106,11 +132,8 @@ subtrees = {};
 % below.
 % Removed when we changed to making the object names unique in piRead.
 % objectIndex = 0;
-if ~exist('beBlock','var'), beBlock = false; end
 
 % Multiple material and shapes can be used for one object.
-nMaterial   = 0;
-nShape      = 0;
 
 % Strip WorldBegin
 if isequal(txt{1},'WorldBegin'),  txt = txt(2:end); end
@@ -123,9 +146,7 @@ if isequal(txt{1},'WorldBegin'),  txt = txt(2:end); end
 % have counted (parsedUntil)
 % if isempty(txt{1}), warning('Empty text line.'); end
 cnt = 1;
-
 while cnt <= length(txt)
-
     % For debugging, I removed the semicolon
     currentLine = txt{cnt};
 
@@ -136,18 +157,21 @@ while cnt <= length(txt)
         % we run into another AttributeBegin, we recursively come back
         % here.  Typically, we return here with the subnodes from the
         % AttributeBegin/End block.
-        [subnodes, retLine] = parseGeometryText(thisR, txt(cnt+1:end), name, true);
-        
+        [subnodes, retLine] = parseGeometryText(thisR, ...
+            'txt',txt(cnt+1:end), 'name',name, 'beBlock',true, ...
+            'material',mat);
+
         % We now have the collection of subnodes from this
         % AttributeBegin/End block.  Also we know the returned line number
         % (retLine) where we will continue.
-        
+
         % Group the subnodes from this Begin/End block with the others that
         % have collected into the variable subtrees.
         subtrees = cat(1, subtrees, subnodes);
 
         % Update where we start from
         cnt =  cnt + retLine;
+
 
     elseif contains(currentLine,...
             {'#ObjectName','#object name','#CollectionName','#Instance','#MeshName', '# Name'}) && ...
@@ -167,24 +191,28 @@ while cnt <= length(txt)
     elseif strncmp(currentLine,'Transform ',10) ||...
             piContains(currentLine,'ConcatTransform')
         % Transformation information
-        [translation, rot, scale] = parseTransform(currentLine);
-
+        [translation, rotation, scale] = parseTransform(currentLine);
+        translation = {translation};rotation = {rotation};scale = {scale};
     elseif piContains(currentLine,'MediumInterface') && ...
             ~strcmp(currentLine(1),'#')
         % MediumInterface could be water or other scattering media.
         medium = currentLine;
 
     elseif piContains(currentLine,'NamedMaterial') && ~strcmp(currentLine(1),'#')
-        % We can have multiple materials, but I don't see how this
-        % could work.  Here we should only have one namedMaterial at a
-        % time (BW).
-        nMaterial = nMaterial+1;
-        mat{nMaterial} = piParseGeometryMaterial(currentLine); %#ok<AGROW>
-
+        thisMat = piParseGeometryMaterial(currentLine);
+        % If it's not defined and used here, it get ignored.
+        if isKey(thisR.materials.list,thisMat.namedmaterial)
+            
+            if isempty(mat)
+                mat{1} = thisMat;
+            else
+                mat{end+1} = thisMat;
+            end
+        end
+        clear thisMat;
     elseif strncmp(currentLine,'Material',8) && ~strcmp(currentLine(1),'#')
-        % Material.  But the materials shouldn't be here.  They are
-        % parsed and written out separately.
-        mat = parseBlockMaterial(currentLine);
+        % Material.  In this case, shouldn't be more than one material.
+        mat{1} = parseBlockMaterial(currentLine);
 
     elseif piContains(currentLine,'AreaLightSource') && ~strcmp(currentLine(1),'#')
         % The area light is created below, after the AttributeEnd
@@ -208,21 +236,59 @@ while cnt <= length(txt)
         % We need to deal with these separately.  They were grouped with
         % LightSource.
         %
-    elseif piContains(currentLine, 'Rotate')
-        fprintf('Ignoring Rotate: %s\n',currentLine);
-
-    elseif piContains(currentLine, 'Scale')
-        fprintf('Ignoring Scale: %s\n',currentLine);
+    elseif piContains(currentLine, 'Translate')
         
+        thisTranslate = {sscanf(currentLine, 'Translate %f %f %f')};
+
+        if isempty(translation)
+            translation = thisTranslate;
+        else
+            translation{end+1} = thisTranslate{:};
+        end
+        clear thisTranslate;
+    elseif piContains(currentLine, 'Rotate')
+        thisRot = {sscanf(currentLine, 'Rotate %f %f %f %f')};
+        if isempty(rotation)
+            rotation = thisRot;
+        else
+            rotation{end+1} = thisRot{:};
+        end
+        clear thisRot;
+    elseif piContains(currentLine, 'Scale')
+        thisScale = {sscanf(currentLine, 'Scale %f %f %f')};
+        
+        if isempty(scale)
+            scale = thisScale;
+        else
+            scale{end+1} = thisScale{:};
+        end
+        clear thisScale;
     elseif  piContains(currentLine,'ReverseOrientation')
         fprintf('Ignoring ReverseOrientation: %s\n', currentLine);
+    elseif piContains(currentLine, 'Include') && ~strcmp(currentLine(1),'#')
+        % Bunny-fur.pbrt from mmp includes a .pbrt.gz file.
+        % In this case, we dont parse it, just include it as a shape.
+        
+        thisShape = piParseShape(currentLine);
+        lineparts = strsplit(currentLine,' ');
+        thisShape.filename = erase(lineparts{2},'"'); 
 
+        if ~exist('shape', 'var') || isempty(shape)
+            shape{1} = thisShape;
+        else
+            shape{end+1} = thisShape;
+        end
+        clear shisShape
     elseif piContains(currentLine,'Shape') && ~strcmp(currentLine(1),'#')
-        % Shape - Created below.  Why do we allow a cell array of
-        % multiple shapes? 
-        nShape = nShape+1;
-        shape{nShape} = piParseShape(currentLine);
-        if nShape > 1, fprintf('shape %d\n',nShape); end
+        % Shape - Created below.  
+        % nShape = nShape+1;
+        % shape{nShape} = piParseShape(currentLine);
+        if ~exist('shape', 'var') || isempty(shape)
+            shape{1} = piParseShape(currentLine);
+        else
+            shape{end+1} = piParseShape(currentLine);
+        end
+        % if nShape > 1, fprintf('shape %d\n',nShape); end
         
         % We need a way to decide whether we are in an ABLoop
         if ~beBlock
@@ -236,7 +302,7 @@ while cnt <= length(txt)
             if exist('areaLight','var'), parms.areaLight = areaLight; end
             if exist('lght','var'),      parms.lght = lght; end
             if exist('shape','var'),     parms.shape = shape; end
-            if exist('rot','var'),       parms.rot = rot; end
+            if exist('rotation','var'),       parms.rotation = rotation; end
             if exist('translation','var'), parms.translation = translation; end
             if exist('mediumInterface','var'), parms.mediumInterface = medium; end
             if exist('mat','var'), parms.mat = mat; end
@@ -254,13 +320,7 @@ while cnt <= length(txt)
                 for ii = 1:numel(subtrees)
                     trees = trees.graft(1, subtrees(ii));
                 end
-            end
-            %             trees = tree(resCurrent);
-            %             for ii = 1:numel(subtrees)
-            %                 trees = trees.graft(1, subtrees(ii));
-            %             end
-            nShape = 0;
-            nMaterial = 0;                        
+            end                      
         end
     elseif strcmp(currentLine,'AttributeEnd')
         % Exiting a Begin/End block
@@ -280,7 +340,7 @@ while cnt <= length(txt)
         if exist('areaLight','var') ...
                 || exist('lght','var') ...
                 || exist('shape','var') ...
-                || exist('rot','var')  ...
+                || exist('rotation','var')  ...
                 || exist('translation','var') ...
                 || exist('mediumInterface','var') ...
                 || exist('mat','var')
@@ -292,10 +352,49 @@ while cnt <= length(txt)
             if exist('areaLight','var'), parms.areaLight = areaLight; end
             if exist('lght','var'),      parms.lght = lght; end
             if exist('shape','var'),     parms.shape = shape; end
-            if exist('rot','var'),       parms.rot = rot; end
-            if exist('scale','var'),     parms.scale = scale; end
+            if exist('rotation','var')
+                rotationX = 0; rotationY = 0; rotationZ = 0;
+                for ii = 1:numel(rotation)
+                    thisRot = rotation{ii};
+                    if iscell(thisRot), thisRot = thisRot{1};end
+                    if isequal(size(thisRot),[4,3])
+                        for nn = 1:3
+                            thisRotAxis = thisRot(:,nn);
+                            index = find(thisRotAxis(2:end)==1);
+                            if isempty(index), index = -1;end
+                            rotationX = rotationX+thisRotAxis(1)*(index==1);
+                            rotationY = rotationY+thisRotAxis(1)*(index==2);
+                            rotationZ = rotationZ+thisRotAxis(1)*(index==3);
+                        end
+                    else
+                        index = find(thisRot(2:end)==1);
+                        if isempty(index), index = -1;end
+                        rotationX = rotationX+thisRot(1)*(index==1);
+                        rotationY = rotationY+thisRot(1)*(index==2);
+                        rotationZ = rotationZ+thisRot(1)*(index==3);
+                        if index == -1
+                            zyx = axisAngleToEuler(thisRot(1),[thisRot(2),thisRot(3),thisRot(4)],'zyx');
+                            rotationX = rotationX+zyx(3);rotationY = rotationY+zyx(2);rotationZ = rotationZ+zyx(1);
+                        end
+                    end
+                end
+                parms.rotation = piRotationMatrix('zrot',rotationZ, 'yrot', rotationY, 'xrot',rotationX);
+            end
+            if exist('scale','var')
+                thisScale = [1;1;1];
+                for ii = 1:numel(scale)
+                    thisScale = [thisScale(1).*scale{ii}(1), thisScale(2).*scale{ii}(2), thisScale(3).*scale{ii}(3)];
+                end
+                parms.scale = thisScale(:); 
+            end
             if exist('sz','var'),        parms.sz = sz; end
-            if exist('translation','var'),  parms.translation = translation; end
+            if exist('translation','var')
+                thisTranslation = [0;0;0];
+                for ii = 1:numel(translation)
+                    thisTranslation = [thisTranslation(1)+translation{ii}(1),thisTranslation(2)+translation{ii}(2),thisTranslation(3)+translation{ii}(3)];
+                end
+                parms.translation = thisTranslation(:); 
+            end
             if exist('mediumInterface','var'), parms.mediumInterface = mediumInterface; end
             if exist('mat','var'),          parms.mat = mat; end
             if exist('InstanceName','var'), parms.InstanceName = InstanceName; end
@@ -306,22 +405,7 @@ while cnt <= length(txt)
             for ii = 1:numel(subtrees)
                 trees = trees.graft(1, subtrees(ii));
             end
-            %{
-            if piBranchIdentity(resCurrent) && ~isempty(subtrees)
-                % If the branch transform is the identity, and there are
-                % subtrees, we add them.
-                trees = subtrees;
-            else
-                % If the transform is not the identity, we add it
-                % (resCurrent) above the light and object nodes in this
-                % subtree.
-                trees = tree(resCurrent);
-                for ii = 1:numel(subtrees)
-                    trees = trees.graft(1, subtrees(ii));
-                end
-            end
-            %}
-
+            clear mat mediumInterface scale rotation translation shape
         elseif exist('name','var')  && ~isempty(name)
             % We have a name, but not a shape, lght or arealight.
             %
@@ -378,7 +462,7 @@ parsedUntil = cnt;
 %% We build the tree that is returned from any of the defined subtrees
 
 % Finished with all the AttributeBegin/End blocks
-fprintf('Identified %d assets; parsed up to line %d\n',numel(subtrees),parsedUntil);
+fprintf('[INFO]: Identified %d assets; parsed up to line %d\n',numel(subtrees),parsedUntil);
 
 % We create the root node here, placing it as the root of all of the
 % subtree branches.
@@ -439,20 +523,47 @@ elseif isfield(parms,'shape')
     shape = parms.shape;
 
     % Shouldn't we be looping over numel(shape)?
-    if iscell(shape), shape = shape{1}; end
-    if ~isfield(parms,'name')
+    % if iscell(shape), shape = shape; end
+
+    if ~isfield(parms,'name') || isempty(parms.name)
         % The name might have been passed in
-        name = piShapeNameCreate(shape,true,thisR.get('input basename'));
+        name = piShapeNameCreate(shape{1},true,thisR.get('input basename'));
     else, name = parms.name;
     end
-
+    
     % We create object (assets) here.
     if isfield(parms,'mat'), oMAT = parms.mat;   else, oMAT = []; end
     if isfield(parms,'medium'), oMEDIUM = parms.medium; else, oMEDIUM = []; end
+
     resObject = parseGeometryObject(shape,name,oMAT,oMEDIUM);
 
     % Makes a tree of this object and adds that into the
     % collection of subtrees we are building.
+    subtrees = cat(1, subtrees, tree(resObject));
+
+elseif isfield(parms,'InstanceName')
+    if ~isfield(parms,'name') || isempty(parms.name)
+        % The name might have been passed in
+        name = [parms.InstanceName,'_',num2str(randi(1e5))];
+    else, name = parms.name;
+    end   
+    resObject.name = name;
+    resObject.type = 'instance';
+    if isfield(parms,'mat'), resObject.oMAT = parms.mat;   else, resObject.oMAT  = []; end
+    if isfield(parms,'medium'), resObject.oMEDIUM = parms.medium; else, resObject.oMEDIUM = []; end
+    if isfield(parms,'translation')
+        resObject.translation = parms.translation;
+    end
+
+    if isfield(parms,'scale')
+        resObject.scale       = parms.scale;
+    end
+
+    if isfield(parms,'rotation')
+        resObject.rotation       = parms.rotation;
+    end
+    resObject.referenceObject = parms.InstanceName;
+    
     subtrees = cat(1, subtrees, tree(resObject));
 end
 
@@ -472,40 +583,23 @@ else, bNAME = 'AttributeEnd';
 end
 
 if isfield(parms,'sz'),  oSZ = parms.sz; else, oSZ = []; end
-if isfield(parms,'rot'), oROT = parms.rot; else, oROT = []; end
+if isfield(parms,'rotation'), oROT = parms.rotation; else, oROT = []; end
 if isfield(parms,'translation'),oTRANS = parms.translation; else, oTRANS = []; end
 if isfield(parms,'scale'),oSCALE = parms.scale; else, oSCALE = []; end
 
 resCurrent = parseGeometryBranch(bNAME,oSZ,oROT,oTRANS,oSCALE);
 
-% if piBranchIdentity(resCurrent)
-%     disp(resCurrent.name)
-%     fprintf('%f\n',oSCALE);
-%     fprintf('%f\n',oTRANS);
-%     fprintf('%f\n',oROT);
-% end
 % If we have defined an Instance (ObjectBegin/End) then we
 % assign it to a branch node here.
 if isfield(parms,'InstanceName')
     resCurrent.referenceObject = parms.InstanceName;
 end
 
-%{
-% We do this on return now.  Not sure where is better.
-%
-% Adding this resCurrent branch above the light and object
-% nodes in this subtree.  The subtrees are below this branch
-% with its transformation.
-trees = tree(resCurrent);
-for ii = 1:numel(subtrees)
-    trees = trees.graft(1, subtrees(ii));
-end
-%}
 end
 
 
 %% Make a branch node
-function resCurrent = parseGeometryBranch(name,sz,rot,translation,scale)
+function resCurrent = parseGeometryBranch(name,sz,rotation,translation,scale)
 % Create a branch node with the transform information.
 
 % This should be the parent of the light or object,
@@ -532,7 +626,7 @@ else
 end
 
 if ~isempty(sz), resCurrent.size = sz; end
-if ~isempty(rot), resCurrent.rotation = {rot}; end
+if ~isempty(rotation), resCurrent.rotation = {rotation}; end
 if ~isempty(translation), resCurrent.translation = {translation}; end
 if ~isempty(scale), resCurrent.scale = {scale}; end
 

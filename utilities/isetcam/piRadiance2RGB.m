@@ -24,7 +24,7 @@ function [ip,sensor] = piRadiance2RGB(radiance,varargin)
 %   sensor
 %
 % See also
-%   piMetadataSetSize
+%   piMetadataSetSize, piOI2IP
 
 %%
 varargin = ieParamFormat(varargin);
@@ -71,8 +71,8 @@ end
 
 % Not sure why these aren't settable.  I think they are here to conform
 % with the ISETAuto generalization paper
-readnoise   = 0.2e-3;
-darkvoltage = 0.2e-3;
+readnoise   = 2e-3;
+darkvoltage = 2e-3;
 [electrons,~] = iePixelWellCapacity(pixelSize);  % Microns
 converGain = 1/electrons;         % voltage swing/electrons
 % 
@@ -90,7 +90,12 @@ end
 
 
 oiSize = oiGet(oi,'size');
-sensor = sensorSet(sensor, 'size', oiSize);
+samplesapce_oi = oiGet(oi,'width spatial resolution','microns');
+if pixelSize == samplesapce_oi
+    sensor = sensorSet(sensor, 'size', oiSize);
+else
+    sensor = sensorSet(sensor, 'size', oiSize*(samplesapce_oi/pixelSize));
+end
 % sensor = sensorSetSizeToFOV(sensor, oi.wAngular, oi);
 
 %% Compute

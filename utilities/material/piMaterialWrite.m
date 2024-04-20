@@ -164,6 +164,5 @@ if ~isempty(medium.vsfFile)
     val_floatindex = sprintf(' "string vsfFile" "spds/%s_vsf.spd"',medium.name);
     val = strcat(val, val_floatindex);
 end
-
-
 end
+

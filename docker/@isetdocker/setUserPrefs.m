@@ -38,50 +38,73 @@ if ispref(prefGroupName)
     end
 end
 
-% Prompt user for device preference
-device = input('Choose a device (GPU/CPU) [g/c]: ', 's');
-if strcmpi(device,'g')
-    device = 'gpu';
-elseif strcmpi(device,'c')
-    device = 'cpu';
-end
-% Prompt user for device ID
-deviceID = input('Enter device ID (-1 for none or CPU): ');
-
 % Define presets for the render context and prompt user to choose or type their own
 disp('Available render contexts:');
 disp('1. remote-orange');
 disp('2. remote-mux');
-disp('3. Use my own');
-renderContextChoice = input('Choose a render context (1-3): ');
+disp('3. local-orange');
+disp('4. local-mux');
+disp('5. Use my own');
+renderContextChoice = input('Choose a render context (1-5): ');
 
 switch renderContextChoice
     case 1
         renderContext = 'remote-orange';
     case 2
         renderContext = 'remote-mux';
+    case 3
+        renderContext = 'default';
+        dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-ti';
+    case 4
+        renderContext = 'default';
+        dockerImage = 'digitalprodev/pbrt-v4-gpu-volta-mux';
     otherwise
         renderContext = input('Enter your custom render context: ', 's');
 end
 
+switch renderContext
+    case 'remote-orange'
+        remoteHost = 'orange.stanford.edu';
+        dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-ti';
+    case 'remote-mux'
+        remoteHost = 'mux.stanford.edu';
+        dockerImage = 'digitalprodev/pbrt-v4-gpu-volta-mux';
+    case 'default'
+        remoteHost = '';
+    otherwise
+        remoteHost = input('Enter remote host address: ', 's');
+end
 % Additional prompts based on selected renderContext
-if ~strcmpi(renderContext, 'Use my own') && ~isempty(renderContext)
+if ~strcmpi(renderContext, 'Use my own') && ~isempty(renderContext) &&...
+    ~contains(renderContext,'default')
     remoteUser = input('Enter remote user name: ', 's');
     workDir = ['/home/' remoteUser '/ISETRemoteRender'];
-    
-    switch renderContext
-        case 'remote-orange'
-            remoteHost = 'orange.stanford.edu';
-            dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-ti';
-        case 'remote-mux'
-            remoteHost = 'mux.stanford.edu';
-            dockerImage = 'digitalprodev/pbrt-v4-gpu-volta-mux';
-        otherwise
-            remoteHost = input('Enter remote host address: ', 's');
-    end
+else
+    remoteUser = '';
+    % username = char(java.lang.System.getProperty('user.name'));
+    workDir = fullfile(piRootPath,'local');
 end
 
-if strcmpi(device, 'cpu')
+% Prompt user for device preference
+device = input('Choose a device (GPU/CPU) [g/c]: ', 's');
+if strcmpi(device,'g')
+    device = 'gpu';
+    if ~isempty(remoteHost) && ~isempty(remoteUser)
+        [status, remoteGPUAttrs]=obj.getGpuAttrs(remoteUser, remoteHost);
+        if ~status
+            fprintf('Avaliable GPU on %s:\n',renderContext);
+            for ii  = 1:numel(remoteGPUAttrs)
+                disp(remoteGPUAttrs(ii));
+            end
+        else
+            disp('[INFO]: Could not get remote GPU information.');
+        end
+    end
+    % Prompt user for device ID
+    deviceID = input('Enter device ID: ');
+elseif strcmpi(device,'c')
+    device = 'cpu';
+    deviceID = -1;
     dockerImage = 'digitalprodev/pbrt-v4-cpu';
     customImageChoice = input('Use digitalprodev/pbrt-v4-cpu, do you want to set your own? [y/n]: ', 's');
     if strcmpi(customImageChoice, 'y')
@@ -98,14 +121,14 @@ setpref(prefGroupName, 'renderContext', renderContext);
 setpref(prefGroupName, 'remoteHost', remoteHost);
 setpref(prefGroupName, 'remoteUser', remoteUser);
 
-if ~isempty(remoteHost)
-    if strcmpi(renderContext,'remote-orange') || strcmpi(renderContext,'remote-mux')
-        remotePBRTResources = '/acorn/data/iset/PBRTResources';
-    else
-        remotePBRTResources = input('Enter your remote PBRT resources path: ', 's');
-    end
-    setpref(prefGroupName, 'remotePBRTResources', remotePBRTResources);
+% if ~isempty(remoteHost)
+if strcmpi(renderContext,'remote-orange') || strcmpi(renderContext,'remote-mux') || strcmpi(renderContext,'default')
+    PBRTResources = '/acorn/data/iset/PBRTResources';
+else
+    PBRTResources = input('Enter your remote PBRT resources path: ', 's');
 end
+setpref(prefGroupName, 'PBRTResources', PBRTResources);
+% end
 
 % Set object properties
 obj.device = device;

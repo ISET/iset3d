@@ -193,7 +193,9 @@ if isequal(thisR.get('optics type'),'lens')
             % also copy the file over to local/thisScene/lens
             lensDir = fullfile(thisR.get('output dir'),'lens');
             if ~exist(lensDir,'dir'), mkdir(lensDir);end
-            copyfile(lensFile,fullfile(lensDir,[lensName, ext]));
+            if ~exist(fullfile(lensDir,[lensName, ext]),'file')
+                copyfile(lensFile,fullfile(lensDir,[lensName, ext]));
+            end
         end
 
     end
@@ -253,7 +255,9 @@ end
 
 
 % set workDir back to the default
-rmpref('ISETDocker','remoteSceneDir');
+if ~isempty(getpref('ISETDocker','remoteHost'))
+    rmpref('ISETDocker','remoteSceneDir');
+end
 end   % End of piWrite
 
 %% ---------  Helper functions
@@ -282,7 +286,7 @@ outputDir  = thisR.get('output dir');
 
 % We check for the overwrite here and we make sure there is also an input
 % directory to copy from.
-if ~isempty(inputDir)
+if ~isempty(inputDir) && ~strcmpi(inputDir,outputDir)
     sources = dir(inputDir);
     status  = true;
     for i = 1:length(sources)
@@ -711,12 +715,12 @@ lineMedia     = find(contains(thisR.world, {'_media.pbrt'}));
 if isequal(thisR.exporter, 'Copy')
     for ii = 1:numel(thisR.world)
         fprintf(fileID,'%s \n',thisR.world{ii});
-        if piContains(thisR.world{ii},'WorldBegin') && ...
-                isempty(lineMaterials) &&...
-                ~isempty(thisR.materials)
-            % Insert the materials file
-            fprintf(fileID,'%s \n',sprintf('Include "%s_materials.pbrt" \n', basename));
-        end
+        % if piContains(thisR.world{ii},'WorldBegin') && ...
+        %         isempty(lineMaterials) &&...
+        %         ~isempty(thisR.materials)
+        %     % Insert the materials file
+        %     fprintf(fileID,'%s \n',sprintf('Include "%s_materials.pbrt" \n', basename));
+        % end
         if piContains(thisR.world{ii}, 'WorldBegin') &&...
                 isempty(lineLights) &&...
                 ~isempty(thisR.lights)

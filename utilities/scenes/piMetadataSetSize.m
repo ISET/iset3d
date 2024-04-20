@@ -1,25 +1,35 @@
 function sensor = piMetadataSetSize(oi,sensor)
 % Convert metadata from OI to sensor; ultimately to IP through piOI2IP
 %
-% Syntax
+% Brief
+%   In some applications we want to carry the metadata from the oi to
+%   the sensor.  Seems to need some simplification with piOI2IP.
 %
-% Description
+% Syntax
+%   sensor = piMetadataSetSize(oi,sensor)
 %
 % Inputs
 %   oi
-%  sensor
+%   sensor
 %
 % Optional key/val pairs
+%   'ip'
 %
 % Return
 %  sensor
+%  ip
 %
 % Description
-%  Describe the issues and algorithm here
+%   The related function piOI2IP converts from oi to sensor to ip.
+%   Describe the issues and algorithm here. It seems to me we should
+%   have a single function, maybe piMetadata(oi,varargin), that
+%   converts from the oi to the sensor and, optionally, to the ip.
+%   Maybe like this:  piMetadata(oi,sensor,'ip',ip);
 %
 % Zhenyi Liu, 2019
 %
 % See also
+%   We should rename and integrate with piOI2IP
 %
 
 % sensorSize = sensorGet(sensor,'size');

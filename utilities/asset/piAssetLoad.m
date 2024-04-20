@@ -72,19 +72,26 @@ if isempty(filePath)
     switch assetType
         case 'scene'
             fname = fullfile(piDirGet('assets'),[n e]);
+            pbrtFile = fullfile(piDirGet('assets'),n,[n '.pbrt']);
         case 'character'
             downloadDir = piDirGet('assets');
-            if ~exist(fullfile(downloadDir,'characters',fname),'file')
+            if ~exist(fullfile(downloadDir,'characters'),'dir')
                 ieWebGet('resourcename', 'characters', 'resourcetype', 'pbrtv4', ...
                     'download dir',downloadDir,'unzip', true);
             end
             fname = fullfile(piDirGet('character-assets'),[n e]);
+            pbrtFile = fullfile(piDirGet('character-assets'),n,[n '.pbrt']);
         otherwise
             error('Unknown asset type %s',assetType);
     end
 end
-
-asset = load(fname);
+if exist(fname,'file')
+    asset = load(fname);
+elseif exist(pbrtFile,'file')
+    asset.thisR = piRead(pbrtFile);
+else
+    error('File not found:%s.\n',fname);
+end
 
 %% Adjust the input slot in the recipe for the local user.
 
@@ -102,7 +109,7 @@ switch assetType
     case 'character'
         [~,n, e] = fileparts(inFile);
         % assume folder name is the same as pbrt file prefix
-        asset.thisR.set('inputfile',fullfile(piDirGet('character-recipes'),n,[n e]));
+        asset.thisR.set('inputfile',fullfile(piDirGet('character-assets'),n,[n e]));
 end
 
 % Find the name of the directory containing the original recipe input file

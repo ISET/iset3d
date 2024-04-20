@@ -71,7 +71,9 @@ if isfield(texture, pName)
         % Changing property type if the user doesn't specify it.
         if isnumeric(val)
             if numel(val) == 3
-                texture.(pName).type = 'rgb';
+                if ~strcmp(texture.(pName).type,'vector3')
+                    texture.(pName).type = 'rgb';
+                end
             elseif numel(val) > 3
                 texture.(pName).type = 'spectrum';
             elseif isinteger(val)

@@ -121,7 +121,6 @@ p.addParameter('exporter', 'PARSE', @(x)(ismember(x,validExporters)));
 % We will use the output in local with this name.
 %    local/outputdirname/outdirname.pbrt
 p.parse(fname,varargin{:});
-[~, outputdirname] = fileparts(fname);
 
 thisR = recipe;
 thisR.version = 4;
@@ -147,9 +146,11 @@ exporter = p.Results.exporter;
 thisR.exporter = exporter;
 
 %% Set the output directory in local that piWrite will use
-
-outFilepath      = fullfile(piRootPath,'local',outputdirname);
-outputFile       = fullfile(outFilepath,[outputdirname,'.pbrt']);
+[sceneFolder,pbrtFileName,~] = fileparts(fname);
+strparts = strsplit(sceneFolder,'/');
+sceneFolder = strparts{end};
+outFilepath      = fullfile(piRootPath,'local',sceneFolder);
+outputFile       = fullfile(outFilepath,[pbrtFileName,'.pbrt']);
 thisR.set('outputFile',outputFile);
 
 %% Read PBRT options and world text.
@@ -170,33 +171,36 @@ pbrtOptions = piReadWorldText(thisR, txtLines);
 % Act on the pbrtOptions, setting the recipe slots (i.e., thisR).
 piReadOptions(thisR,pbrtOptions);
 
-%% Insert the text from the Include files
 
-% These are usually _geometry.pbrt and _materials.pbrt.  At this
-% point, we can have shapes that have no names.  These are defined in
-% thisR.world just by their points and normals.
-piReadWorldInclude(thisR);
 
 %% Read Materials and Textures
+if ~strcmpi(exporter, 'Copy')
+    %% Insert the text from the Include files
 
-% Read material and texture
-[materialLists, textureList, newWorld, matNameList, texNameList] = parseMaterialTexture(thisR);
-thisR.world = newWorld;
+    % These are usually _geometry.pbrt and _materials.pbrt.  At this
+    % point, we can have shapes that have no names.  These are defined in
+    % thisR.world just by their points and normals.
+    piReadWorldInclude(thisR);
+    % Read material and texture
+    [materialLists, textureList, newWorld, matNameList, texNameList] = parseMaterialTexture(thisR);
 
-thisR.materials.list = materialLists;
-thisR.materials.order = matNameList;
 
-% Add the material lib
-thisR.materials.lib = piMateriallib;
+    thisR.world = newWorld(~cellfun('isempty',newWorld));
 
-thisR.textures.list = textureList;
-thisR.textures.order = texNameList;
+    thisR.materials.list = materialLists;
+    thisR.materials.order = matNameList;
 
-% Convert texture file format to PNG
-thisR = piTextureFileFormat(thisR);
+    % Add the material lib
+    thisR.materials.lib = piMateriallib;
 
-fprintf('Read %d materials and %d textures.\n', materialLists.Count, textureList.Count);
+    thisR.textures.list = textureList;
+    thisR.textures.order = texNameList;
 
+    % Convert texture file format to PNG
+    thisR = piTextureFileFormat(thisR);
+
+    fprintf('[INFO]: Read %d materials and %d textures.\n', materialLists.Count, textureList.Count);
+end
 %% Decide whether to Copy or Parse to get the asset tree filled up
 
 if strcmpi(exporter, 'Copy')
@@ -240,7 +244,7 @@ else
         % transform [...] / Translate/ rotate/ scale/
         % material ... / NamedMaterial
         % shape ...
-        disp('*** No tree returned by parseObjectInstanceText. recipe.assets is empty');
+        disp('[INFO]: No tree returned by parseObjectInstanceText. recipe.assets is empty');
     end
 end
 
@@ -522,6 +526,7 @@ while ii<=nline
             % thisLine is a cell of 1.
             % It contains a cell array with the individual words.
             thisLine = thisLine{1};
+            
             nStrings = length(thisLine);
             blockType = thisLine{1};
             blockSubtype = thisLine{2};
@@ -533,6 +538,9 @@ while ii<=nline
             % This builds the struct and assigns the values of the
             % parameters
             while dd <= nStrings
+                if strcmp(thisLine{dd},'#')
+                    break
+                end
                 if piContains(thisLine{dd},' ')
                     C = strsplit(thisLine{dd},' ');
                     valueType = C{1};
@@ -590,7 +598,7 @@ if isequal(blockName,'Integrator') && isempty(s)
     s.subtype = 'path';
     s.maxdepth.type = 'integer';
     s.maxdepth.value= 5;
-    fprintf('Setting integrator to "path" with 5 bounces.\n')
+    fprintf('[INFO]: Setting integrator to "path" with 5 bounces.\n')
 end
 
 end
@@ -621,14 +629,16 @@ if any(piContains(world, 'Include'))
         IncFileNamePath = fullfile(inputDir, IncFileName);
 
         % Read the text from the include file
-        IncLines = piReadText(IncFileNamePath);
+        if endsWith(IncFileNamePath,'.pbrt', 'IgnoreCase', true)
+            % only include pbrt files
+            IncLines = piReadText(IncFileNamePath);
 
-        % Erase the include line.
-        thisR.world{IncludeIdxList(IncludeIdx)} = [];
-
-        % Add the text to the world section
-        thisR.world = {thisR.world, IncLines};
-        thisR.world = cat(1, thisR.world{:});
+            % Erase the include line.
+            thisR.world{IncludeIdxList(IncludeIdx)} = [];
+            % Add the text to the world section
+            thisR.world = {thisR.world, IncLines};
+            thisR.world = cat(1, thisR.world{:});
+        end     
     end
 end
 

@@ -47,7 +47,7 @@ varargin =ieParamFormat(varargin);
 
 p = inputParser;
 p.addRequired('inputFile',@(x)(exist(x,'file')));
-p.addParameter('label',{'radiance'},@(x)(ischar(x)||iscell(x)));
+p.addParameter('label',{'radiance','depth'},@(x)(ischar(x)||iscell(x)));
 
 p.addParameter('recipe',[],@(x)(isequal(class(x),'recipe')));
 % p.addParameter('wave', 400:10:700, @isnumeric);
@@ -81,91 +81,55 @@ otherData.instanceID = [];
 normalImage = [];
 albedoImage = [];
 
-% we assume we can work through a cell array, but don't always get one
 if ~iscell(label), label = {label}; end
-
-% As written we have to get radiance or the routine fails
-% if max(contains(label,'radiance')) == 0
-%     label{end+1} = 'radiance';
-% end
 
 for ii = 1:numel(label)
 
     switch label{ii}
         case {'radiance','illuminance'}
-            energy = piReadEXR(inputFile, 'data type','radiance');
-
-            % For the 'label' case, we seem to go here and this is empty.
-            % Not sure why.
+            nn = 1;
+            for ww = 400:10:700
+                radianceChannels(nn) = sprintf("S0.%d,000nm",ww);
+                nn = nn+1;
+            end
+            try
+                % New format
+                energy = exrread(inputFile,Channels = radianceChannels);
+            catch
+                % keep the old format
+                energy = piReadEXR(inputFile, 'data type','radiance');
+            end
             if isempty(energy)
                 error('No energy term returned.');
-            elseif ismatrix(energy)
-                % For some cases we have only a single row, such as
-                % the film shape case.
-                data_wave = 400:10:700;
-                [space,w] = size(energy);
-                % Always return as a row
-                energy = reshape(energy,1,space,w);
-                photons  = Energy2Quanta(data_wave,energy);
             else
-                if isempty(find(energy(:,:,17),1))
-                    % Chromatic aberration only goes up to 16 wavebands.
-                    energy = energy(:,:,1:16);
-                    data_wave = 400:20:700;
-                else
-                    data_wave = 400:10:700;
-                end
+                data_wave = 400:10:700;
                 photons  = Energy2Quanta(data_wave,energy);
             end
 
         case {'depth', 'zdepth'}
             try
-                % we error if x & y are missing
-                % unless we call zdepth -- we should probably
-                % just have the ReadEXR code be more resilient
-                % we might already have the output, but it might or
-                % might not have a suffix?
-                [dir, file, ~] = fileparts(inputFile);
-                exrFile = fullfile(dir, file);
-                depthFile = sprintf('%s_%d_%d_Pz',exrFile, thisR.film.yresolution.value, ...
-                    thisR.film.xresolution.value);
-
-                if isfile(depthFile)
-                    [fid, ~] = fopen(depthFile, 'r');
-                    serializedImage = fread(fid, inf, 'float');
-                    ieObject = reshape(serializedImage, thisR.film.yresolution.value, thisR.film.xresolution.value, 1);
-                    fclose(fid);
-                    delete(depthFile);
-
-                elseif isequal(label{ii},'depth')
-                    depthImage = piReadEXR(inputFile, 'data type','depth');
-                elseif isequal(label{ii},'zdepth')
-                    depthImage = piReadEXR(inputFile, 'data type','zdepth');
-                end
-
+                coordinates = exrread(inputFile,Channels=["P.X","P.Y","P.Z"]);
             catch
-                warning('Can not find "Pz(?)" channel in %s, ignore reading depth', inputFile);
-                continue
+                coordinates =piReadEXR(inputFile, 'data type','3dcoordinates');
             end
-            otherData.coordinates = piReadEXR(inputFile, 'data type','3dcoordinates');
-        case 'coordinates'
-            % Doesn't work on many scenes
-            otherData.coordinates = piReadEXR(inputFile, 'data type','3dcoordinates');
-
+            if isequal(label{ii},'depth')
+                depthImage = sqrt(coordinates(:,:,1).^2+coordinates(:,:,2).^2+coordinates(:,:,3).^2);
+            elseif isequal(label{ii},'zdepth')
+                depthImage = coordinates(:,:,3);
+            end
+            otherData.coordinates = coordinates;
         case 'material'
             % Doesn't work yet
             otherData.materialID = piReadEXR(inputFile, 'data type','material');
 
         case 'normal'
-            normalImage = piReadEXR(inputFile, 'data type','normal');
+            otherData.normalImage = exrread(inputFile,Channels=["N.X","N.Y","N.Z"]);
         case 'albedo'
-            albedoImage = piReadEXR(inputFile, 'data type','albedo');
+            otherData.albedoImage = exrread(inputFile,Channels=["Albedo.R","Albedo.G","Albedo.B"]);
         case 'instance'
             % Should the instanceID be ieObject?
             otherData = piReadEXR(inputFile, 'data type','instanceId');
             ieObject.type = 'metadata';
-            ieObject.metadata = otherData;
-            return;
     end
 end
 

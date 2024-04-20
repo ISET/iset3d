@@ -37,7 +37,19 @@ classdef isetdocker < handle
             p.addParameter('remotemachine','',@ischar);
             p.addParameter('verbosity',1,@isnumeric);
 
-            piDockerConfig;
+            % We only need the local docker command interface, not
+            % the whole docker engine.  This tests for the local
+            % docker command, which is normally installed on Apple.  A
+            % 0 means we are good.
+            [status, result] = system('docker -v');
+            assert(isequal(result(1:6),'Docker'));
+            if status
+                % status is not zero, so command failed. Maybe it is a
+                % path issue. 
+                disp('Configuring local docker path with piDockerConfig.');
+                piDockerConfig;
+            end
+
             % set user preferences
             if ~ispref('ISETDocker')
                 % First time through, this is called.
@@ -137,8 +149,11 @@ classdef isetdocker < handle
 
         function upload(obj,localDir, remoteDir, excludePattern)
             % Construct the rsync command
-            rsyncCommand = "rsync -avz --progress --update";
-
+            if ispc
+                rsyncCommand = "wsl rsync -avz --progress --update";
+            else
+                rsyncCommand = "rsync -avz --progress --update";
+            end
             % Add exclusion patterns if specified
             if exist('excludePattern', 'var') && iscell(excludePattern)
                 for i = 1:length(excludePattern)
@@ -154,7 +169,7 @@ classdef isetdocker < handle
 
             % Finalize the rsync command with source and destination paths
             rsyncCommand = rsyncCommand + " '" + localDir + "/' '" + remoteDir + "/'";
-
+            disp('[INFO]: Uploading data:');
             % Execute the rsync command
             [status, cmdout] = system(rsyncCommand);
 
@@ -192,7 +207,7 @@ classdef isetdocker < handle
 
             % Finalize the rsync command with source and destination paths
             rsyncCommand = rsyncCommand + " '" + remoteDir + "/' '" + localDir + "/'";
-
+            disp('[INFO]: Downloading data:');
             % Execute the rsync command
             [status, cmdout] = system(rsyncCommand);
 
@@ -229,14 +244,16 @@ classdef isetdocker < handle
             else
                 ourContainer = ['pbrt-cpu-' uName];
             end
-            % save container name
-            setpref('ISETDocker','PBRTContainer',ourContainer);
+
             % attach all
-            remotePBRTResources = getpref('ISETDocker','remotePBRTResources');
+            
             workDirPBRT = getpref('ISETDocker','workDir');
-            volumeMap = sprintf("-v %s:%s -v %s:%s ", ...
-                workDirPBRT, workDirPBRT, ...
-                remotePBRTResources, remotePBRTResources);
+            volumeMap = sprintf("-v %s:%s", ...
+                workDirPBRT, workDirPBRT);
+            if ispref('ISETDocker','PBRTResources')
+                PBRTResources = getpref('ISETDocker','PBRTResources');
+                volumeMap = strcat(volumeMap,sprintf(" -v %s:%s ",PBRTResources, PBRTResources));
+            end
             placeholderCommand = 'bash';
 
             % We use the default context for local docker containers
@@ -273,6 +290,8 @@ classdef isetdocker < handle
                     fprintf("[INFO]: STARTED Docker successfully\n");
                 end
             end
+            % save container name
+            setpref('ISETDocker','PBRTContainer',ourContainer);
         end
         %% reset - Resets the running Docker containers
         function reset(obj)
@@ -338,6 +357,56 @@ classdef isetdocker < handle
 
         end
 
+        function [rStatus, gpuAttrs] = getGpuAttrs(obj, remoteUser, remoteHost)
+            % getGpuAttrs
+            % Get a vector of strings with descriptions of the GPU resources
+            %
+            % Synopsis
+            %   [status, gpuAttrs] = getGpuAttrs(system)
+            %
+            %arguments (Input)
+            %    string remoteMachine
+            %    string remoteUser
+            %end
 
-end
+            %arguments (Output)
+            %   rStatus int32
+            %   gpuAttrs() struct ???
+            %end
+
+            %  remoteMachine - a string containing the hostname of the target machine
+            %  remoteUser - User name on remote system
+            %
+            % Outputs
+            %  status - 0 means it worked well
+            %  gpuAttrs - An array of strucutres of text strings describing the GPUs on "system"
+
+
+            %% Build the query command
+            if ~exist('remoteUser','var'), remoteUser = obj.remoteUser;end
+            if ~exist('remoteHost','var'), remoteHost = obj.remoteHost;end
+
+            rShell = 'ssh';
+            remoteCommand = 'nvidia-smi --query-gpu="index","name","memory.total","driver_version" --format="csv","noheader"';
+            remoteCommand = sprintf('%s %s@%s %s',rShell, remoteUser, remoteHost, remoteCommand);
+
+            [rStatus, gpuString] = system(remoteCommand);
+
+            if rStatus ~= 0, error(gpuString);
+            end
+
+            gpuString = splitlines(gpuString);
+            gpuString = gpuString(strlength(gpuString) > 0);
+            gpuString = split(gpuString,', ');
+
+            for i=1:size(gpuString,1)
+                gpuAttrs(i).id = gpuString(i,1);
+                gpuAttrs(i).name = gpuString(i,2);
+                gpuAttrs(i).mem = gpuString(i,3);
+                gpuAttrs(i).driver = gpuString(i,4);
+            end
+
+        end
+
+    end
 end

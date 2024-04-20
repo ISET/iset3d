@@ -46,7 +46,8 @@ for ii = numel(txtLines):-1:1
         %     textureMap(textureName) = textureStruct;
         %
         t_index = t_index+1;
-        textureList{t_index}   = parseBlockTexture(thisLine,thisR);  %#ok<AGROW>'
+        
+        textureList{t_index}   = parseBlockTexture(thisLine,thisR);  
         % textureMap(textureList{t_index}.name) = textureList{t_index};
         % texNameList{t_index} = textureList{t_index}.name;
         % Avoid duplicated material definition
@@ -56,8 +57,7 @@ for ii = numel(txtLines):-1:1
         else
             t_index = t_index - 1;
         end
-        txtLines(ii) = [];
-
+        thisLine = [];
     elseif strncmp(thisLine,'MakeNamedMaterial',length('MakeNamedMaterial')) ||...
             strncmp(thisLine,'Material',length('Material'))
         % Assign the materialMap container
@@ -65,24 +65,32 @@ for ii = numel(txtLines):-1:1
         %   materialMap(matName) = materialStruct;
         %
         m_index = m_index+1;
-        
-        materialList{m_index}  = parseBlockMaterial(thisLine); %#ok<AGROW>
+        thisMat = parseBlockMaterial(thisLine);
+        if ~isempty(thisMat)
+            materialList{m_index}  = thisMat;
+        else
+            m_index = m_index-1;
+        end
+        if isempty(materialList{m_index}), return; end
         % Avoid dubplicated material definition
         if ~isKey(materialMap, materialList{m_index}.name)
             materialMap(materialList{m_index}.name) = materialList{m_index};
             matNameList{m_index} = materialList{m_index}.name;
         else
-            m_index = m_index - 1;
+            m_index = max(m_index - 1, 0);
         end
-        txtLines(ii) = [];
+        if strncmp(thisLine,'MakeNamedMaterial',length('MakeNamedMaterial'))
+            thisLine = [];
+        end
     elseif strncmp(thisLine, 'NamedMaterial', length('NamedMaterial'))
         % We have removed ' ' with '_' in materials, so do the same thing
         % with NamedMaterial for assets.
         % Substitute the spaces in material name with _
         dQuotePos = strfind(thisLine, '"');
         thisLine(dQuotePos(1):dQuotePos(2)) = strrep(thisLine(dQuotePos(1):dQuotePos(2)), ' ', '_');
-        txtLines{ii} = thisLine;
+        
     end
+    txtLines{ii} = thisLine;
 end
 
 % Flip the order because we parse the material and texture from back to

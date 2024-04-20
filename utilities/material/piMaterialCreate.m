@@ -277,7 +277,7 @@ switch tp
         material.color.value = [];
 
         material.eumelanin.type = 'float';
-        material.coeumelaninlor.value = [];
+        material.eumelanin.value = [];
 
         material.pheomelanin.type = 'float';
         material.pheomelanin.value = [];
