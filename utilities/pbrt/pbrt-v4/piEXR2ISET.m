@@ -110,7 +110,7 @@ for ii = 1:numel(label)
             try
                 coordinates = exrread(inputFile,Channels=["P.X","P.Y","P.Z"]);
             catch
-                coordinates =piReadEXR(inputFile, 'data type','3dcoordinates');
+                coordinates = exrread(inputFile,Channels=["Px","Py","Pz"]);
             end
             if isequal(label{ii},'depth')
                 depthImage = sqrt(coordinates(:,:,1).^2+coordinates(:,:,2).^2+coordinates(:,:,3).^2);
