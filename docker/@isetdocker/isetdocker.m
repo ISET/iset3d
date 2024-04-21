@@ -266,10 +266,10 @@ classdef isetdocker < handle
             if strcmpi(obj.device, 'gpu')
                 % want: --gpus '"device=#"'
                 gpuString = sprintf(' --gpus device=%s ',num2str(obj.deviceID));
-                dCommand = sprintf('docker %s run -d -it %s --name %s  %s', contextFlag, gpuString, ourContainer, volumeMap);
             else
-                dCommand = sprintf('docker %s run -d -it --name %s %s', contextFlag, ourContainer, volumeMap);
+                gpuString = sprintf(' --gpus device=%s ',num2str(0));
             end
+            dCommand = sprintf('docker %s run -d -it %s --name %s  %s', contextFlag, gpuString, ourContainer, volumeMap);
 
             cmd = sprintf('%s %s %s', dCommand, useImage, placeholderCommand);
 
