@@ -88,6 +88,7 @@ for ii = 1:numel(label)
     switch label{ii}
         case {'radiance','illuminance'}
             nn = 1;
+            radianceChannels = strings(1,31);
             for ww = 400:10:700
                 radianceChannels(nn) = sprintf("S0.%d,000nm",ww);
                 nn = nn+1;
@@ -107,11 +108,19 @@ for ii = 1:numel(label)
             end
 
         case {'depth', 'zdepth'}
-            try
+            info = exrinfo(inputFile);
+            channelNames = info.ChannelInfo.Properties.RowNames;
+            if contains('P.X',channelNames)
+                % Modern naming for X,Y,Z coordinates
                 coordinates = exrread(inputFile,Channels=["P.X","P.Y","P.Z"]);
-            catch
+            elseif contains('Px',channelNames)
+                % Historical naming
                 coordinates = exrread(inputFile,Channels=["Px","Py","Pz"]);
+            else
+                warning('No X,Y,Z channels found.  Returning.');
+                return;
             end
+
             if isequal(label{ii},'depth')
                 depthImage = sqrt(coordinates(:,:,1).^2+coordinates(:,:,2).^2+coordinates(:,:,3).^2);
             elseif isequal(label{ii},'zdepth')
