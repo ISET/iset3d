@@ -119,8 +119,8 @@ for ii = 1:numel(label)
             end
             otherData.coordinates = coordinates;
         case 'material'
-            % Doesn't work yet
-            otherData.materialID = piReadEXR(inputFile, 'data type','material');
+            % Doesn't work yet MaterialId
+            otherData.materialID = exrread(inputFile,Channels="MaterialId");
 
         case 'normal'
             otherData.normalImage = exrread(inputFile,Channels=["N.X","N.Y","N.Z"]);
@@ -128,7 +128,7 @@ for ii = 1:numel(label)
             otherData.albedoImage = exrread(inputFile,Channels=["Albedo.R","Albedo.G","Albedo.B"]);
         case 'instance'
             % Should the instanceID be ieObject?
-            otherData = piReadEXR(inputFile, 'data type','instanceId');
+            otherData = exrread(inputFile,Channels="InstanceId");
             ieObject.type = 'metadata';
     end
 end

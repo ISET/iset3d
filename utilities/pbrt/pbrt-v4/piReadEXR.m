@@ -71,8 +71,11 @@ switch dataType
         catch
             warning('Missing a Px or Py depth channel');
         end
-        output(:,:,3) = piEXR2Mat(filename, 'P.Z');
-
+        try
+            output(:,:,3) = piEXR2Mat(filename, 'P.Z');
+        catch
+            output(:,:,3) = piEXR2Mat(filename, 'Pz');
+        end
     case "material" % single channel
         output = piEXR2Mat(filename, 'MaterialId');
     case "normal"
