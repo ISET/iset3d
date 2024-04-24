@@ -6,12 +6,13 @@ function [ip,sensor] = piRadiance2RGB(radiance,varargin)
 %
 %
 % Description
-%   After we simulate the scene we have both the radiance and the pixel level
-%   metadata.  This function converts the radiance and metadata all the way to
-%   the IP level. Accepts either scene or OI.
+%   After we simulate a scene with ISET3d, we have the radiance
+%   (scene) or irradiance data (oi). This function creates a sensor
+%   and ip, and converts the data and metadata all the way to the IP
+%   level.
 %
 % Input
-%   scene radiance - This scene should generally have metadata attached to it.
+%   scene or oi - This generally has metadata attached to it.
 %
 % Optional key/value pairs
 %   sensor        - File name containing the sensor (default sensorCreate)
@@ -20,8 +21,8 @@ function [ip,sensor] = piRadiance2RGB(radiance,varargin)
 %   etime         - exposure time
 %
 % Output
-%   ip
-%   sensor
+%   ip  - Computed ip
+%   sensor - sensor used for the computation.  Can be reused.
 %
 % See also
 %   piMetadataSetSize, piOI2IP
@@ -57,6 +58,9 @@ elseif ~strcmp(radiance.type,'opticalimage')
 else
     oi = radiance;
 end
+
+% Below, we set the pixel size for a 1-1 match to the oi spatial
+% sampling resolution.
 if isempty(pixelSize)
     pixelSize = oiGet(oi,'width spatial resolution','microns');
 end
@@ -69,8 +73,7 @@ else
     load(sensorName,'sensor');
 end
 
-% Not sure why these aren't settable.  I think they are here to conform
-% with the ISETAuto generalization paper
+% Thse are here to conform with the ISETAuto generalization paper
 readnoise   = 2e-3;
 darkvoltage = 2e-3;
 [electrons,~] = iePixelWellCapacity(pixelSize);  % Microns
@@ -80,7 +83,7 @@ sensor = sensorSet(sensor,'pixel read noise volts',readnoise);
 sensor = sensorSet(sensor,'pixel voltage swing',1);
 sensor = sensorSet(sensor,'pixel dark voltage',darkvoltage);
 sensor = sensorSet(sensor,'pixel conversion gain',converGain);
-sensor = sensorSet(sensor, 'quantization method','12bit');
+sensor = sensorSet(sensor,'quantization method','12bit');
 
 sensor = sensorSet(sensor,'analog gain', analoggain);
 if ~isempty(pixelSize)
@@ -88,13 +91,13 @@ if ~isempty(pixelSize)
     sensor = sensorSet(sensor,'pixel size same fill factor',pixelSize*1e-6);
 end
 
-
+% Match sensor and oi spatial sampling.  Though maybe BW is confused.
 oiSize = oiGet(oi,'size');
-samplesapce_oi = oiGet(oi,'width spatial resolution','microns');
-if pixelSize == samplesapce_oi
+samplespace_oi = oiGet(oi,'width spatial resolution','microns');
+if pixelSize == samplespace_oi
     sensor = sensorSet(sensor, 'size', oiSize);
 else
-    sensor = sensorSet(sensor, 'size', oiSize*(samplesapce_oi/pixelSize));
+    sensor = sensorSet(sensor, 'size', oiSize*(samplespace_oi/pixelSize));
 end
 % sensor = sensorSetSizeToFOV(sensor, oi.wAngular, oi);
 
