@@ -42,7 +42,7 @@ classdef isetdocker < handle
             % docker command, which is normally installed on Apple.  A
             % 0 means we are good.
             [status, result] = system('docker -v');
-            assert(isequal(result(1:6),'Docker'));
+            assert(isequal(result(1:6),'Docker'), 'Docker engine may not be running');
             if status
                 % status is not zero, so command failed. Maybe it is a
                 % path issue. 
