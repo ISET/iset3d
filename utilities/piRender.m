@@ -129,8 +129,8 @@ meanLuminance    = p.Results.meanluminance;
 meanIlluminance  = p.Results.meanilluminance;   
 wave             = p.Results.wave;
 
-%% Set up the isetdocker
-if ~ispref('ISETDocker')
+%% Set up the isetdocker -- add test for have prefs but no object
+if ~ispref('ISETDocker') || isempty(renderDocker)
     renderDocker = isetdocker();
 else
     if isempty(renderDocker)
