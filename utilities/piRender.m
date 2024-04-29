@@ -1,4 +1,4 @@
-function [ieObject, result, thisD] = piRender(thisR, varargin)
+function [ieObject, result, thisD, outFile] = piRender(thisR, varargin)
 % Read a PBRT scene file, run the docker command, return the ieObject.
 %
 % Synopsis

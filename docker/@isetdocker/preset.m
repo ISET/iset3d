@@ -8,7 +8,7 @@ function preset(obj, presetName, varargin)
 %%
 presetName = ieParamFormat(presetName);
 
-validNames = {'localgpu','localgpu-alt','remotemux','remotemux-0','remotemux-1','remoteorange','remoteorange-0','remoteorange-1','humaneye'}; 
+validNames = {'localgpu','localgpu-alt','remotemux','remotemux-0','remotemux-1','remoteorange','remoteorange-0','remoteorange-1','humaneye', 'remotecnidl'}; 
 if ~ismember(presetName,validNames)
     disp('Valid Names (allowing for ieParamFormat): ')
     disp(validNames);
@@ -54,7 +54,7 @@ switch presetName
                 obj.deviceID=-1;
         end
         
-    case {'remotemux', 'remoteorange', 'remoteorange-0', 'remoteorange-1','remotemux-0','remotemux-1'}
+    case {'remotemux', 'remoteorange', 'remoteorange-0', 'remoteorange-1','remotemux-0','remotemux-1', 'remotecnidl'}
         % Render remotely on GPU
         obj.device = 'gpu';
 
@@ -66,6 +66,9 @@ switch presetName
             case {'remoteorange', 'remoteorange-0','remoteorange-1'}
                 obj.renderContext =  'remote-orange';
                 obj.remoteHost = 'orange.stanford.edu';                
+            case {'remote-cnidl'}
+                obj.renderContext = 'remote-cnidl';
+                obj.remoteHost = 'cni-dl.stanford.edu';
         end
 
         % also pick GPU and docker image
@@ -82,6 +85,9 @@ switch presetName
             case 'remoteorange-0'
                 obj.dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-ti';
                 obj.deviceID = 0;
+            case 'remotecnidl'
+                obj.dockerImage = 'camerasimulation/pbrt-v4-gpu-ampere-cnidl';
+                obj.deviceID = 9; % pick the last one for now
         end
     otherwise
         validNames_str = string(validNames);
