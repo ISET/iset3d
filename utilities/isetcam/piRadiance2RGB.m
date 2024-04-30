@@ -15,7 +15,8 @@ function [ip,sensor] = piRadiance2RGB(radiance,varargin)
 %   scene or oi - This generally has metadata attached to it.
 %
 % Optional key/value pairs
-%   sensor        - File name containing the sensor (default sensorCreate)
+%   sensor        - File name containing the sensor, or a sensor.
+%                   Default conforms with the ISETAuto generalization paper
 %   pixel size    - Size in microns (e.g. 2)
 %   film diagonal - In millimeters, default is 5 mm
 %   etime         - exposure time
@@ -45,17 +46,19 @@ p.parse(radiance,varargin{:});
 radiance     = p.Results.radiance;
 sensorName   = p.Results.sensor;
 pixelSize    = p.Results.pixelsize;
-filmDiagonal = p.Results.filmdiagonal;
+% filmDiagonal = p.Results.filmdiagonal;
 eTime        = p.Results.etime;
 noiseFlag    = p.Results.noiseflag;
 analoggain   = p.Results.analoggain;
 %% scene to optical image
 
 if strcmp(radiance.type,'scene')
+    % What oi parameters are in here?
     oi = piOICreate(radiance.data.photons);
 elseif ~strcmp(radiance.type,'opticalimage')
     error('Input should be a scene or optical image');
 else
+    % The usual compute path is through here
     oi = radiance;
 end
 
@@ -66,32 +69,35 @@ if isempty(pixelSize)
 end
 
 %% oi to sensor
-if isempty(sensorName)
-    sensor = sensorCreate;
-else
-%     sensor = sensorCreate('monochrome');
-    load(sensorName,'sensor');
+if isempty(sensorName), sensor = sensorCreate;
+
+    % The default conforms with the ISETAuto generalization paper
+    readnoise   = 2e-3;
+    darkvoltage = 2e-3;
+    [electrons,~] = iePixelWellCapacity(pixelSize);  % Microns
+    converGain = 1/electrons;         % voltage swing/electrons
+    %
+    sensor = sensorSet(sensor,'pixel read noise volts',readnoise);
+    sensor = sensorSet(sensor,'pixel voltage swing',1);
+    sensor = sensorSet(sensor,'pixel dark voltage',darkvoltage);
+    sensor = sensorSet(sensor,'pixel conversion gain',converGain);
+    sensor = sensorSet(sensor,'quantization method','12bit');
+
+    sensor = sensorSet(sensor,'analog gain', analoggain);
+    if ~isempty(pixelSize)
+        % Pixel size in meters needed here.
+        sensor = sensorSet(sensor,'pixel size same fill factor',pixelSize*1e-6);
+    end
+elseif ischar(sensorName), load(sensorName,'sensor');
+elseif isfield(sensorName,'type') && isequal(sensorName.type,'sensor')
+    sensor = sensorName;
 end
 
-% Thse are here to conform with the ISETAuto generalization paper
-readnoise   = 2e-3;
-darkvoltage = 2e-3;
-[electrons,~] = iePixelWellCapacity(pixelSize);  % Microns
-converGain = 1/electrons;         % voltage swing/electrons
-% 
-sensor = sensorSet(sensor,'pixel read noise volts',readnoise);
-sensor = sensorSet(sensor,'pixel voltage swing',1);
-sensor = sensorSet(sensor,'pixel dark voltage',darkvoltage);
-sensor = sensorSet(sensor,'pixel conversion gain',converGain);
-sensor = sensorSet(sensor,'quantization method','12bit');
+% This sensorSet replaces the code below.
+sensor = sensorSet(sensor,'match oi',oi);
 
-sensor = sensorSet(sensor,'analog gain', analoggain);
-if ~isempty(pixelSize)
-    % Pixel size in meters needed here.
-    sensor = sensorSet(sensor,'pixel size same fill factor',pixelSize*1e-6);
-end
-
-% Match sensor and oi spatial sampling.  Though maybe BW is confused.
+%{
+% Match sensor and oi spatial sampling.
 oiSize = oiGet(oi,'size');
 samplespace_oi = oiGet(oi,'width spatial resolution','microns');
 if pixelSize == samplespace_oi
@@ -100,6 +106,7 @@ else
     sensor = sensorSet(sensor, 'size', oiSize*(samplespace_oi/pixelSize));
 end
 % sensor = sensorSetSizeToFOV(sensor, oi.wAngular, oi);
+%}
 
 %% Compute
 
