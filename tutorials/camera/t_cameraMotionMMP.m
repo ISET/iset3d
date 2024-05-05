@@ -19,9 +19,25 @@ if ~piDockerExists, piDockerConfig; end
 
 %% Read in an MMP Scene Recipe
 % Use full path unless the scenes are in your matlab path
-%thisR = piRead('pavilion-night.pbrt', 'exporter', 'Copy');
-%thisR = piRead('pavilion-day.pbrt', 'exporter', 'Copy');
+
+%{
+% Not working
+thisR = piRead('pavilion-night.pbrt', 'exporter', 'Copy');
+thisR = piRead('pavilion-day.pbrt', 'exporter', 'Copy');
 thisR = piRead('bistro_cafe.pbrt', 'exporter', 'Copy');
+thisR = piRead('sanmiguel-courtyard.pbrt', 'exporter', 'Copy');
+thisR = piRead('book.pbrt', 'exporter', 'Copy');
+%}
+% Working
+%{
+%thisR = piRead('dambreak0.pbrt', 'exporter', 'Copy');
+%thisR = piRead('dambreak1.pbrt', 'exporter', 'Copy');
+%thisR = piRead('sportscar-sky.pbrt', 'exporter', 'Copy');
+%thisR = piRead('frame25.pbrt', 'exporter', 'Copy');
+%}
+
+% Read a scene we want to test
+thisR = piRead('pavilion-night.pbrt', 'exporter', 'Copy');
 
 %% Set render quality
 %
