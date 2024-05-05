@@ -465,21 +465,31 @@ if isfield(thisR.camera,'motion')
 
     motionTranslate = thisR.get('camera motion translate');
     motionStart     = thisR.get('camera motion rotation start');
+    if isempty(motionStart)
+        motionStart     = thisR.get('camera motion translate start');
+    end
+ 
     motionEnd       = thisR.get('camera motion rotation end');
-
+    if isempty(motionEnd)
+        motionEnd       = thisR.get('camera motion translate end');
+    end
     fprintf(fileID,'ActiveTransform StartTime \n');
     fprintf(fileID,'Translate 0 0 0 \n');
-    fprintf(fileID,'Rotate %f %f %f %f \n',motionStart(:,1)); % Z
-    fprintf(fileID,'Rotate %f %f %f %f \n',motionStart(:,2)); % Y
-    fprintf(fileID,'Rotate %f %f %f %f \n',motionStart(:,3));  % X
+    if ~isempty(thisR.get('camera motion rotation start'));
+        fprintf(fileID,'Rotate %f %f %f %f \n',motionStart(:,1)); % Z
+        fprintf(fileID,'Rotate %f %f %f %f \n',motionStart(:,2)); % Y
+        fprintf(fileID,'Rotate %f %f %f %f \n',motionStart(:,3));  % X
+    end
     fprintf(fileID,'ActiveTransform EndTime \n');
     fprintf(fileID,'Translate %0.2f %0.2f %0.2f \n',...
         [motionTranslate(1),...
         motionTranslate(2),...
         motionTranslate(3)]);
-    fprintf(fileID,'Rotate %f %f %f %f \n',motionEnd(:,1)); % Z
-    fprintf(fileID,'Rotate %f %f %f %f \n',motionEnd(:,2)); % Y
-    fprintf(fileID,'Rotate %f %f %f %f \n',motionEnd(:,3));  % X
+    if ~isempty(thisR.get('camera motion rotation end'))
+        fprintf(fileID,'Rotate %f %f %f %f \n',motionEnd(:,1)); % Z
+        fprintf(fileID,'Rotate %f %f %f %f \n',motionEnd(:,2)); % Y
+        fprintf(fileID,'Rotate %f %f %f %f \n',motionEnd(:,3));  % X
+    end
     fprintf(fileID,'ActiveTransform All \n');
 end
 
