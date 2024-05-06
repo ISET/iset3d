@@ -36,8 +36,8 @@ thisR = piRead('book.pbrt', 'exporter', 'Copy');
 %thisR = piRead('frame25.pbrt', 'exporter', 'Copy');
 %}
 
-% Read a scene we want to test
-thisR = piRead('pavilion-night.pbrt', 'exporter', 'Copy');
+%% Read a scene we want to test
+thisR = piRead(which('pavilion-night.pbrt'), 'exporter', 'Copy');
 
 %% Set render quality
 %
@@ -64,7 +64,7 @@ piWrite(thisR);
 % Speed up by only returning radiance, and display
 scene = piRender(thisR);
 sceneWindow(scene);
-if isequal(piCamBio,'isetcam')
+if piCamBio
     sceneSet(scene,'display mode','hdr');
 else
     sceneSet(scene,'gamma',0.5);
@@ -82,7 +82,8 @@ thisR.set('camera motion rotate start',piRotationMatrix);
 
 % Move in the direction camera is looking, but just a small amount.
 fromto = thisR.get('from to');
-endPos = [1 0 0] + thisR.lookAt.from(:);
+endPos = thisR.lookAt.from(:);
+endPos(1) = endPos(1) + 1;
 
 % Set camera motion end parameters, no change in rotation yet.
 thisR.set('camera motion translate end',endPos);
