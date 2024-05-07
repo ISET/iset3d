@@ -41,15 +41,18 @@ p.addParameter('filmdiagonal',5,@isscalar); % [mm]
 p.addParameter('etime',1/100,@isscalar); % 
 p.addParameter('noiseflag',2,@isscalar);
 p.addParameter('analoggain',1);
+p.addParameter('quantization','12 bit',@ischar);  % 12bit, 10bit, 8bit, analog
 
 p.parse(radiance,varargin{:});
 radiance     = p.Results.radiance;
 sensorName   = p.Results.sensor;
 pixelSize    = p.Results.pixelsize;
-% filmDiagonal = p.Results.filmdiagonal;
 eTime        = p.Results.etime;
 noiseFlag    = p.Results.noiseflag;
 analoggain   = p.Results.analoggain;
+
+% filmDiagonal = p.Results.filmdiagonal;
+
 %% scene to optical image
 
 if strcmp(radiance.type,'scene')
