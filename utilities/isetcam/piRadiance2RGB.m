@@ -38,8 +38,9 @@ p.addRequired('radiance',@isstruct);
 p.addParameter('sensor','',@ischar);   % A file name
 p.addParameter('pixelsize',[],@isscalar); % um
 p.addParameter('filmdiagonal',5,@isscalar); % [mm]
-p.addParameter('etime',1/100,@isscalar); % 
+p.addParameter('etime',[],@isscalar); % 
 p.addParameter('noiseflag',2,@isscalar);
+p.addParameter('conversiongain',[],@isscalar);
 p.addParameter('analoggain',1);
 p.addParameter('quantization','12 bit',@ischar);  % 12bit, 10bit, 8bit, analog
 
@@ -50,9 +51,7 @@ pixelSize    = p.Results.pixelsize;
 eTime        = p.Results.etime;
 noiseFlag    = p.Results.noiseflag;
 analoggain   = p.Results.analoggain;
-
-% filmDiagonal = p.Results.filmdiagonal;
-
+converGain=p.Results.conversiongain;
 %% scene to optical image
 
 if strcmp(radiance.type,'scene')
@@ -112,8 +111,14 @@ end
 %}
 
 %% Compute
-
-% eTime  = autoExposure(oi,sensor,0.90,'weighted','center rect',rect);
+size = oiGet(oi,'size');
+zones = getImageZones(size(1), size(2),7,7);
+if isempty(eTime)
+    for zz = [11,17,19,21,23,25,27,29,39]
+        eTime(zz)  = autoExposure(oi,sensor,0.95,'weighted','center rect',round(zones(zz,:)));
+    end
+    eTime = (mean(eTime));
+end
 sensor = sensorSet(sensor,'exp time',eTime);
 sensor = sensorSet(sensor,'noise flag',noiseFlag); % see sensorSet for more detail
 
@@ -158,4 +163,27 @@ if isfield(sensor,'metadata')
     ip.metadata.eT = eTime;
 end
 
+end
+
+
+function zones = getImageZones(height, width, numRows, numCols)
+
+% Calculate the size of each zone
+zoneHeight = height / numRows;
+zoneWidth = width / numCols;
+
+% Initialize the zones array
+zones = zeros(numRows * numCols, 4); % Each row: [x, y, width, height]
+
+% Generate the rectangles for each zone
+index = 1;
+for row = 1:numRows
+    for col = 1:numCols
+        x = (col-1) * zoneWidth + 1;
+        y = (row-1) * zoneHeight + 1;
+
+        zones(index, :) = [x, y, zoneWidth, zoneHeight];
+        index = index + 1;
+    end
+end
 end

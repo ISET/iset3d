@@ -103,8 +103,11 @@ if ~isempty(getpref('ISETDocker','remoteHost'))
 
         if status == 0
             if ~isempty(getpref('ISETDocker','remoteHost'))
-
-                obj.download(fullfile(remoteSceneDir,'renderings'), fullfile(outputFolder,'renderings'));
+                if ~getpref('ISETDocker','batch')
+                    obj.download(fullfile(remoteSceneDir,'renderings'), fullfile(outputFolder,'renderings'));
+                else
+                    return;
+                end
             end
         end
     end
