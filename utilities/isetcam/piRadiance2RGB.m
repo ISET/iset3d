@@ -51,7 +51,8 @@ pixelSize    = p.Results.pixelsize;
 eTime        = p.Results.etime;
 noiseFlag    = p.Results.noiseflag;
 analoggain   = p.Results.analoggain;
-converGain=p.Results.conversiongain;
+% converGain   = p.Results.conversiongain;
+
 %% scene to optical image
 
 if strcmp(radiance.type,'scene')
@@ -78,7 +79,7 @@ if isempty(sensorName), sensor = sensorCreate;
     darkvoltage = 2e-3;
     [electrons,~] = iePixelWellCapacity(pixelSize);  % Microns
     converGain = 1/electrons;         % voltage swing/electrons
-    %
+    
     sensor = sensorSet(sensor,'pixel read noise volts',readnoise);
     sensor = sensorSet(sensor,'pixel voltage swing',1);
     sensor = sensorSet(sensor,'pixel dark voltage',darkvoltage);
@@ -95,22 +96,13 @@ elseif isfield(sensorName,'type') && isequal(sensorName.type,'sensor')
     sensor = sensorName;
 end
 
-% This sensorSet replaces the code below.
+% Make the sensor pixel size match the oi sample spacing.  The OI is
+% computed with a specific size to match some sensor, usually.
 sensor = sensorSet(sensor,'match oi',oi);
 
-%{
-% Match sensor and oi spatial sampling.
-oiSize = oiGet(oi,'size');
-samplespace_oi = oiGet(oi,'width spatial resolution','microns');
-if pixelSize == samplespace_oi
-    sensor = sensorSet(sensor, 'size', oiSize);
-else
-    sensor = sensorSet(sensor, 'size', oiSize*(samplespace_oi/pixelSize));
-end
-% sensor = sensorSetSizeToFOV(sensor, oi.wAngular, oi);
-%}
-
 %% Compute
+
+% This is a special autoExposure method.  It should go into autoExposure
 size = oiGet(oi,'size');
 zones = getImageZones(size(1), size(2),7,7);
 if isempty(eTime)
@@ -120,6 +112,7 @@ if isempty(eTime)
     eTime = (mean(eTime));
 end
 sensor = sensorSet(sensor,'exp time',eTime);
+
 sensor = sensorSet(sensor,'noise flag',noiseFlag); % see sensorSet for more detail
 
 sensor = sensorCompute(sensor,oi);
@@ -128,6 +121,7 @@ fprintf('eT: %f ms \n',eTime*1e3);
 % sensorWindow(sensor);
 
 %% Copy metadata
+
 % if isfield(oi,'metadata')
 %     if ~isempty(oi.metadata)
 %      sensor.metadata          = oi.metadata;
@@ -142,6 +136,7 @@ fprintf('eT: %f ms \n',eTime*1e3);
 %% Sensor to IP
 CFAs = sensor.color.filterNames;
 if numel(CFAs)>3
+    disp('We only calculate the ip for 3 color channel case.')
     ip = [];
     return
 end
@@ -165,6 +160,7 @@ end
 
 end
 
+%%  Should go into autoExposure
 
 function zones = getImageZones(height, width, numRows, numCols)
 
