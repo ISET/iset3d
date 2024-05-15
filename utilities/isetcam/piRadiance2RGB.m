@@ -4,7 +4,6 @@ function [ip,sensor] = piRadiance2RGB(radiance,varargin)
 % Syntax
 %    [ip,sensor] = piRadiance2RGB(radiance,varargin)
 %
-%
 % Description
 %   After we simulate a scene with ISET3d, we have the radiance
 %   (scene) or irradiance data (oi). This function creates a sensor
@@ -12,7 +11,7 @@ function [ip,sensor] = piRadiance2RGB(radiance,varargin)
 %   level.
 %
 % Input
-%   scene or oi - This generally has metadata attached to it.
+%   radiance - Either a scene or oi, usually with some metadata.
 %
 % Optional key/value pairs
 %   sensor        - File name containing the sensor, or a sensor.
@@ -55,14 +54,16 @@ analoggain   = p.Results.analoggain;
 
 %% scene to optical image
 
-if strcmp(radiance.type,'scene')
-    % What oi parameters are in here?
-    oi = piOICreate(radiance.data.photons);
-elseif ~strcmp(radiance.type,'opticalimage')
-    error('Input should be a scene or optical image');
+if isfield(radiance,'type')
+    if strcmp(radiance.type,'scene')
+        % Convert the scene data to oi data
+        oi = piOICreate(radiance.data.photons);
+    elseif strcmp(radiance.type,'opticalimage')
+        % Typical calculation this way.
+        oi = radiance;
+    end
 else
-    % The usual compute path is through here
-    oi = radiance;
+    error('Input should be a scene or optical image');
 end
 
 % Below, we set the pixel size for a 1-1 match to the oi spatial
