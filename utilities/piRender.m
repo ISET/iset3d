@@ -130,11 +130,13 @@ meanIlluminance  = p.Results.meanilluminance;
 wave             = p.Results.wave;
 
 %% Set up the isetdocker -- add test for have prefs but no object
-if ~ispref('ISETDocker') || isempty(renderDocker)
+if ~ispref('ISETDocker') && isempty(renderDocker)
     renderDocker = isetdocker();
 else
     if isempty(renderDocker)
         disp('[INFO]: Render Locally.');
+    else
+        % renderDocker is fine
     end
 end
 
