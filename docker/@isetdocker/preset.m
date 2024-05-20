@@ -106,7 +106,9 @@ setpref('ISETDocker','device',  obj.device);
 setpref('ISETDocker','deviceID',obj.deviceID);
 setpref('ISETDocker','dockerImage',  obj.dockerImage);
 setpref('ISETDocker','remoteHost',  obj.remoteHost);
-setpref('ISETDocker','remoteUser',  obj.remoteUser);
+if ~isequal(obj.remoteUser,'')
+    setpref('ISETDocker','remoteUser',  obj.remoteUser);
+end
 setpref('ISETDocker','renderContext',  obj.renderContext);
 
 end
