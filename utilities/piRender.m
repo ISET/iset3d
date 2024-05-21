@@ -134,6 +134,7 @@ if ~ispref('ISETDocker') && isempty(renderDocker)
     renderDocker = isetdocker();
 else
     if isempty(renderDocker)
+        renderDocker = isetdocker();
         disp('[INFO]: Render Locally.');
     else
         % renderDocker is fine
