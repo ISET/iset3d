@@ -10,6 +10,8 @@
 %
 % Zhenyi SCIEN 2019
 %
+% Updated for pbrt-v4 Translate -- D.Carinal 2024
+%
 % See also
 %   t_piIntro_*
 
@@ -41,10 +43,6 @@ thisR.set('bounces',2);
 % Field of view
 thisR.set('fov',45);
 
-% This is a convenient routine we use when there are many parts and
-% you are willing to accept ZL's mapping into materials based on
-% automobile parts. 
-% piMaterialGroupAssign(thisR);
 thisR.set('light', 'Sky1', 'rotate', [-90 0 0]);
 %% Write out the pbrt scene file, based on thisR.
 piWrite(thisR);
@@ -65,17 +63,16 @@ end
 % Specify the initial position and pose (rotation), translate,
 % and then set camera motion end position.
 %
-% Findthe current camera position and rotation
-from = thisR.get('from');
-thisR.set('camera motion translate start',from(:));
-thisR.set('camera motion rotate start',piRotationMatrix);
 
-% Move in the direction camera is looking, but just a small amount.
-fromto = thisR.get('from to');
-endPos = -0.5*fromto(:) + thisR.lookAt.from(:);
+% As of pbrt-v4 it seems like we want to start from "0" not .from
+thisR.set('camera motion translate start',[0 0 0]);
 
-% Set camera motion end parameters, no change in rotation yet.
+% shift camera to the side by .1 meters by setting camera motion end parameters
+endPos = [.1 0 0];
 thisR.set('camera motion translate end',endPos);
+
+% No rotation yet
+thisR.set('camera motion rotate start',piRotationMatrix);
 thisR.set('camera motion rotate end',piRotationMatrix);
 
 % Write and render
@@ -86,8 +83,6 @@ sceneWindow(scene);
 
 %%  Now, rotate the camera
 %
-% No translation, end position is where camera is now.
-endPos = thisR.lookAt.from(:);
 
 % The angle specification is piRotationMatrix.  Here the angle is changed
 % by 5 degrees around the z-axis.
