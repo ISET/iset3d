@@ -65,10 +65,11 @@ end
 %
 
 % As of pbrt-v4 it seems like we want to start from "0" not .from
-thisR.set('camera motion translate start',[0 0 0]);
+startPos = [0 0 0];
+thisR.set('camera motion translate start', startPos);
 
 % shift camera to the side by .1 meters by setting camera motion end parameters
-endPos = [.1 0 0];
+endPos = [.2 0 0];
 thisR.set('camera motion translate end',endPos);
 
 % No rotation yet
@@ -92,11 +93,27 @@ endRotation = piRotationMatrix('zrot',5);
 thisR.set('camera motion translate end',endPos);
 thisR.set('camera motion rotate end',endRotation);
 
-%% Write an render
+%% Write and render
 piWrite(thisR);
-scene = piRender(thisR, 'render type', 'radiance');
-scene = sceneSet(scene,'name','Camera Motionblur: rotation');
-sceneWindow(scene);
+scene1 = piRender(thisR);
+scene1 = sceneSet(scene1,'name','Camera Motion: rotation');
+sceneWindow(scene1);
+
+% Now we'll do a second frame
+thisR.set('camera motion translate start',endPos);
+thisR.set('camera motion translate end',endPos .* 2);
+
+thisR.set('camera motion rotate start',endRotation);
+thisR.set('camera motion rotate end',endRotation .* 2);
+
+piWrite(thisR);
+scene2 = piRender(thisR);
+scene2 = sceneSet(scene2,'name','Camera Motion: rotation');
+sceneWindow(scene2);
+
+sceneSum = sceneAdd(scene1, scene2);
+sceneWindow(sceneSum);
+
 
 %% END
 
