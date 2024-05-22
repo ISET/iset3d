@@ -99,19 +99,29 @@ scene1 = piRender(thisR);
 scene1 = sceneSet(scene1,'name','Camera Motion: rotation');
 sceneWindow(scene1);
 
-% Now we'll do a second frame
-thisR.set('camera motion translate start',endPos);
-thisR.set('camera motion translate end',endPos .* 2);
+%% Test whether we can sum together several frames in sequence
+%  and get the same result as a sigle, long-exposure, frame.
 
-thisR.set('camera motion rotate start',endRotation);
-thisR.set('camera motion rotate end',endRotation .* 2);
+% We can set shutteropen & shutterclose for a scene and try
+% to produce a sequence that way. Or make each frame a "standalone"
+% with from & to based on the previous frame + motion
+
+% Now we'll do additional frames
+scenes = {};
+numFrames = 5;
+for ii = 1:numFrames
+    thisR.set('camera motion translate start',endPos .* ii-1);
+    thisR.set('camera motion translate end',endPos .* ii);
+
+    thisR.set('camera motion rotate start',endRotation .* ii-1);
+thisR.set('camera motion rotate end',endRotation .* ii);
 
 piWrite(thisR);
-scene2 = piRender(thisR);
-scene2 = sceneSet(scene2,'name','Camera Motion: rotation');
-sceneWindow(scene2);
-
-sceneSum = sceneAdd(scene1, scene2);
+scenes{ii} = piRender(thisR);
+scenes{ii} = sceneSet(scenes{ii},'name','Camera Motion: rotation');
+%sceneWindow(scene2);
+end
+sceneSum = sceneAdd(scenes);
 sceneWindow(sceneSum);
 
 
