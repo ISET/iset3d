@@ -69,9 +69,10 @@ doBatch = p.Results.batch;
 
 %% Set up the denoiser path information and check
 % get the latest release for oidn denoiser
-
-oidn_dir = oidn_fetch('OpenImageDenoise', 'oidn');
-
+persistent oidn_dir;
+if isempty(oidn_dir)
+    oidn_dir = oidn_fetch('OpenImageDenoise', 'oidn');
+end
 if ~p.Results.useNvidia
     oidn_pth  = fullfile(string(oidn_dir), 'bin');
 else

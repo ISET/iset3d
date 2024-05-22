@@ -25,7 +25,7 @@ function [result, dockerCommand] = dockercmd(obj,cmd,varargin)
 % Example
 %{
    thisD = isetdocker;
-   result = thisD.dockercmd('ps','string','wandell');
+   result = thisD.dockercmd('psfind','string','wandell');
 %}
 
 %%

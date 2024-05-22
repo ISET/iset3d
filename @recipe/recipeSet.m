@@ -779,7 +779,7 @@ switch param
         %
         thisR.sampler.type = 'Sampler';
         thisR.sampler.subtype = val;
-    case {'raysperpixel','pixelsamples'}
+    case {'raysperpixel','pixelsamples','samplesperpixel'}
         % thisR.set('rays per pixel')
         % How many rays from each pixel
         if isempty(thisR.sampler)

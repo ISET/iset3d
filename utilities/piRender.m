@@ -1,4 +1,4 @@
-function [ieObject, result, thisD] = piRender(thisR, varargin)
+function [ieObject, result, thisD, outFile] = piRender(thisR, varargin)
 % Read a PBRT scene file, run the docker command, return the ieObject.
 %
 % Synopsis
@@ -129,12 +129,15 @@ meanLuminance    = p.Results.meanluminance;
 meanIlluminance  = p.Results.meanilluminance;   
 wave             = p.Results.wave;
 
-%% Set up the isetdocker
-if ~ispref('ISETDocker')
+%% Set up the isetdocker -- add test for have prefs but no object
+if ~ispref('ISETDocker') && isempty(renderDocker)
     renderDocker = isetdocker();
 else
     if isempty(renderDocker)
+        renderDocker = isetdocker();
         disp('[INFO]: Render Locally.');
+    else
+        % renderDocker is fine
     end
 end
 
@@ -162,7 +165,7 @@ outF = strcat('renderings/',currName,'.exr');
 % machine and with what parameters the docker image/containter is invoked.
 
 [status, result] = renderDocker.render(thisR, p.Results.commandonly);
-
+if getpref('ISETDocker','batch'), ieObject =[]; return;end
 % Lots of output when verbosity is 2.
 % Append the renderCommand and output file
 if renderDocker.verbosity > 0

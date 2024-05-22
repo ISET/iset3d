@@ -372,12 +372,20 @@ switch ieParamFormat(param)  % lower case, no spaces
     case {'cameramotionrotationstart'}
         % Start rotation
         if isfield(thisR.camera,'motion')
-            val = thisR.camera.motion.activeTransformStart.rotate;
+            if isfield(thisR.camera.motion.activeTransformStart, 'rotate')
+                val = thisR.camera.motion.activeTransformStart.rotate;
+            else
+                val = [];
+            end
         end
     case {'cameramotionrotationend'}
         % End rotation
         if isfield(thisR.camera,'motion')
-            val = thisR.camera.motion.activeTransformEnd.rotate;
+            if isfield(thisR.camera.motion.activeTransformStart, 'rotate')
+                val = thisR.camera.motion.activeTransformEnd.rotate;
+            else
+                val =[];
+            end
         end
     case {'exposuretime','cameraexposure'}
         try
