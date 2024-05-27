@@ -277,7 +277,7 @@ switch ieParamFormat(param)  % lower case, no spaces
     case {'transformtimes'}
         val = thisR.transformTimes;
     case {'transformtimesstart'}
-        if isfield(thisR.transformTimes, 'strat')
+        if isfield(thisR.transformTimes, 'start')
             val = thisR.transformTimes.start;
         else
             val = [];
