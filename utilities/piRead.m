@@ -312,7 +312,7 @@ function piReadOptions(thisR,pbrtOptions)
 % Inputs
 %   thisR - PBRT recipe
 %   pbrtOptions - Text extracted from PBRT scene file containing the
-%     options for Camera, Sample, Filme, TransformTimes, PixelFilter,
+%     options for Camera, Sample, Film, TransformTimes, PixelFilter,
 %     Integrator, and Scale
 %
 % Output
