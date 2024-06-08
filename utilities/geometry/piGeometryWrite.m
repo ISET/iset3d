@@ -335,9 +335,12 @@ for ii = 1:numel(children)
             fprintf(fid, strcat(spacing, indentSpacing,...
                 'ActiveTransform EndTime \n'));
             for jj = 1:size(thisNode.translation, 2)
+                % Something amiss with how we are setting or getting
+                % translation in our code. Trying to see if this change
+                % helps
                 if isfield(thisNode.motion, 'translation')
-                    if ~isempty(thisNode.motion.translation(jj, :))
-                        pos = thisNode.motion.translation(jj,:);
+                    if ~isempty(thisNode.translation{jj})
+                        pos = thisNode.translation{jj};
                         fprintf(fid, strcat(spacing, indentSpacing,...
                             sprintf('Translate %f %f %f', pos(1),...
                             pos(2),...
