@@ -129,7 +129,7 @@ thisR.set('render type',renderType);
 % are expected to be present remotely.
 piWrite(thisR);
 
-[obj, results, thisD] = piRender(thisR, 'docker', thisD);
+[obj, results, thisD] = piRender(thisR, 'docker', thisD, varargin{:});
 
 if isempty(obj),  error('Render failed.'); end
 
