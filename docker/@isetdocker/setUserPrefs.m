@@ -32,7 +32,7 @@ if ispref(prefGroupName)
         updateChoice = input('Do you want to check your preferences? [y/n]: ', 's');
         if strcmpi(updateChoice, 'y')
             disp('-----Preferences Summary-----');
-            listPrefs(groupName)
+            listPrefs(prefGroupName)
         end
         return;
     end
