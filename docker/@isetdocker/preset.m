@@ -1,4 +1,4 @@
-function preset(obj, presetName, varargin)
+function validPreset = preset(obj, presetName, varargin)
 % Store the default parameters for one of our presets
 %
 %
@@ -10,9 +10,12 @@ presetName = ieParamFormat(presetName);
 
 validNames = {'localgpu','localgpu-alt','remotemux','remotemux-0','remotemux-1','remoteorange','remoteorange-0','remoteorange-1','humaneye'}; 
 if ~ismember(presetName,validNames)
-    disp('Valid Names (allowing for ieParamFormat): ')
+    disp('Valid Presets are: ')
     disp(validNames);
-    error('%s not in valid set %s\n',presetName); 
+    validPreset = false;
+    return;
+else
+    validPreset = true;
 end
 
 switch presetName

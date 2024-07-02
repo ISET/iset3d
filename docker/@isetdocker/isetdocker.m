@@ -61,7 +61,12 @@ classdef isetdocker < handle
             args = p.Results;
 
             if ~isempty(args.preset)
-                obj.preset(args.preset);
+                validPreset = obj.preset(args.preset);
+                if validPreset == false && isequal(args.preset, 'help')
+                    return; % user just wants info
+                else
+                    error("Invalid preset selected. Exiting.");
+                end
             end
 
             % Check and set 'device' preference
