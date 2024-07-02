@@ -64,7 +64,7 @@ classdef isetdocker < handle
                 validPreset = obj.preset(args.preset);
                 if validPreset == false && isequal(args.preset, 'help')
                     return; % user just wants info
-                else
+                elseif validPreset == false
                     error("Invalid preset selected. Exiting.");
                 end
             end
