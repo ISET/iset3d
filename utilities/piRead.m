@@ -1,8 +1,8 @@
-function thisR = piRead(fname,varargin)
+function [thisR, info] = piRead(fname,varargin)
 % Read an parse a PBRT scene file, returning a rendering recipe
 %
 % Syntax
-%    thisR = piRead(fname, varargin)
+%    [thisR,info] = piRead(fname, varargin)
 %
 % Description
 %  Parses a pbrt scene file and returns the full set of rendering
@@ -54,6 +54,7 @@ function thisR = piRead(fname,varargin)
 %   recipe - A @recipe object with the parameters needed to write a
 %            new pbrt scene file for rendering.  Normally, we write
 %            out the new files in (piRootPath)/local/scenename
+%   info   - Text describing information about the read
 %
 % Assumptions:
 %
@@ -91,6 +92,8 @@ function thisR = piRead(fname,varargin)
 varargin =ieParamFormat(varargin);
 p = inputParser;
 
+info = '';
+
 % Parse the scene from server
 if isstruct(fname) && isfield(fname, 'hash')
     p.addParameter('docker',[],@(x)(isa(x,'isetdocker'))); % isetdocker object
@@ -105,7 +108,7 @@ if isstruct(fname) && isfield(fname, 'hash')
     thisR = thisload.thisR;
     thisR.set('input file',fullfile(fname.filepath, fname.mainfile));
     thisR.set('output file',strrep(recipeMat,'.mat','.pbrt'));
-    fprintf('[INFO]: Use a database scene: [%s].\n',[fname.filepath,'/',fname.mainfile]);
+    info = addText(info,sprintf('[INFO]: Use a database scene: [%s].\n',[fname.filepath,'/',fname.mainfile]));
     return
 end
 
@@ -122,12 +125,17 @@ p.addParameter('exporter', 'PARSE', @(x)(ismember(x,validExporters)));
 %    local/outputdirname/outdirname.pbrt
 p.parse(fname,varargin{:});
 
+%% Initialize the recipe
+
 thisR = recipe;
 thisR.version = 4;
 
 infile = fname;
-%% Init ISET prefs
-piPrefsInit
+
+% Make sure ISET3d prefs are set.  If not, set some defaults.  Where
+% should this be?  Why here?
+piPrefsInit;
+
 %% Exist checks on the whole path.
 if exist(infile,'file')
     if ~isempty(which(infile))
@@ -171,8 +179,6 @@ pbrtOptions = piReadWorldText(thisR, txtLines);
 % Act on the pbrtOptions, setting the recipe slots (i.e., thisR).
 piReadOptions(thisR,pbrtOptions);
 
-
-
 %% Read Materials and Textures
 if ~strcmpi(exporter, 'Copy')
     %% Insert the text from the Include files
@@ -199,7 +205,8 @@ if ~strcmpi(exporter, 'Copy')
     % Convert texture file format to PNG
     thisR = piTextureFileFormat(thisR);
 
-    fprintf('[INFO]: Read %d materials and %d textures.\n', materialLists.Count, textureList.Count);
+    info = addText(info,sprintf('[INFO]: Read %d materials and %d textures.\n', materialLists.Count, textureList.Count));
+    
 end
 %% Decide whether to Copy or Parse to get the asset tree filled up
 
@@ -209,7 +216,8 @@ if strcmpi(exporter, 'Copy')
 else
     % Try to parse the assets
     % Build the asset tree of objects and lights
-    [trees, newWorld] = parseObjectInstanceText(thisR, thisR.world);
+    [trees, newWorld, infotxt] = parseObjectInstanceText(thisR, thisR.world);
+    info = addText(info,infotxt);
     thisR.world = newWorld;
 
     if exist('trees','var') && ~isempty(trees)
@@ -244,7 +252,7 @@ else
         % transform [...] / Translate/ rotate/ scale/
         % material ... / NamedMaterial
         % shape ...
-        disp('[INFO]: No tree returned by parseObjectInstanceText. recipe.assets is empty');
+        info = addText(info,'[INFO]: No tree returned by parseObjectInstanceText. recipe.assets is empty');
     end
 end
 

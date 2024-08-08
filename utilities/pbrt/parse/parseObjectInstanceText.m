@@ -1,8 +1,8 @@
-function [trees, newWorld] = parseObjectInstanceText(thisR, txt)
+function [trees, newWorld, infotxt] = parseObjectInstanceText(thisR, txt)
 % Parse the geometry objects accounting for object instances
 %
 % Synopsis
-%   [trees, newWorld] = parseObjectInstanceText(thisR, txt)
+%   [trees, newWorld, infotxt] = parseObjectInstanceText(thisR, txt)
 %
 % Brief description
 %   The txt is the world text from a PBRT file.  It is parsed into
@@ -22,6 +22,7 @@ function [trees, newWorld] = parseObjectInstanceText(thisR, txt)
 % Outputs
 %   trees    -  Assets in a tree format
 %   newWorld - Modified world text, after removing unnecessary lines.
+%   infotxt  - Text describing what was parsed
 %
 % See also
 %   parseGeometryText
@@ -30,6 +31,7 @@ function [trees, newWorld] = parseObjectInstanceText(thisR, txt)
 rootAsset = piAssetCreate('type', 'branch');
 rootAsset.name = 'root_B';
 trees = tree(rootAsset);
+infotxt = '';
 
 %% Identify the objects
 % This section might be placed in parseGeometryText.
@@ -46,7 +48,7 @@ objEndLocs   = find(contains(txt,'ObjectEnd'));
 % If there are objects, this block reads them and adds them to the
 % 'trees' variable.
 if ~isempty(objBeginLocs)
-    disp('[INFO]: Start Object processing.');
+    infotxt = addText(infotxt,sprintf('Start Object processing.\n'));
     for objIndex = 1:numel(objBeginLocs)
         
 
@@ -86,13 +88,11 @@ if ~isempty(objBeginLocs)
         % Remove the object lines we processed, creating an empty cell
         txt(objBeginLocs(objIndex):objEndLocs(objIndex)) = cell(objEndLocs(objIndex)-objBeginLocs(objIndex)+1,1);
         
-    end
-    
-    % We remove the empty cells which were created as we removed the
-    % objects.
-    
-    disp('[INFO]: Finished Object processing.');
+    end        
 end
+
+% We remove the empty cells which were created as we removed the
+% objects.
 txt = txt(~cellfun(@isempty,txt));
 
 % If we have any empty AttributeBegin/End blocks, remove them too.
@@ -128,8 +128,10 @@ end
 % processed and removed above. It does have AttributeBegin/End
 % sequences that we parse here, returning the subnodes of a tree.
 newWorld = txt_new(:);
-fprintf('[INFO]: Attribute processing: \n');
-[subnodes, parsedUntil] = parseGeometryText(thisR, 'txt',newWorld);
+infotxt = addText(infotxt, sprintf('Attribute processing: \n'));
+
+[subnodes, parsedUntil,info] = parseGeometryText(thisR, 'txt',newWorld);
+infotxt = addText(infotxt,info);
 
 %% We assign the returned subnodes to the tree
 
