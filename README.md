@@ -1,4 +1,4 @@
-# Welcome to ISET3d!
+# Welcome to ISET3d (tiny)!
 
 The tools in ISET3d extend ISETcam to provide a physically-accurate simulation (ray traced) rendering of 3D scenes.  The code returns a scene spectral radiance, or if you specify a lens, an optical image spectral irradiance, for a 3D scene.  The ray tracing is based on PBRT (Physically Based Ray Tracing).
 
