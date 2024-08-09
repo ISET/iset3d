@@ -1103,7 +1103,7 @@ switch param
         % thisR.set('skypmap',filename)
         % add a skymap by filename
         % See piDockerImgtool for creating skymaps
-        if isstruct(val) && strcmp(val.type,'skymap')
+        if isa(val,'IDBContent') && strcmp(val.type,'skymap')
             % use a database skymap
             skymapFileName = val.filepath;
         else

@@ -54,7 +54,6 @@ scene = piRender(thisR,'docker',thisDocker);
 sceneWindow(scene);
 
 %% Render a scene from data base
-
 % We expect people to include a recipe.mat file in the database.  We
 % do handle the case in which there is no recipe file.
 sceneName       = 'ChessSet';
@@ -68,24 +67,13 @@ thisScene = ourDB.contentFind('PBRTResources', 'name',sceneName, 'show',true);
 recipeDB = piRead(thisScene,'docker',thisDocker);
 
 recipeDB.set('spatial resolution',[512,512]);
-recipeDB.set('lights','all','delete');
 
-% A local skymap, which will be uploaded to the user's remote
-% directory.  (The path needs to be fixed).
-recipeDB.set('skymap','room.exr');
-
-% This writes the recipe.  We need to understand why the textures are
-% being written locally when we are using remote rendering.  Shouldn't
-% happen.
 piWrite(recipeDB);
-
 %
 scene = piRender(recipeDB,'docker',thisDocker);
 sceneWindow(scene);
 
-
-%% Change the skymap to a skymap in the database
-
+%% Add a database skymap to the scene
 %
 remoteSkymaps = ourDB.contentFind('PBRTResources','type','skymap', 'show',true);
 
@@ -94,39 +82,17 @@ recipeDB.set('light','all','delete');
 
 recipeDB.set('skymap',remoteSkymaps(1));
 
-scene = piWRS(recipeDB);
+piWRS(recipeDB);
+
+%% Add a local skymap to the scene
+recipeDB.set('lights','all','delete');
+
+recipeDB.set('skymap','room.exr');
+
+piWRS(recipeDB);
 
 %% Use a texture in the database
 
-
-%% Add a scene to the database, and render it remotely
-
-% Use the database.  We need a thisR.set('use db',true);
-%
-thisR.useDB = 1;
-remoteDBDir     = '/acorn/data/iset/PBRTResources/scene/ChessSet';
-remoteSceneFile = fullfile(remoteDBDir,'ChessSet.pbrt');
-recipeMATFile   = fullfile(localFolder,'ChessSet.mat');
-sceneName       = 'ChessSet';
-save(recipeMATFile,'thisR');
-
-% add info to the database.
-
-ourDB.contentCreate('collection Name',collectionName, ...
-    'type','scene', ...
-    'filepath',remoteDBDir,...
-    'name',sceneName,...
-    'category','indoor',...
-    'mainfile',[sceneName, '.pbrt'],...
-    'source','iset3d',...
-    'tags','',...
-    'size',piDirSizeGet(localFolder)/1024^2,... % MB
-    'format','pbrt');
-
-% upload files to the remote server
-thisDocker.upload(localFolder,remoteDBDir);
-% remove the mat file from local folder
-delete(recipeMATFile);
 
 %% END
 

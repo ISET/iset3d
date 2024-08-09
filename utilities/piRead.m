@@ -95,7 +95,7 @@ p = inputParser;
 info = '';
 
 % Parse the scene from server
-if isstruct(fname) && isfield(fname, 'hash')
+if isa(fname, 'IDBContent')
     p.addParameter('docker',[],@(x)(isa(x,'isetdocker'))); % isetdocker object
     p.parse(varargin{:});
     isetDocker = p.Results.docker;

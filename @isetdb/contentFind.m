@@ -1,4 +1,4 @@
-function documents = contentFind(obj, collection, varargin)
+function docIDBContent = contentFind(obj, collection, varargin)
 % Return documents stored in the ISETDB (mongo) database
 %
 
@@ -37,6 +37,7 @@ p.parse(obj,collection,varargin{:});
 
 %% Generate SHA256 hash for the content
 contentStruct = contentSet(p.Results);
+
 fieldNames = fieldnames(contentStruct);
 
 % Iterate over field names and remove fields with empty values
@@ -74,6 +75,9 @@ if p.Results.show
        disp(struct2table(documents));
    end
    disp('---------------------------------------------------------------');
+end
+for ii = 1:numel(documents)
+    docIDBContent(ii)=IDBContent(documents(ii));
 end
 
 end

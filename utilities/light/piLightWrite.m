@@ -240,7 +240,7 @@ for ii = 1:numel(thisR.lights)
                 else
                     % Handle case where skymap might be in a different directory and useDB flag is off
                     skymapDestination = fullfile(thisR.get('output dir'), 'skymaps', mapName);
-                    if ~exist(skymapDestination, 'file') || ~thisR.useDB
+                    if ~exist(skymapDestination, 'file') && ~thisR.useDB
                         % Attempt to find the skymap file in the skymaps directory
                         mapFile = fullfile(piDirGet('skymaps'), mapName);
                         if isfile(mapFile)
@@ -250,12 +250,18 @@ for ii = 1:numel(thisR.lights)
                         end
                     end
                 end
-
-                % Handle remote file path replacement for Docker preferences and database use
-                if ~isempty(getpref('ISETDocker', 'remoteHost')) && thisR.useDB && ~strncmpi(mapNamePath, '/', 1)
-                    remoteFolder = fileparts(thisR.inputFile);
-                    mapNameFullpath = fullfile(remoteFolder, mapNamePath);
-                    mapnameTxt = strrep(mapnameTxt, mapNamePath, mapNameFullpath);
+                
+                % If the skymap is in users local scene folder, we do not
+                % give the server full path to it, it might be a local
+                % skymap added by the user.
+          
+                if ~exist(fullfile(thisR.get('output dir'),'skymaps',mapName),'file')
+                    % Handle remote file path replacement for Docker preferences and database use
+                    if ~isempty(getpref('ISETDocker', 'remoteHost')) && thisR.useDB && ~strncmpi(mapNamePath, '/', 1)
+                        remoteFolder = fileparts(thisR.inputFile);
+                        mapNameFullpath = fullfile(remoteFolder, mapNamePath);
+                        mapnameTxt = strrep(mapnameTxt, mapNamePath, mapNameFullpath);
+                    end
                 end
 
                 % Append the updated mapname text to the light definition
