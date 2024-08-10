@@ -15,7 +15,7 @@ ourDB = isetdb();
 % scenes: Contains individual scene files which may include all
 %         the necessary data (like assets, lighting, and camera information) 
 %         to render a complete environment or image. 
-
+%
 % bsdfs: Stands for Bidirectional Scattering Distribution Functions; likely
 %        contains data or scripts related to the way light interacts with 
 %        surfaces within a scene. 
@@ -169,6 +169,5 @@ for ii = 1:numel(skymaps) % first one is '@eaDir'
 end
 remoteSkymaps = ourDB.contentFind('PBRTResources','type','skymap', 'show',true);
 
-
-
+%%
 

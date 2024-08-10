@@ -1,26 +1,30 @@
+%% Showing how to change 
+%
+% Renders a
+% 
+% * local scene (slantedBar.pbrt) from the repository, and 
+% * database scene (ChessSet.pbrt) on acorn
+%
+% Shows how to change the skymap using both local and remote skymap
+% data.
+%
+% See also
+%
+
 %%
-ieInit; clear ISETdb;
+ieInit; 
+clear ISETdb;
 piDockerConfig;
+
 % set up connection to the database, it's 49153 if we are in Stanford
 % Network. 
 % Question: 
 %   1. How to figure out the port number if we are not.
 %   2. What if the data is not on acorn?
 
-%%
-% docker for rendering scenes 
+%% Create a docker class we will use to render the scenes 
+
 thisDocker = isetdocker();
-
-% Always this weird number for Stanford and acorn.
-% The database is on acorn and accessible via that port.
-setpref('db','port',49153);
-ourDB = isetdb;
-
-% if ~isopen(ourDB.connection),error('No connection to database.');end
-
-% Zhenyi uses this one.  Maybe we will rename to iset3d-tiny or iset3d
-% or something.
-collectionName = 'PBRTResources'; % ourDB.collectionCreate(colName);
 
 %% Render local scene with remote PBRT
 
@@ -34,10 +38,11 @@ collectionName = 'PBRTResources'; % ourDB.collectionCreate(colName);
 % getpref('ISETDocker') % set up by isetdocker.setUserPrefs()
 
 % The local folder can can contain any PBRT scene
-localFolder = '/Users/zhenyi/git_repo/dev/iset3d/data/scenes/slantedEdge';
-% localFolder = '/Users/wandell/Documents/MATLAB/iset3d-v4/data/scenes/slantedEdge';
+pbrtFile = which('slantedEdge.pbrt');
 
-pbrtFile = fullfile(localFolder, 'slantedEdge.pbrt');
+% localFolder = '/Users/zhenyi/git_repo/dev/iset3d/data/scenes/slantedEdge';
+% localFolder = '/Users/wandell/Documents/MATLAB/iset3d-v4/data/scenes/slantedEdge';
+% pbrtFile = fullfile(localFolder, 'slantedEdge.pbrt');
 thisR = piRead(pbrtFile);
 
 % Edit for a while.
@@ -54,9 +59,20 @@ scene = piRender(thisR,'docker',thisDocker);
 sceneWindow(scene);
 
 %% Render a scene from data base
-% We expect people to include a recipe.mat file in the database.  We
-% do handle the case in which there is no recipe file.
+
+% We a recipe.mat file in the database.  We do handle the case in
+% which there is no recipe file.
 sceneName       = 'ChessSet';
+
+% Always this weird number for Stanford and acorn.
+% The database is on acorn and accessible via that port.
+if isequal(getpref('db','port'),49153)
+else, setpref('db','port',49153); end
+
+% Zhenyi uses this mongoDB.  Maybe we will rename to iset3d-tiny or
+% iset3d or something.
+ourDB = isetdb;
+collectionName = 'PBRTResources'; % ourDB.collectionCreate(colName);
 
 % Returns a struct from the database defining properties of the scene.
 thisScene = ourDB.contentFind('PBRTResources', 'name',sceneName, 'show',true);
@@ -69,7 +85,7 @@ recipeDB = piRead(thisScene,'docker',thisDocker);
 recipeDB.set('spatial resolution',[512,512]);
 
 piWrite(recipeDB);
-%
+
 scene = piRender(recipeDB,'docker',thisDocker);
 sceneWindow(scene);
 
