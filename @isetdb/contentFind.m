@@ -63,9 +63,10 @@ end
 
 if p.Results.show
    disp('---------------------------------------------------------------');
+   fprintf('[INFO]: %d items are found.\n',numel(documents));
    if numel(documents) == 1
         disp(struct2table(documents,'AsArray',true));
-   elseif numel(documents)>50
+   elseif numel(documents)>20
         disp('[INFO]: Number of requested items is larger than 20, showing only the first 20 here.')
         disp(struct2table(documents(1:20)));
    elseif isempty(documents)

@@ -1797,6 +1797,9 @@ switch param
                     thisR.metadata.illuminanceRecipe = illumR;
             end
         end
+
+    case {'usedb'}
+        thisR.useDB = val;
     otherwise
         error('Unknown parameter %s\n',param);
 end

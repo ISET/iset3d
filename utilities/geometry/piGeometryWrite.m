@@ -592,7 +592,7 @@ for nMat = 1:numel(thisNode.material)
                     thisShape.filename = fullfile(remoteFolder,thisShape.filename);
                     shapeText = piShape2Text(thisShape);
                 elseif contains(thisShape.filename, '.pbrt')
-                    pbrtName = fullfile(remoteFolder,pbrtName);
+                    thisShape.filename = fullfile(remoteFolder,thisShape.filename);
                 end
             end
             % Write out the PBRT text line for this shape (edited)

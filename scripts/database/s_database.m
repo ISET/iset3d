@@ -94,11 +94,13 @@ sceneWindow(scene);
 remoteSkymaps = ourDB.contentFind('PBRTResources','type','skymap', 'show',true);
 
 % need a function to remove skymap using type rather than name.
+for ii = 1:numel(remoteSkymaps)
 recipeDB.set('light','all','delete');
 
-recipeDB.set('skymap',remoteSkymaps(1));
+recipeDB.set('skymap',remoteSkymaps(ii));
 
 piWRS(recipeDB);
+end
 
 %% Add a local skymap to the scene
 recipeDB.set('lights','all','delete');
