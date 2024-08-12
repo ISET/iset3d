@@ -1,18 +1,21 @@
 classdef isetdocker < handle
-    % isetdocker creates a new docker for remote execution.
+    % Creates a new docker environment for remote execution.
     %
-    % It relies on the ISETDocker parameters stored in Matlab
+    % Isetdocker relies on parameters stored in Matlab
+    %
     % getpref('ISETDocker')
     %
-    % These can be set the first time by running
+    % The ISETDocker parameters can be initialized, or changed, by
+    % running
     %
     %   thisDocker = isetdocker;
     %   thisDocker.setUserPrefs;
     %
     % You will be asked a set of questions.  Answer them, and your
-    % info will be updated.    
+    % info Matlab prefs will be updated.    
     %
-    %
+    % See also
+    %  
     properties (GetAccess=public, SetAccess = public)
         % common
         name = 'ISET Docker Controls'

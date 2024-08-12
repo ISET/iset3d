@@ -1,12 +1,17 @@
-%% Showing how to change 
+%% Rendering a local and an database scene
 %
-% Renders a
+% Renders
 % 
-% * local scene (slantedBar.pbrt) from the repository, and 
-% * database scene (ChessSet.pbrt) on acorn
+%  * a local scene (slantedBar.pbrt), and 
+%  * an acorn database scene (ChessSet.pbrt)
 %
-% Shows how to change the skymap using both local and remote skymap
+% Also shows how to change the skymap using both local and remote skymap
 % data.
+%
+% Make sure you have configured your computer for remote rendering.
+% For instructions, see
+%
+%   doc isetdocker
 %
 % See also
 %
@@ -26,11 +31,11 @@ piDockerConfig;
 
 thisDocker = isetdocker();
 
-%% Render local scene with remote PBRT
+%% Remotely render a local scene
 
 % Make sure you have configured your computer according to this:
 %
-%       https://github.com/ISET/iset3d/wiki/Remote-Rendering-with-PBRT-v4
+%   https://github.com/ISET/iset3d/wiki/Remote-Rendering-with-PBRT-v4
 %
 % See /iset3d/tutorials/remote/s_remoteSet.m for remote server
 % configuration
@@ -64,53 +69,58 @@ sceneWindow(scene);
 % which there is no recipe file.
 sceneName       = 'ChessSet';
 
-% Always this weird number for Stanford and acorn.
 % The database is on acorn and accessible via that port.
 if isequal(getpref('db','port'),49153)
 else, setpref('db','port',49153); end
 
-% Zhenyi uses this mongoDB.  Maybe we will rename to iset3d-tiny or
-% iset3d or something.
-ourDB = isetdb;
+% isetdb opens a connection to the MongoDB on acron.
+%
+% Zhenyi implemented a mongoDB collection.  We might rename in the
+% future.
+pbrtDB = isetdb;
 collectionName = 'PBRTResources'; % ourDB.collectionCreate(colName);
 
 % Returns a struct from the database defining properties of the scene.
-thisScene = ourDB.contentFind('PBRTResources', 'name',sceneName, 'show',true);
+thisScene = pbrtDB.contentFind('PBRTResources', 'name',sceneName, 'show',true);
 
 % The scenes in this database have a recipe.mat.  The input file is on
 % acorn.  The docker has the information about the host, username, and
 % directories to find the recipe.
-recipeDB = piRead(thisScene,'docker',thisDocker);
+thisR = piRead(thisScene,'docker',thisDocker);
 
-recipeDB.set('spatial resolution',[512,512]);
+thisR.set('spatial resolution',[512,512]);
 
-piWrite(recipeDB);
+piWrite(thisR);
 
-scene = piRender(recipeDB,'docker',thisDocker);
+scene = piRender(thisR,'docker',thisDocker);
 sceneWindow(scene);
 
 %% Add a database skymap to the scene
-%
-remoteSkymaps = ourDB.contentFind('PBRTResources','type','skymap', 'show',true);
 
-% need a function to remove skymap using type rather than name.
-for ii = 1:numel(remoteSkymaps)
-recipeDB.set('light','all','delete');
 
-recipeDB.set('skymap',remoteSkymaps(ii));
+% There are a lot of remote skymaps stored
+remoteSkymaps = pbrtDB.contentFind('PBRTResources','type','skymap', 'show',true);
 
-piWRS(recipeDB);
-end
+% Need a function to remove skymap using type rather than name.
+thisR.set('light','all','delete');
+
+% Use the remote skymap
+thisR.set('skymap',remoteSkymaps(30));
+
+piWRS(thisR);
 
 %% Add a local skymap to the scene
-recipeDB.set('lights','all','delete');
 
-recipeDB.set('skymap','room.exr');
+thisR.set('lights','all','delete');
 
-piWRS(recipeDB);
+% Now use the local skymap
+thisR.set('skymap','room.exr');
 
-%% Use a texture in the database
+piWRS(thisR);
 
+%%
+
+thisR.summarize;
 
 %% END
 
