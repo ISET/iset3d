@@ -296,14 +296,28 @@ classdef tree
         function t = show(obj)
             % Bring up a uifigure with collapsible tree
             windowName = strcat('Assets Collection',':', datestr(datetime('now')));
-            fig = uifigure('Name',windowName, 'Tag','assetsUI');
+
+            % Check if the window already exists
+            existingFig = findall(groot, 'Type', 'figure', 'Tag', 'assetsUI');
+
+            if isempty(existingFig)
+                % Create a new uifigure if it doesn't exist
+                fig = uifigure('Name', windowName, 'Tag', 'assetsUI');
+            else
+                % Use the existing figure
+                fig = existingFig;
+                fig.Name = windowName; % Update the window name
+                figure(fig); % Bring the existing figure to the front
+                clf(fig); % Clear existing content
+            end
+
             t = uitree(fig,'Position',[80 10 400 400],'SelectionChangedFcn',@getNodeData);
-            
+
             % First level nodes
             assets = uitreenode(t,'Text','Assets','NodeData',[]);
             root = 1;
             createAssetsTree(assets, obj, 1);
-            
+
             % collapse by default
             expand(t);
             
