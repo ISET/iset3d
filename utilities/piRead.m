@@ -99,6 +99,7 @@ if isa(fname, 'IDBContent')
     p.addParameter('docker',[],@(x)(isa(x,'isetdocker'))); % isetdocker object
     p.parse(varargin{:});
     isetDocker = p.Results.docker;
+    if isempty(isetDocker), isetDocker = isetdocker();end
     remoteFile = strrep(fname.mainfile,'.pbrt','.mat');
     localDir   = fullfile(piRootPath,'local',[fname.name]);
     cd(isetDocker.sftpSession,fname.filepath);
