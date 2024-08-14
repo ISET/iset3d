@@ -244,15 +244,23 @@ switch ieParamFormat(sceneDir)
     case 'kitchen'
         sceneDir = 'kitchen';
         sceneFile = 'kitchen.pbrt';
-        % exporter = 'Copy';
-        exporter = 'PARSE';  % Worked in dev-resources on March 27, 2023
+        exporter = 'Copy';
+        % exporter = 'PARSE';  % Worked in dev-resources on March 27, 2023
     case {'landscape'}
+        % Not working perhaps because the pointers to the exr files
+        % are in another directory.
         sceneDir = 'landscape';
         if isempty(sceneFile)
             sceneFile = 'view-0.pbrt';
         end
-        % exporter = 'Copy';
-        exporter = 'PARSE';
+        exporter = 'Copy';
+    case {'staircase2'}
+        sceneDir = 'staircase2';
+        if isempty(sceneFile)
+            sceneFile = 'scene-v4.pbrt';
+        end
+        exporter = 'Copy';
+        % exporter = 'PARSE';  % Very slow and no useful.
     case {'bistro'}
         % Downloaded from the computer, cardinal, put in data/scenes/web
         % Other versions of this scene are
