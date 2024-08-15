@@ -218,7 +218,11 @@ for ii = 1:numel(thisR.lights)
             else
                 % Retrieve filename and pbrt text for thisLight, assuming 'true' specifies detailed retrieval
                 [mapNamePath, mapnameTxt] = piLightGet(thisLight, 'filename val', 'pbrt text', true);
-
+                if contains(mapNamePath,getpref('ISETDocker','PBRTResources'))
+                    useRemoteSkymap = 1;
+                else
+                    useRemoteSkymap = 0;
+                end
                 % Define the directory path for skymaps
                 skymapDir = fullfile(thisR.get('output dir'), 'skymaps');
                 % Create the skymap directory if it doesn't already exist
@@ -229,24 +233,26 @@ for ii = 1:numel(thisR.lights)
                 mapName = [fileName, ext]; % Combine filename and extension
 
                 % Check if the skymap file exists in the output directory
-                if exist(fullfile(thisR.get('output dir'), mapNamePath), 'file')
-                    % Copy the file to skymap directory if it doesn't exist there
-                    destinationFile = fullfile(skymapDir, mapName);
-                    if ~exist(destinationFile, "file")
-                        copyfile(fullfile(thisR.get('output dir'), mapNamePath), skymapDir);
-                    end
-                    % Update mapnameTxt to reflect the new location
-                    mapnameTxt = sprintf(' "string filename" "skymaps/%s"', mapName);
-                else
-                    % Handle case where skymap might be in a different directory and useDB flag is off
-                    skymapDestination = fullfile(thisR.get('output dir'), 'skymaps', mapName);
-                    if ~exist(skymapDestination, 'file') && ~thisR.useDB
-                        % Attempt to find the skymap file in the skymaps directory
-                        mapFile = fullfile(piDirGet('skymaps'), mapName);
-                        if isfile(mapFile)
-                            copyfile(mapFile, skymapDir);
-                        else
-                            error('Skymap not found: %s\n', mapFile);
+                if ~(thisR.useDB || useRemoteSkymap)
+                    if exist(fullfile(thisR.get('output dir'), mapNamePath), 'file')
+                        % Copy the file to skymap directory if it doesn't exist there
+                        destinationFile = fullfile(skymapDir, mapName);
+                        if ~exist(destinationFile, "file")
+                            copyfile(fullfile(thisR.get('output dir'), mapNamePath), skymapDir);
+                        end
+                        % Update mapnameTxt to reflect the new location
+                        mapnameTxt = sprintf(' "string filename" "skymaps/%s"', mapName);
+                    else
+                        % Handle case where skymap might be in a different directory and useDB flag is off
+                        skymapDestination = fullfile(thisR.get('output dir'), 'skymaps', mapName);
+                        if ~exist(skymapDestination, 'file')
+                            % Attempt to find the skymap file in the skymaps directory
+                            mapFile = fullfile(piDirGet('skymaps'), mapName);
+                            if isfile(mapFile)
+                                copyfile(mapFile, skymapDir);
+                            else
+                                error('Skymap not found: %s\n', mapFile);
+                            end
                         end
                     end
                 end
