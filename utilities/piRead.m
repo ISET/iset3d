@@ -114,8 +114,8 @@ if isa(fname, 'IDBContent')
 end
 
 p.addRequired('fname', @(x)(exist(fname,'file')));
-validExporters = {'Copy','PARSE'};
-p.addParameter('exporter', 'PARSE', @(x)(ismember(x,validExporters)));
+validExporters = {'copy','parse'};
+p.addParameter('exporter', 'parse', @(x)(ismember(lower(x),validExporters)));
 
 % We use meters in PBRT, assimp uses centimeter as base unit
 % Blender scene has a scale factor equals to 100.
@@ -181,7 +181,7 @@ pbrtOptions = piReadWorldText(thisR, txtLines);
 piReadOptions(thisR,pbrtOptions);
 
 %% Read Materials and Textures
-if ~strcmpi(exporter, 'Copy')
+if ~strcmpi(exporter, 'copy')
     %% Insert the text from the Include files
 
     % These are usually _geometry.pbrt and _materials.pbrt.  At this
@@ -211,7 +211,7 @@ if ~strcmpi(exporter, 'Copy')
 end
 %% Decide whether to Copy or Parse to get the asset tree filled up
 
-if strcmpi(exporter, 'Copy')
+if strcmpi(exporter, 'copy')
     % On Copy we copy the assets, we do not parse them.
     % It would be best if we could always parse the objects.
 else
