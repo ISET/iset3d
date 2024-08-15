@@ -699,7 +699,7 @@ switch param
     case 'nmicrolens'
         % Number of microlens/pinhole samples for a light field camera
         %
-        if length(val) == 1, val(2) = val(1); end
+        if isscalar(val), val(2) = val(1); end
         thisR.camera.num_pinholes_h.value = val(1);
         thisR.camera.num_pinholes_h.type = 'float';
         thisR.camera.num_pinholes_w.value = val(2);
@@ -767,7 +767,7 @@ switch param
         % Number of spatial samples on the film (or retinal) surface. The
         % number of samples may be spread over larger or smaller field of
         % view.
-        if length(val) == 1, val(2) = val(1); end
+        if isscalar(val), val(2) = val(1); end
         thisR.film.xresolution.value = val(1);
         thisR.film.yresolution.value = val(2);
         thisR.film.xresolution.type = 'integer';
@@ -1459,7 +1459,7 @@ switch param
         end
         param = varargin{1};
         % If only one element in varargin, it should be a node struct.
-        if numel(varargin) == 1 && ~ischar(varargin{1})
+        if isscalar(varargin) && ~ischar(varargin{1})
             thisR.assets = thisR.assets.set(id, varargin{1});
             out = varargin{1};
             thisR.assets = thisR.assets.uniqueNames;
