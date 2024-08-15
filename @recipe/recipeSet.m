@@ -1158,29 +1158,42 @@ switch param
         end
         % Create a sky light with default params.
         [~, f, ~] = fileparts(skymapFileName);
-
+        
         lName = f; % in case we want to get fancy later
         envLight = piLightCreate(lName, ...
             'type', 'infinite',...
             'filename', skymapFileName);
-        thisR.set('lights', envLight, 'add');
-
-        if ~isempty(varargin) && isequal(varargin{1},'rotation val')
-            thisR.set('light', lName, 'rotate', varargin{2});
+        % In case we dont parse the scene
+        if strcmpi(thisR.exporter,'copy')
+            thisR.lights{1} = envLight; % tmp
+            lightTxt = piLightWrite(thisR);
+            % Add a new skymap or replace the exisiting one
+            location = find(contains(thisR.world,{'LightSource "infinite"'}));
+            if ~isempty(location)
+                thisR.world{location}=lightTxt{1}.line{2};
+            else
+                thisR.world{end+1} = lightTxt{1}.line{2};
+            end            
+            thisR.lights = []; % empty it
         else
-            % For V4 we do not usually need the -90 rotation as we did
-            % for V3. For V4 the 'up' direction seems to mainly be
-            % z-up. But scenes where it is y-up, we need the rotation.
-            % (Check with Zhenyi).
-            up = thisR.get('up');
-            if up(2) > up(3)
-                % This is a y-up recipe, so by default we rotate the skypmap
-                thisR.set('light', lName, 'rotate', [-90 0 0]);
+            thisR.set('lights', envLight, 'add');
+
+            if ~isempty(varargin) && isequal(varargin{1},'rotation val')
+                thisR.set('light', lName, 'rotate', varargin{2});
+            else
+                % For V4 we do not usually need the -90 rotation as we did
+                % for V3. For V4 the 'up' direction seems to mainly be
+                % z-up. But scenes where it is y-up, we need the rotation.
+                % (Check with Zhenyi).
+                up = thisR.get('up');
+                if up(2) > up(3)
+                    % This is a y-up recipe, so by default we rotate the skypmap
+                    thisR.set('light', lName, 'rotate', [-90 0 0]);
+                end
             end
         end
-
         out = envLight;
-
+        
     case {'light', 'lights'}
         % Calling convention
         %
