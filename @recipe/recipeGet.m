@@ -1961,7 +1961,7 @@ switch ieParamFormat(param)  % lower case, no spaces
                             % Sometimes the shape is a string?  Like
                             % 'Sphere'?
                             warning('Object %d has no shape.',id);
-                        elseif ~isempty(theShape.point3p)
+                        elseif isfield(theShape,'point3p') && ~isempty(theShape.point3p)
                             pts = theShape.point3p;
                             val(1) = (max(pts(1:3:end))-min(pts(1:3:end)))*thisScale(1);
                             val(2) = (max(pts(2:3:end))-min(pts(2:3:end)))*thisScale(2);
@@ -1988,8 +1988,9 @@ switch ieParamFormat(param)  % lower case, no spaces
                                 fprintf('%s - size from PBRT not yet implemented.\n',theShape.filename)
                                 % We have some cases, like for chess set.
                             end
-                        end
-                        % I suppose?
+                        else
+                            warning('Problem parsing theShape and thus determining the size.');
+                        end                        
                     else
                         warning('Only objects have a size');
                     end

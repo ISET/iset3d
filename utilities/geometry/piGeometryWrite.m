@@ -1,5 +1,5 @@
 function  piGeometryWrite(thisR,varargin)
-% Write out a geometry file that matches the format and labeling objects
+% Write out a geometry file that matches the PBRT syntax
 %
 % Synopsis
 %   piGeometryWrite(thisR,varargin)
@@ -9,6 +9,7 @@ function  piGeometryWrite(thisR,varargin)
 %   obj:   Returned by piGeometryRead, contains information about objects.
 %
 % Optional key/value pairs
+%   None
 %
 % Output:
 %   None
@@ -41,7 +42,7 @@ p.parse(thisR,varargin{:});
 fname = fullfile(Filepath,sprintf('%s_geometry.pbrt',scene_fname));[~,n,e]=fileparts(fname);
 
 % Get the assets from the recipe
-obj = thisR.assets;
+assetTree = thisR.assets;
 
 %% Write the geometry file...
 
@@ -58,23 +59,22 @@ rootID = 1;
 % the arguments to recursiveWriteXXXX
 %
 
-% Write object and light definitions in the main geometry
+% Recursively write asset and light definitions in the main geometry
 % and any needed child geometry files
-if ~isempty(obj)
+if ~isempty(assetTree)
 
-    % This code seems to do nothing unless we are processing
-    % instances. If there are no instances, nothing gets written.  If
-    % there are instances, we seem to write out some information about
-    % the branch defining the geometry for this instance.
-    recursiveWriteNode(fid_obj, obj, rootID, Filepath, thisR.outputFile, thisR);
+    % If there are no instances, nothing gets written.  If there are
+    % instances, we seem to write out some information about the
+    % branch defining the geometry for this instance.
+    recursiveWriteNode(fid_obj, assetTree, rootID, Filepath, thisR.outputFile, thisR);
 
     % Write the geometry from the tree structure in the geometry file
     % for all of the assets, including objects and lights.
     lvl = 0;
     writeGeometryFlag = 0;
-    recursiveWriteAttributes(fid_obj, obj, rootID, lvl, thisR.outputFile, writeGeometryFlag, thisR);
+    recursiveWriteAttributes(fid_obj, assetTree, rootID, lvl, thisR.outputFile, writeGeometryFlag, thisR);
 else
-    % if the tree object is empty, copy the world slot into the geometry
+    % if the asset tree is empty, copy the world slot into the geometry
     % file.
     for ii = numel(thisR.world)
         fprintf(fid_obj, thisR.world{ii});
@@ -89,25 +89,30 @@ end
 %% ---------  Geometry file writing helpers
 
 %% Recursively write nodes
-function recursiveWriteNode(fid, obj, nodeID, rootPath, outFilePath, thisR)
-% Manages the special case of instances.
+function recursiveWriteNode(fid, assetTree, nodeID, rootPath, outFilePath, thisR)
+% Recursively classify and write the nodes of the assetTree
+% 
+% It does the recursion for the nodeID. This method manages the
+% special case of instances.
 %
 % The main work writing out the geometry file is done by
-% recursiveWriteAttributes (below).  This one is specialized for
-% writing out nodes that are instances of a main node written out by
-% recursiveWriteAttributes.
+% recursiveWriteAttributes (below).  
 %
-% fid - Open file pointer for the geometry file
-% obj - A tree structure that contains the scene information,
-%       including objects and lights and the geometry branches for
-%       those assets
-% nodeID   - The node in the tree (an integer)
-% rootPath -
-% outFilePath - Shouldn't this be irrelevant given that we have the
+% Inputs
+%  fid - Open file pointer to the geometry file
+%  assetTree - A tree structure that contains the scene information,
+%             including objects and lights and the geometry branches for
+%            those assets
+%  nodeID   - The node in the tree (an integer)
+%  rootPath -
+%  outFilePath - Shouldn't this be irrelevant given that we have the
 %               fid?
-% thisR  - The recipe for rendering the scene
+%  thisR  - The recipe for rendering the scene
+%
+%
 %
 % Define each object in geometry.pbrt file. This section writes out
+%
 % (1) Material for every object
 % (2) path to each child geometry file
 %     which store the shape and other geometry info.
@@ -120,7 +125,7 @@ function recursiveWriteNode(fid, obj, nodeID, rootPath, outFilePath, thisR)
 %       recursively checked in the next level of our traverse.
 
 %% Get children of the current Node (thisNode)
-children = obj.getchildren(nodeID);
+children = assetTree.getchildren(nodeID);
 
 %% Loop through all children of our current node (thisNode)
 % If 'object' node, write out. If 'branch' node, put in the list
@@ -133,17 +138,14 @@ nodeList = [];
 for ii = 1:numel(children)
 
     % set our current node to each of the child nodes
-    thisNode = obj.get(children(ii));
+    thisNode = assetTree.get(children(ii));
 
-    % The nodes can be a branch, object, light, marker, or instance
-    %
-
+    % The nodes can be a branch, object, light, marker, or instance.
+    % We only process our way down branches. 
     if isequal(thisNode.type, 'branch')
         % If a branch, put id in the nodeList
 
-        % It would be much better to pre-allocate if possible.  For speed
-        % with scenes and many assets. Ask Zhenyi Liu how he wants to
-        % handle this (BW)
+        % We add the node to the nodeList
         nodeList = [nodeList children(ii)]; %#ok<AGROW>
 
         % do not write object instance repeatedly
@@ -193,13 +195,15 @@ for ii = 1:numel(children)
                         end
                     end
                 end
+
                 lvl = 1;
                 writeGeometryFlag = 1;
-                recursiveWriteAttributes(fid, obj, children(ii), lvl, outFilePath, writeGeometryFlag, thisR);
+                recursiveWriteAttributes(fid, assetTree, children(ii), lvl, outFilePath, writeGeometryFlag, thisR);
                 fprintf(fid, 'ObjectEnd\n\n');
                 % nodeID == 1 is rootID.
                 if nodeID ~=1, return; end
             end
+            
         end
 
         % Define object node
@@ -215,7 +219,7 @@ end
 
 % We've built up a list of branch nodes. Loop through them.
 for ii = 1:numel(nodeList)
-    recursiveWriteNode(fid, obj, nodeList(ii), rootPath, outFilePath);
+    recursiveWriteNode(fid, assetTree, nodeList(ii), rootPath, outFilePath);
 end
 
 end

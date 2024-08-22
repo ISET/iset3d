@@ -97,8 +97,8 @@ for ii=1:numel(textureParams)
             texturePathTmp = 'textures';
             if ~isempty(texturePath) && exist(thisVal,'file')
                 if ~exist(fullfile(oDir,'textures',[n,e]),'file')
-                    fullpathTex = dir(thisVal);
-                    copyfile(fullfile(fullpathTex.folder, fullpathTex.name), ...
+                    fullpathTex = which(thisVal);
+                    copyfile(fullpathTex, ...
                         fullfile(oDir,'textures'));
                 end
                 texturePathTmp = texturePath;

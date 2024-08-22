@@ -1,4 +1,18 @@
 classdef isetdocker < handle
+    % isetdocker creates a new docker for remote execution.
+    %
+    % It relies on the ISETDocker parameters stored in Matlab
+    % getpref('ISETDocker')
+    %
+    % These can be set the first time by running
+    %
+    %   thisDocker = isetdocker;
+    %   thisDocker.setUserPrefs;
+    %
+    % You will be asked a set of questions.  Answer them, and your
+    % info will be updated.    
+    %
+    %
     properties (GetAccess=public, SetAccess = public)
         % common
         name = 'ISET Docker Controls'
@@ -61,7 +75,12 @@ classdef isetdocker < handle
             args = p.Results;
 
             if ~isempty(args.preset)
-                obj.preset(args.preset);
+                validPreset = obj.preset(args.preset);
+                if validPreset == false && isequal(args.preset, 'help')
+                    return; % user just wants info
+                elseif validPreset == false
+                    error("Invalid preset selected. Exiting.");
+                end
             end
 
             % Check and set 'device' preference
@@ -266,6 +285,8 @@ classdef isetdocker < handle
             if strcmpi(obj.device, 'gpu')
                 % want: --gpus '"device=#"'
                 gpuString = sprintf(' --gpus device=%s ',num2str(obj.deviceID));
+            elseif strcmpi(obj.device, 'cpu')
+                gpuString = ' ';
             else
                 gpuString = sprintf(' --gpus device=%s ',num2str(0));
             end

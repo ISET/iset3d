@@ -4,7 +4,6 @@ function [ip,sensor] = piRadiance2RGB(radiance,varargin)
 % Syntax
 %    [ip,sensor] = piRadiance2RGB(radiance,varargin)
 %
-%
 % Description
 %   After we simulate a scene with ISET3d, we have the radiance
 %   (scene) or irradiance data (oi). This function creates a sensor
@@ -12,7 +11,7 @@ function [ip,sensor] = piRadiance2RGB(radiance,varargin)
 %   level.
 %
 % Input
-%   scene or oi - This generally has metadata attached to it.
+%   radiance - Either a scene or oi, usually with some metadata.
 %
 % Optional key/value pairs
 %   sensor        - File name containing the sensor, or a sensor.
@@ -38,28 +37,33 @@ p.addRequired('radiance',@isstruct);
 p.addParameter('sensor','',@ischar);   % A file name
 p.addParameter('pixelsize',[],@isscalar); % um
 p.addParameter('filmdiagonal',5,@isscalar); % [mm]
-p.addParameter('etime',1/100,@isscalar); % 
+p.addParameter('etime',[],@isscalar); % 
 p.addParameter('noiseflag',2,@isscalar);
+p.addParameter('conversiongain',[],@isscalar);
 p.addParameter('analoggain',1);
+p.addParameter('quantization','12 bit',@ischar);  % 12bit, 10bit, 8bit, analog
 
 p.parse(radiance,varargin{:});
 radiance     = p.Results.radiance;
 sensorName   = p.Results.sensor;
 pixelSize    = p.Results.pixelsize;
-% filmDiagonal = p.Results.filmdiagonal;
 eTime        = p.Results.etime;
 noiseFlag    = p.Results.noiseflag;
 analoggain   = p.Results.analoggain;
+% converGain   = p.Results.conversiongain;
+
 %% scene to optical image
 
-if strcmp(radiance.type,'scene')
-    % What oi parameters are in here?
-    oi = piOICreate(radiance.data.photons);
-elseif ~strcmp(radiance.type,'opticalimage')
-    error('Input should be a scene or optical image');
+if isfield(radiance,'type')
+    if strcmp(radiance.type,'scene')
+        % Convert the scene data to oi data
+        oi = piOICreate(radiance.data.photons);
+    elseif strcmp(radiance.type,'opticalimage')
+        % Typical calculation this way.
+        oi = radiance;
+    end
 else
-    % The usual compute path is through here
-    oi = radiance;
+    error('Input should be a scene or optical image');
 end
 
 % Below, we set the pixel size for a 1-1 match to the oi spatial
@@ -76,7 +80,7 @@ if isempty(sensorName), sensor = sensorCreate;
     darkvoltage = 2e-3;
     [electrons,~] = iePixelWellCapacity(pixelSize);  % Microns
     converGain = 1/electrons;         % voltage swing/electrons
-    %
+    
     sensor = sensorSet(sensor,'pixel read noise volts',readnoise);
     sensor = sensorSet(sensor,'pixel voltage swing',1);
     sensor = sensorSet(sensor,'pixel dark voltage',darkvoltage);
@@ -93,25 +97,23 @@ elseif isfield(sensorName,'type') && isequal(sensorName.type,'sensor')
     sensor = sensorName;
 end
 
-% This sensorSet replaces the code below.
+% Make the sensor pixel size match the oi sample spacing.  The OI is
+% computed with a specific size to match some sensor, usually.
 sensor = sensorSet(sensor,'match oi',oi);
-
-%{
-% Match sensor and oi spatial sampling.
-oiSize = oiGet(oi,'size');
-samplespace_oi = oiGet(oi,'width spatial resolution','microns');
-if pixelSize == samplespace_oi
-    sensor = sensorSet(sensor, 'size', oiSize);
-else
-    sensor = sensorSet(sensor, 'size', oiSize*(samplespace_oi/pixelSize));
-end
-% sensor = sensorSetSizeToFOV(sensor, oi.wAngular, oi);
-%}
 
 %% Compute
 
-% eTime  = autoExposure(oi,sensor,0.90,'weighted','center rect',rect);
+% This is a special autoExposure method.  It should go into autoExposure
+size = oiGet(oi,'size');
+zones = getImageZones(size(1), size(2),7,7);
+if isempty(eTime)
+    for zz = [11,17,19,21,23,25,27,29,39]
+        eTime(zz)  = autoExposure(oi,sensor,0.95,'weighted','center rect',round(zones(zz,:)));
+    end
+    eTime = (mean(eTime));
+end
 sensor = sensorSet(sensor,'exp time',eTime);
+
 sensor = sensorSet(sensor,'noise flag',noiseFlag); % see sensorSet for more detail
 
 sensor = sensorCompute(sensor,oi);
@@ -120,6 +122,7 @@ fprintf('eT: %f ms \n',eTime*1e3);
 % sensorWindow(sensor);
 
 %% Copy metadata
+
 % if isfield(oi,'metadata')
 %     if ~isempty(oi.metadata)
 %      sensor.metadata          = oi.metadata;
@@ -134,6 +137,7 @@ fprintf('eT: %f ms \n',eTime*1e3);
 %% Sensor to IP
 CFAs = sensor.color.filterNames;
 if numel(CFAs)>3
+    disp('We only calculate the ip for 3 color channel case.')
     ip = [];
     return
 end
@@ -155,4 +159,28 @@ if isfield(sensor,'metadata')
     ip.metadata.eT = eTime;
 end
 
+end
+
+%%  Should go into autoExposure
+
+function zones = getImageZones(height, width, numRows, numCols)
+
+% Calculate the size of each zone
+zoneHeight = height / numRows;
+zoneWidth = width / numCols;
+
+% Initialize the zones array
+zones = zeros(numRows * numCols, 4); % Each row: [x, y, width, height]
+
+% Generate the rectangles for each zone
+index = 1;
+for row = 1:numRows
+    for col = 1:numCols
+        x = (col-1) * zoneWidth + 1;
+        y = (row-1) * zoneHeight + 1;
+
+        zones(index, :) = [x, y, zoneWidth, zoneHeight];
+        index = index + 1;
+    end
+end
 end
