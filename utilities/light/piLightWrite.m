@@ -423,7 +423,11 @@ end
 
 if writefile
     %% Write to scene_lights.pbrt file
-    warning('Writing to scene_lights.  Not sure we ever get here.')
+
+    % We get here when writing out a skymap.  That is relatively
+    % recent, as part of the mongodb skymap management. (BW).
+
+    % warning('Writing to scene_lights.  Not sure we ever get here.')
 
     [workingDir, n] = fileparts(thisR.outputFile);
     fname_lights = fullfile(workingDir, sprintf('%s_lights.pbrt', n));
