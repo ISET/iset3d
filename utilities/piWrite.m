@@ -811,18 +811,14 @@ end
 
 %%
 function piWriteMaterials(thisR)
-% Write both materials and textures files into the output directory
+% Write _materials.pbrt file with material and texture information
 
-% We create the materials file.  Its name is the same as the output pbrt
-% file, but it has an _materials inserted.
+% The materials file is <basename>_materials.pbrt
 outputDir  = thisR.get('output dir');
 basename   = thisR.get('output basename');
-% [~,n] = fileparts(thisR.inputFile);
 fname_materials = sprintf('%s_materials.pbrt',basename);
 thisR.set('materials output file',fullfile(outputDir,fname_materials));
 piMaterialWrite(thisR);
-
-
 end
 
 %%

@@ -133,6 +133,14 @@ thisR.version = 4;
 
 infile = fname;
 
+% 8/27/2024 Place the scene directory on the Matlab path.  This is
+% important for finding parameter files in the subdirectory.  It
+% matters in piParameterGet() for finding an spd.
+inPath = fileparts(infile); pathCell = strsplit(path,pathsep);
+if ~any(strcmp(inPath,pathCell))
+    addpath(genpath(inPath));
+end
+
 % Make sure ISET3d prefs are set.  If not, set some defaults.  Where
 % should this be?  Why here?
 piPrefsInit;
