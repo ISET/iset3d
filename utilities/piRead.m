@@ -450,6 +450,9 @@ flipping = 0;
 if(isempty(lookAtBlock))
     % If it is empty, use the default
     thisR.lookAt = struct('from',[0 0 0],'to',[0 1 0],'up',[0 0 1]);
+    from = thisR.get('from');
+    to   = thisR.get('to');
+    up   = thisR.get('up');
 else
     % We have values
     %     values = textscan(lookAtBlock{1}, '%s %f %f %f %f %f %f %f %f %f');
@@ -459,7 +462,7 @@ else
     up = [values{8} values{9} values{10}];
 end
 
-% If there's a transform, we transform the LookAt. % to change
+% If there's a transform, we transform the LookAt.
 if ~isempty(txtLines)
     [~, transformBlock] = piBlockExtract(txtLines,'blockName','Transform');
     if(~isempty(transformBlock))
@@ -470,7 +473,7 @@ if ~isempty(txtLines)
     end
 end
 % If there's a concat transform, we use it to update the current camera
-% position. % to change
+% position.
 [~, concatTBlock] = piBlockExtract(txtLines,'blockName','ConcatTransform');
 if(~isempty(concatTBlock))
     values = textscan(concatTBlock{1}, '%s [%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f]');
@@ -500,17 +503,19 @@ blockLine = []; % make sure we return something to avoid an error.
 
 % How many lines of text?
 nline = numel(txtLines);
-s = [];ii=1;
+s = []; ii=1;
 
 while ii<=nline
-    blockLine = txtLines{ii};
     % There is enough stuff to make it worth checking
-    if length(blockLine) >= 5 % length('Shape')
-        % If the blockLine matches the BlockName, do something
-        if strncmp(blockLine, blockName, length(blockName))
-            s=[];
+    if length(txtLines{ii}) >= 5 % length('Shape')
+        % If the start of the text matches the BlockName, do something
+        if strncmp(txtLines{ii}, blockName, length(blockName))
+            % s=[];
 
-            % If it is Transform, do this and then return
+            % We return this.
+            blockLine = txtLines{ii};
+
+            % If it is Transform or these others, just return the blockLine
             if (strcmp(blockName,'Transform') || ...
                     strcmp(blockName,'LookAt')|| ...
                     strcmp(blockName,'ConcatTransform')|| ...
@@ -518,7 +523,8 @@ while ii<=nline
                 return;
             end
 
-            % It was not Transform.  So figure it out.
+            % It was not Transform or the others.  So figure which of
+            % the other types it might be. 
             thisLine = strrep(blockLine,'[','');  % Get rid of [
             thisLine = strrep(thisLine,']','');   % Get rid of ]
             thisLine = textscan(thisLine,'%q');   % Find individual words into a cell array

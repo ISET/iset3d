@@ -1,11 +1,21 @@
 function validPreset = preset(obj, presetName, varargin)
 % Store the default parameters for one of our presets
 %
+% Synopsis
+%   isetdocker.preset(presetName);
 %
+% humaneye
+% orange-cpu
+% localgpu
+% 
 % See also
 %   isetdocker
 
 %%
+if notDefined('presetName')
+    presetName = 'help';
+end
+
 presetName = ieParamFormat(presetName);
 
 validNames = {'localgpu','localgpu-alt','remotemux','remotemux-0','remotemux-1','remoteorange','remoteorange-0','remoteorange-1','humaneye'}; 
