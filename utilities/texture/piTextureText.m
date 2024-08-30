@@ -96,7 +96,7 @@ for ii=1:numel(textureParams)
             % that it's not in scene root path
             texturePathTmp = 'textures';
             if ~isempty(texturePath) && exist(thisVal,'file')
-                if ~exist(fullfile(oDir,'textures',[n,e]),'file')
+                if ~exist(fullfile(oDir,'textures',[n,e]),'file') && ~thisR.useDB
                     fullpathTex = which(thisVal);
                     copyfile(fullpathTex, ...
                         fullfile(oDir,'textures'));

@@ -67,7 +67,7 @@ switch str
         thisR.summarize('film');
         thisR.summarize('lookat');
         [~,namelist] = thisR.summarize('assets');
-        thisR.summarize('materials');
+        % thisR.summarize('materials');  % Included in asset summary
         thisR.summarize('metadata');
     case 'file'
         fprintf('\nFile information\n-----------\n');

@@ -117,7 +117,7 @@ sensor = sensorSet(sensor,'exp time',eTime);
 sensor = sensorSet(sensor,'noise flag',noiseFlag); % see sensorSet for more detail
 
 sensor = sensorCompute(sensor,oi);
-fprintf('eT: %f ms \n',eTime*1e3);
+% fprintf('eT: %f ms \n',eTime*1e3);
 
 % sensorWindow(sensor);
 

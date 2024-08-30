@@ -15,7 +15,7 @@ ourDB = isetdb();
 % scenes: Contains individual scene files which may include all
 %         the necessary data (like assets, lighting, and camera information) 
 %         to render a complete environment or image. 
-
+%
 % bsdfs: Stands for Bidirectional Scattering Distribution Functions; likely
 %        contains data or scripts related to the way light interacts with 
 %        surfaces within a scene. 
@@ -83,25 +83,65 @@ end
 assets = ourDB.contentFind(collectionName, 'category','bus','type','asset', 'show',true);
 
 %% scenes
-% upload the file to remote server
-filesSyncRemote(remoteServer, localFolder, remoteDir);
+% % upload the file to remote server
+% filesSyncRemote(remoteServer, localFolder, remoteDir);
+% 
+% % add this scene to our database
+% 
+% [thisID, contentStruct] = ourDB.contentCreate('collection Name',collectionName, ...
+%     'type','scene', ...
+%     'filepath',remoteDir,...
+%     'name','low-poly-taxi',...
+%     'category','iset3d',...
+%     'mainfile','low-poly-taxi.pbrt',...
+%     'source','blender',...
+%     'tags','test',...
+%     'sizeInMB',piDirSizeGet(sceneFolder,remoteServer)/1024^2,... % MB
+%     'format','pbrt'); 
+% 
+% queryStruct.hash = thisID;
+% thisScene = ourDB.contentFind(collectionName, queryStruct);
+%% Add a scene to the database, and render it remotely
 
-% add this scene to our database
+% Use the database.  We need a thisR.set('use db',true);
+%
+localFolder = '/Users/zhenyi/git_repo/dev/iset3d/data/scenes/ChessSet';
+% localFolder = '/Users/wandell/Documents/MATLAB/iset3d-v4/data/scenes/slantedEdge';
 
-[thisID, contentStruct] = ourDB.contentCreate('collection Name',collectionName, ...
+pbrtFile = fullfile(localFolder, 'ChessSet.pbrt');
+thisR = piRead(pbrtFile);
+piWrite(thisR);  
+scene = piRender(thisR,'docker',thisDocker);
+
+sceneWindow(scene);
+
+% Edit for a while.
+thisR.useDB = 1;
+remoteDBDir     = '/acorn/data/iset/PBRTResources/scene/ChessSet';
+remoteSceneFile = fullfile(remoteDBDir,'ChessSet.pbrt');
+recipeMATFile   = fullfile(localFolder,'ChessSet.mat');
+sceneName       = 'ChessSet';
+save(recipeMATFile,'thisR');
+
+% change all attached file paths to be absolute
+
+% add info to the database.
+
+ourDB.contentCreate('collection Name',collectionName, ...
     'type','scene', ...
-    'filepath',remoteDir,...
-    'name','low-poly-taxi',...
-    'category','iset3d',...
-    'mainfile','low-poly-taxi.pbrt',...
-    'source','blender',...
-    'tags','test',...
-    'sizeInMB',piDirSizeGet(sceneFolder,remoteServer)/1024^2,... % MB
-    'format','pbrt'); 
+    'filepath',remoteDBDir,...
+    'name',sceneName,...
+    'category','indoor',...
+    'mainfile',[sceneName, '.pbrt'],...
+    'source','iset3d',...
+    'tags','',...
+    'size',piDirSizeGet(localFolder)/1024^2,... % MB
+    'format','pbrt');
 
-queryStruct.hash = thisID;
-thisScene = ourDB.contentFind(collectionName, queryStruct);
-
+% upload files to the remote server
+thisDocker.upload(localFolder,remoteDBDir);
+% remove the mat file from local folder
+delete(recipeMATFile);
 %% textures
 assetDir = fullfile(remoteDir,'skymap');
 skymaps = dir(remoteServer, assetDir);
@@ -129,6 +169,5 @@ for ii = 1:numel(skymaps) % first one is '@eaDir'
 end
 remoteSkymaps = ourDB.contentFind('PBRTResources','type','skymap', 'show',true);
 
-
-
+%%
 

@@ -2,6 +2,7 @@ function value = piParameterGet(thisLine, match)
 % Interpret the parameters on a text line in a PBRT file
 %
 % Synopsis
+%  value = piParameterGet(thisLine, match)
 %
 % Input
 %  thisLine - The input text
@@ -10,10 +11,14 @@ function value = piParameterGet(thisLine, match)
 % Output
 %  value
 %
+% Description
+%  Read in a line of text from a PBRT file.  Interpret the relevant
+%  value.
 %
 % See also
 %   piLightGetFromText
 
+% Example:
 %{
 thisLine = 'AreaLightSource "diffuse" "integer nsamples" [ 16 ] "bool twosided" "true" "rgb L" [ 7.39489317 7.35641623 7.32100344 ]';
 value = piParameterGet(thisLine, 'bool twosided')
@@ -39,26 +44,6 @@ if piContains(match,'string') || piContains(match,'bool') ||...
     parameter_toc = regexp(newline, '"');
     value = newline(parameter_toc(1)+1: parameter_toc(2)-1);
 elseif (piContains(match, ' L') || piContains(match,' I')) && piContains(thisLine,'.spd')
-    % matchIndex = regexp(thisLine, '.spd');
-    % n=matchIndex;
-    % while n <= numel(thisLine)   % Changed to <=, Jan 2022 (BW)
-    %     if strcmp(thisLine(n),'"')
-    %         % find spd file end token
-    %         end_toc = n;
-    %         break;
-    %     end
-    %     n=n+1;
-    % end
-    % n=matchIndex;
-    % while n>1
-    %     if strcmp(thisLine(n),'"')
-    %         % find spd file end token
-    %         start_toc = n;
-    %         break;
-    %     end
-    %     n=n-1;
-    % end
-    % value = thisLine(start_toc+1: end_toc-1);
     % Find the position of '.spd' in the string
     spdPos = strfind(thisLine, '.spd');
 
@@ -71,7 +56,10 @@ elseif (piContains(match, ' L') || piContains(match,' I')) && piContains(thisLin
     % Extract the SPD file string between the start and end quotes
     value = thisLine(startPos+1:endPos-1);
 
-    % If it is a spd file, load in the data as a vector
+    % If it is a spd file, load in the data as a vector.  Note that
+    % piRead always adds the input scene directory to the path, so
+    % partial descriptions of the file path should work here.
+    % (BW.  8/27/2024).
     if exist(value, 'file')
         % One time this failed if not the full path.
         value = which(value);

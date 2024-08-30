@@ -95,10 +95,11 @@ p = inputParser;
 info = '';
 
 % Parse the scene from server
-if isstruct(fname) && isfield(fname, 'hash')
+if isa(fname, 'IDBContent')
     p.addParameter('docker',[],@(x)(isa(x,'isetdocker'))); % isetdocker object
     p.parse(varargin{:});
     isetDocker = p.Results.docker;
+    if isempty(isetDocker), isetDocker = isetdocker();end
     remoteFile = strrep(fname.mainfile,'.pbrt','.mat');
     localDir   = fullfile(piRootPath,'local',[fname.name]);
     cd(isetDocker.sftpSession,fname.filepath);
@@ -113,8 +114,8 @@ if isstruct(fname) && isfield(fname, 'hash')
 end
 
 p.addRequired('fname', @(x)(exist(fname,'file')));
-validExporters = {'Copy','PARSE'};
-p.addParameter('exporter', 'PARSE', @(x)(ismember(x,validExporters)));
+validExporters = {'copy','parse'};
+p.addParameter('exporter', 'parse', @(x)(ismember(lower(x),validExporters)));
 
 % We use meters in PBRT, assimp uses centimeter as base unit
 % Blender scene has a scale factor equals to 100.
@@ -131,6 +132,14 @@ thisR = recipe;
 thisR.version = 4;
 
 infile = fname;
+
+% 8/27/2024 Place the scene directory on the Matlab path.  This is
+% important for finding parameter files in the subdirectory.  It
+% matters in piParameterGet() for finding an spd.
+inPath = fileparts(infile); pathCell = strsplit(path,pathsep);
+if ~any(strcmp(inPath,pathCell))
+    addpath(genpath(inPath));
+end
 
 % Make sure ISET3d prefs are set.  If not, set some defaults.  Where
 % should this be?  Why here?
@@ -180,7 +189,7 @@ pbrtOptions = piReadWorldText(thisR, txtLines);
 piReadOptions(thisR,pbrtOptions);
 
 %% Read Materials and Textures
-if ~strcmpi(exporter, 'Copy')
+if ~strcmpi(exporter, 'copy')
     %% Insert the text from the Include files
 
     % These are usually _geometry.pbrt and _materials.pbrt.  At this
@@ -210,7 +219,7 @@ if ~strcmpi(exporter, 'Copy')
 end
 %% Decide whether to Copy or Parse to get the asset tree filled up
 
-if strcmpi(exporter, 'Copy')
+if strcmpi(exporter, 'copy')
     % On Copy we copy the assets, we do not parse them.
     % It would be best if we could always parse the objects.
 else
@@ -458,6 +467,9 @@ flipping = 0;
 if(isempty(lookAtBlock))
     % If it is empty, use the default
     thisR.lookAt = struct('from',[0 0 0],'to',[0 1 0],'up',[0 0 1]);
+    from = thisR.get('from');
+    to   = thisR.get('to');
+    up   = thisR.get('up');
 else
     % We have values
     %     values = textscan(lookAtBlock{1}, '%s %f %f %f %f %f %f %f %f %f');
@@ -467,7 +479,7 @@ else
     up = [values{8} values{9} values{10}];
 end
 
-% If there's a transform, we transform the LookAt. % to change
+% If there's a transform, we transform the LookAt.
 if ~isempty(txtLines)
     [~, transformBlock] = piBlockExtract(txtLines,'blockName','Transform');
     if(~isempty(transformBlock))
@@ -478,7 +490,7 @@ if ~isempty(txtLines)
     end
 end
 % If there's a concat transform, we use it to update the current camera
-% position. % to change
+% position.
 [~, concatTBlock] = piBlockExtract(txtLines,'blockName','ConcatTransform');
 if(~isempty(concatTBlock))
     values = textscan(concatTBlock{1}, '%s [%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f]');
@@ -508,17 +520,19 @@ blockLine = []; % make sure we return something to avoid an error.
 
 % How many lines of text?
 nline = numel(txtLines);
-s = [];ii=1;
+s = []; ii=1;
 
 while ii<=nline
-    blockLine = txtLines{ii};
     % There is enough stuff to make it worth checking
-    if length(blockLine) >= 5 % length('Shape')
-        % If the blockLine matches the BlockName, do something
-        if strncmp(blockLine, blockName, length(blockName))
-            s=[];
+    if length(txtLines{ii}) >= 5 % length('Shape')
+        % If the start of the text matches the BlockName, do something
+        if strncmp(txtLines{ii}, blockName, length(blockName))
+            % s=[];
 
-            % If it is Transform, do this and then return
+            % We return this.
+            blockLine = txtLines{ii};
+
+            % If it is Transform or these others, just return the blockLine
             if (strcmp(blockName,'Transform') || ...
                     strcmp(blockName,'LookAt')|| ...
                     strcmp(blockName,'ConcatTransform')|| ...
@@ -526,7 +540,8 @@ while ii<=nline
                 return;
             end
 
-            % It was not Transform.  So figure it out.
+            % It was not Transform or the others.  So figure which of
+            % the other types it might be. 
             thisLine = strrep(blockLine,'[','');  % Get rid of [
             thisLine = strrep(thisLine,']','');   % Get rid of ]
             thisLine = textscan(thisLine,'%q');   % Find individual words into a cell array

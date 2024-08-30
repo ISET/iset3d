@@ -1,4 +1,4 @@
-function documents = contentFind(obj, collection, varargin)
+function docIDBContent = contentFind(obj, collection, varargin)
 % Return documents stored in the ISETDB (mongo) database
 %
 
@@ -37,6 +37,7 @@ p.parse(obj,collection,varargin{:});
 
 %% Generate SHA256 hash for the content
 contentStruct = contentSet(p.Results);
+
 fieldNames = fieldnames(contentStruct);
 
 % Iterate over field names and remove fields with empty values
@@ -62,9 +63,10 @@ end
 
 if p.Results.show
    disp('---------------------------------------------------------------');
+   fprintf('[INFO]: %d items are found.\n',numel(documents));
    if numel(documents) == 1
         disp(struct2table(documents,'AsArray',true));
-   elseif numel(documents)>50
+   elseif numel(documents)>20
         disp('[INFO]: Number of requested items is larger than 20, showing only the first 20 here.')
         disp(struct2table(documents(1:20)));
    elseif isempty(documents)
@@ -74,6 +76,9 @@ if p.Results.show
        disp(struct2table(documents));
    end
    disp('---------------------------------------------------------------');
+end
+for ii = 1:numel(documents)
+    docIDBContent(ii)=IDBContent(documents(ii));
 end
 
 end
