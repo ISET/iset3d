@@ -169,7 +169,7 @@ classdef isetdocker < handle
 
             % Finalize the rsync command with source and destination paths
             rsyncCommand = rsyncCommand + " '" + localDir + "/' '" + remoteDir + "/'";
-
+            disp('[INFO]: Uploading data:');
             % Execute the rsync command
             [status, cmdout] = system(rsyncCommand);
 
@@ -207,7 +207,7 @@ classdef isetdocker < handle
 
             % Finalize the rsync command with source and destination paths
             rsyncCommand = rsyncCommand + " '" + remoteDir + "/' '" + localDir + "/'";
-
+            disp('[INFO]: Downloading data:');
             % Execute the rsync command
             [status, cmdout] = system(rsyncCommand);
 

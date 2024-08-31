@@ -121,7 +121,6 @@ p.addParameter('exporter', 'PARSE', @(x)(ismember(x,validExporters)));
 % We will use the output in local with this name.
 %    local/outputdirname/outdirname.pbrt
 p.parse(fname,varargin{:});
-[~, outputdirname] = fileparts(fname);
 
 thisR = recipe;
 thisR.version = 4;
@@ -147,9 +146,11 @@ exporter = p.Results.exporter;
 thisR.exporter = exporter;
 
 %% Set the output directory in local that piWrite will use
-
-outFilepath      = fullfile(piRootPath,'local',outputdirname);
-outputFile       = fullfile(outFilepath,[outputdirname,'.pbrt']);
+[sceneFolder,pbrtFileName,~] = fileparts(fname);
+strparts = strsplit(sceneFolder,'/');
+sceneFolder = strparts{end};
+outFilepath      = fullfile(piRootPath,'local',sceneFolder);
+outputFile       = fullfile(outFilepath,[pbrtFileName,'.pbrt']);
 thisR.set('outputFile',outputFile);
 
 %% Read PBRT options and world text.
@@ -243,7 +244,7 @@ else
         % transform [...] / Translate/ rotate/ scale/
         % material ... / NamedMaterial
         % shape ...
-        disp('*** No tree returned by parseObjectInstanceText. recipe.assets is empty');
+        disp('[INFO]: No tree returned by parseObjectInstanceText. recipe.assets is empty');
     end
 end
 
@@ -597,7 +598,7 @@ if isequal(blockName,'Integrator') && isempty(s)
     s.subtype = 'path';
     s.maxdepth.type = 'integer';
     s.maxdepth.value= 5;
-    fprintf('Setting integrator to "path" with 5 bounces.\n')
+    fprintf('[INFO]: Setting integrator to "path" with 5 bounces.\n')
 end
 
 end
@@ -628,14 +629,16 @@ if any(piContains(world, 'Include'))
         IncFileNamePath = fullfile(inputDir, IncFileName);
 
         % Read the text from the include file
-        IncLines = piReadText(IncFileNamePath);
+        if endsWith(IncFileNamePath,'.pbrt', 'IgnoreCase', true)
+            % only include pbrt files
+            IncLines = piReadText(IncFileNamePath);
 
-        % Erase the include line.
-        thisR.world{IncludeIdxList(IncludeIdx)} = [];
-
-        % Add the text to the world section
-        thisR.world = {thisR.world, IncLines};
-        thisR.world = cat(1, thisR.world{:});
+            % Erase the include line.
+            thisR.world{IncludeIdxList(IncludeIdx)} = [];
+            % Add the text to the world section
+            thisR.world = {thisR.world, IncLines};
+            thisR.world = cat(1, thisR.world{:});
+        end     
     end
 end
 

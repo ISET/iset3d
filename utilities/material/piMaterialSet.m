@@ -106,7 +106,7 @@ if isfield(material,pName)
             % sure who is updating this or how this got here.  ZL?
             pbrtSpectra = load('namedSpectra.mat');
 
-            if isequal(e, '.spd') || ~isempty(find(piContains(pbrtSpectra.namedSpectra,val), 1))
+            if isequal(e, '.spd') || ~isempty(find(piContains(pbrtSpectra.namedSpectra,val), 1)) || (numel(val)>=4 && isnumeric((val)))
                 material.(pName).type = 'spectrum';
             elseif isequal(e, '.bsdf') % not sure whether other type of files are supported
                 material.(pName).type = 'string';

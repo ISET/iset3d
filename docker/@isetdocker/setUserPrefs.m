@@ -42,9 +42,10 @@ end
 disp('Available render contexts:');
 disp('1. remote-orange');
 disp('2. remote-mux');
-disp('3. local');
-disp('4. Use my own');
-renderContextChoice = input('Choose a render context (1-3): ');
+disp('3. local-orange');
+disp('4. local-mux');
+disp('5. Use my own');
+renderContextChoice = input('Choose a render context (1-5): ');
 
 switch renderContextChoice
     case 1
@@ -52,7 +53,11 @@ switch renderContextChoice
     case 2
         renderContext = 'remote-mux';
     case 3
-        renderContext = 'local';
+        renderContext = 'default';
+        dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-ti';
+    case 4
+        renderContext = 'default';
+        dockerImage = 'digitalprodev/pbrt-v4-gpu-volta-mux';
     otherwise
         renderContext = input('Enter your custom render context: ', 's');
 end
@@ -70,22 +75,14 @@ switch renderContext
         remoteHost = input('Enter remote host address: ', 's');
 end
 % Additional prompts based on selected renderContext
-if contains(renderContext,{'remote-orange','remote-mux'})&& ~isempty(renderContext)
+if ~strcmpi(renderContext, 'Use my own') && ~isempty(renderContext) &&...
+    ~contains(renderContext,'default')
     remoteUser = input('Enter remote user name: ', 's');
     workDir = ['/home/' remoteUser '/ISETRemoteRender'];
-    
-    switch renderContext
-        case 'remote-orange'
-            remoteHost = 'orange.stanford.edu';
-            dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-ti';
-        case 'remote-mux'
-            remoteHost = 'mux.stanford.edu';
-            dockerImage = 'digitalprodev/pbrt-v4-gpu-volta-mux';
-        otherwise
-            remoteHost = input('Enter remote host address: ', 's');
-    end
-elseif contains(renderContext,'local')
-    dockerImage = input('Enter docker image name: ', 's');
+else
+    remoteUser = '';
+    % username = char(java.lang.System.getProperty('user.name'));
+    workDir = fullfile(piRootPath,'local');
 end
 
 % Prompt user for device preference

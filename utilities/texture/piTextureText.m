@@ -48,11 +48,17 @@ for ii=1:numel(textureParams)
             ~isempty(texture.(textureParams{ii}).value)
         thisType = texture.(textureParams{ii}).type;
         thisVal = texture.(textureParams{ii}).value;
-
+        
         if ischar(thisVal)
-            thisText = sprintf(' "%s %s" "%s" ',...
-                thisType, textureParams{ii}, thisVal);
+            if contains(lower(thisVal),{'true','false'}) && strcmp(thisType,'bool')
+                thisText = sprintf(' "%s %s" [%s] ',...
+                    thisType, textureParams{ii}, thisVal);
+            else
+                thisText = sprintf(' "%s %s" "%s" ',...
+                    thisType, textureParams{ii}, thisVal);
+            end
         elseif isnumeric(thisVal)
+
             if isinteger(thisType)
                 thisText = sprintf(' "%s %s" [%s] ',...
                     thisType, textureParams{ii}, num2str(thisVal, '%d'));
@@ -60,29 +66,56 @@ for ii=1:numel(textureParams)
                 thisText = sprintf(' "%s %s" [%s] ',...
                     thisType, textureParams{ii}, num2str(thisVal, '%.4f '));
             end
+        elseif islogical(thisVal)
+            if strcmp(thisType,'bool')
+                if thisVal == 1
+                    thisText = sprintf(' "%s %s" [true] ',...
+                        thisType, textureParams{ii});
+                elseif thisVal == 0
+                    thisText = sprintf(' "%s %s" [false] ',...
+                        thisType, textureParams{ii});
+                else
+                    error('Bool value can only be 0 or 1.')
+                end
+            end
         end
-
 
         % Deal with the case of a filename.  Make sure the file is
         % copied into the output directory.
         if isequal(textureParams{ii}, 'filename')
-
+            oDir = thisR.get('output dir');
+            oTexDir = fullfile(oDir,'textures');
+            if ~exist(oTexDir,'dir'),mkdir(oTexDir);end
             % This should generally be a string or potentially
             % textures/string.  In the end, we will make this
             % textures/string and put the image file into the textures
             % sub-directory.
             [texturePath,n,e] = fileparts(thisVal);
+            
+            % This is a texture with absolute path, which normally means 
+            % that it's not in scene root path
+            texturePathTmp = 'textures';
+            if ~isempty(texturePath) && exist(thisVal,'file')
+                if ~exist(fullfile(oDir,'textures',[n,e]),'file')
+                    fullpathTex = dir(thisVal);
+                    copyfile(fullfile(fullpathTex.folder, fullpathTex.name), ...
+                        fullfile(oDir,'textures'));
+                end
+                texturePathTmp = texturePath;
+                texturePath = 'textures';
+            end
+
             thisVal = [n,e];
 
             % Maybe a file named thisVal already exists. It could be
             % in the base or in textures/*.  If it does, we do not
             % need to copy it.
-            oDir = thisR.get('output dir');
-
-            if ~isempty(getpref('ISETDocker','remoteHost'))
+           
+            if ~isempty(getpref('ISETDocker','remoteHost')) && thisR.useDB
                 remoteSceneDir = getpref('ISETDocker','remoteSceneDir');
-                texturePath = fullfile(remoteSceneDir,texturePath);  
+                texturePath = fullfile(remoteSceneDir,texturePath);
             end
+
             if exist(fullfile(oDir,thisVal),'file')
                 % If the file is in the root of the scene, move it
                 % into the 'textures' sub-directory and assign the
@@ -94,32 +127,17 @@ for ii=1:numel(textureParams)
                 if ~contains(thisText, texPathString)
                     thisText = strrep(thisText, thisVal, ['textures/',thisVal]);
                 end
-
             elseif exist(fullfile(oDir,'textures',thisVal),'file')
                 % Do nothing.  It was already in the textures
                 % subdirectory.  We make sure that the string in the
                 % texturePath is correct.
-                if ~isequal(texturePath,'textures')
+                if ~isequal(texturePath,'textures') 
                     % warning('Texture path in the recipe is not correct.  Adjusting.')
                     thisText = strrep(thisText, fullfile(texturePath,thisVal), ['textures/',thisVal]);
+                elseif ~isequal(texturePathTmp,'textures')
+                    thisText = strrep(thisText, fullfile(texturePathTmp,thisVal), ['textures/',thisVal]);
                 end
-
             else 
-                % So we have the case
-                %    ~exist(fullfile(oDir,'textures',thisVal),'file')
-                %
-                % The file was not found either in the base directory
-                % or in the textures directory. So we locate it and
-                % copy it.
-
-                % PBRT V4 files from Matt had references to
-                % ../landscape/mumble ... For the barcelona-pavillion
-                % I copied the files.  But this may happen again.
-                % Very annoying that one scene refers to textures and
-                % geometry from a completely different scene.  This is
-                % a hack, but probably I should fix the original scene
-                % directories. I am worried how often this happens. (BW)
-
                 % Check whether we have it a texture file
                 if ~isempty(getpref('ISETDocker','remoteHost'))&& thisR.useDB ...
                         && ~strncmpi(thisVal,'/',1)
@@ -130,13 +148,18 @@ for ii=1:numel(textureParams)
                         thisType, textureParams{ii}, imgFile);
                 else
                     imgFile = piResourceFind('texture',thisVal);
+                    if isempty(imgFile)
+                        imgFile = findFileRecursive(oDir, thisVal);
+                    end
                 end
                 % At this point, either we have imgFile or it is empty.
-                if isempty(imgFile) 
+                if isempty(imgFile)
+                    
                     thisText = '';
                     val = strrep(val,'imagemap', 'constant');
                     val = strcat(val, ' "rgb value" [0.7 0.7 0.7]');
                     warning('Texture %s not found! Changing it to diffuse', thisVal);
+                    texture.invert.value = [];
                 else
                     if ispc % try to fix filename for the Linux docker container
                         imgFile = pathToLinux(imgFile);
@@ -153,25 +176,10 @@ for ii=1:numel(textureParams)
                     end
                 end
             end
+            
         end
         val = strcat(val, thisText);
     end
 end
 
 end
-
-%                     end
-%
-%                 % If the texture file is in the imageTextures
-%                 % directory, we are good.  If it is not, then we do
-%                 % this.
-%                     % Do we have the file in textures?
-%                     thisVal = fullfile(thisR.get('output dir'),'textures',[n,e]);
-%                     if exist(thisVal,'file')
-%                         imgFile = thisVal;
-%                         warning('Texture file found, but not in specified directory.');
-%                     else
-%                         % impatient "fix" by DJC
-%                         imgFile = which([n e]);
-%                         % force it
-%                     end
