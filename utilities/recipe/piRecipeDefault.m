@@ -1,8 +1,8 @@
-function thisR = piRecipeDefault(varargin)
+function [thisR, info] = piRecipeDefault(varargin)
 % Returns a recipe to an ISET3d (v4) standard scene
 %
 % Syntax
-%   thisR = piRecipeDefault(varargin)
+%   [thisR, info] = piRecipeDefault(varargin)
 %
 % Description:
 %  piRecipeDefault reads in PBRT scene text files in the data/V3
@@ -89,22 +89,6 @@ switch ieParamFormat(sceneDir)
         sceneDir = 'MacBethChecker';
         sceneFile = [sceneDir,'.pbrt'];
         exporter = 'PARSE';
-        %     case 'macbethcheckerbox'
-        %         sceneDir = 'MacBethCheckerBox';
-        %         sceneFile = [sceneDir,'.pbrt'];
-        %         exporter = 'PARSE';
-        %     case 'macbethcheckercus'
-        %         sceneDir = 'MacBethCheckerCus';
-        %         sceneFile = [sceneDir,'.pbrt'];
-        %         exporter = 'PARSE';
-        %     case 'macbethcheckercuslight'
-        %         sceneDir = 'MacBethCheckerCusLight';
-        %         sceneFile = ['MacBethCheckerCus','.pbrt'];
-        %         exporter = 'PARSE';
-        %     case {'macbethcheckercb', 'mcccb'}
-        %         sceneDir = 'mccCB';
-        %         sceneFile = [sceneDir,'.pbrt'];
-        %         exporter = 'PARSE';
     case {'flashcards'}
         sceneDir = 'flashCards';
         sceneFile = [sceneDir,'.pbrt'];
@@ -391,12 +375,13 @@ end
 
 %% If we are here, we found the file.  So create the recipe.
 
-% Parse the file contents into the ISET3d recipe and identify the type of
-% parser.  PARSE has special status.  In other cases, such as the scenes from
-% the PBRT and Benedikt sites, we just copy the files into ISET3d/local.
+% Parse the file contents into the ISET3d recipe and identify the type
+% of parser.  PARSE has special status.  In other cases, such as the
+% scenes from the PBRT and Benedikt sites, we just copy the files into
+% ISET3d/local.
 switch exporter
     case {'PARSE','Copy'}
-        thisR = piRead(fname, 'exporter', exporter);
+        [thisR, info] = piRead(fname, 'exporter', exporter);
     case 'Blender'
         thisR = piRead_Blender(fname,'exporter',exporter);
     otherwise
@@ -406,6 +391,7 @@ thisR.set('exporter',exporter);
 
 % By default, do the rendering and mounting from ISET3d/local.  That
 % directory is not part of the git upload area.
+%
 % outFile = fullfile(piRootPath,'local',sceneName,[sceneName,'.pbrt'];
 [~,n,e] = fileparts(fname);
 outFile = fullfile(piRootPath,'local',sceneDir,[n,e]);
@@ -424,14 +410,6 @@ end
 
 % Set the render type to the default radiance and depth
 thisR.set('render type',{'radiance','depth'});
-
-%% If requested, write the files now
-
-% Usually, however, we edit the recipe before writing and rendering.
-% if write
-%     piWrite(thisR);
-%     fprintf('%s: Using piWrite to save %s in iset3d/local.\n',mfilename, sceneDir);
-% end
 
 end
 
