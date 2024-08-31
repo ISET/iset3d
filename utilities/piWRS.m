@@ -112,7 +112,7 @@ if ~(speed == 1)
     ss = thisR.get('film resolution');
     thisR.set('film resolution',round(ss/speed));
     nb = thisR.get('nbounces');
-    thisR.set('nbounces',1);
+    thisR.set('nbounces',5);
     nrays = thisR.get('rays per pixel');
     thisR.set('rays per pixel',128);
 end

@@ -218,7 +218,11 @@ for ii = 1:numel(thisR.lights)
             else
                 % Retrieve filename and pbrt text for thisLight, assuming 'true' specifies detailed retrieval
                 [mapNamePath, mapnameTxt] = piLightGet(thisLight, 'filename val', 'pbrt text', true);
-
+                if contains(mapNamePath,getpref('ISETDocker','PBRTResources'))
+                    useRemoteSkymap = 1;
+                else
+                    useRemoteSkymap = 0;
+                end
                 % Define the directory path for skymaps
                 skymapDir = fullfile(thisR.get('output dir'), 'skymaps');
                 % Create the skymap directory if it doesn't already exist
@@ -229,33 +233,41 @@ for ii = 1:numel(thisR.lights)
                 mapName = [fileName, ext]; % Combine filename and extension
 
                 % Check if the skymap file exists in the output directory
-                if exist(fullfile(thisR.get('output dir'), mapNamePath), 'file')
-                    % Copy the file to skymap directory if it doesn't exist there
-                    destinationFile = fullfile(skymapDir, mapName);
-                    if ~exist(destinationFile, "file")
-                        copyfile(fullfile(thisR.get('output dir'), mapNamePath), skymapDir);
-                    end
-                    % Update mapnameTxt to reflect the new location
-                    mapnameTxt = sprintf(' "string filename" "skymaps/%s"', mapName);
-                else
-                    % Handle case where skymap might be in a different directory and useDB flag is off
-                    skymapDestination = fullfile(thisR.get('output dir'), 'skymaps', mapName);
-                    if ~exist(skymapDestination, 'file') || ~thisR.useDB
-                        % Attempt to find the skymap file in the skymaps directory
-                        mapFile = fullfile(piDirGet('skymaps'), mapName);
-                        if isfile(mapFile)
-                            copyfile(mapFile, skymapDir);
-                        else
-                            error('Skymap not found: %s\n', mapFile);
+                if ~(thisR.useDB || useRemoteSkymap)
+                    if exist(fullfile(thisR.get('output dir'), mapNamePath), 'file')
+                        % Copy the file to skymap directory if it doesn't exist there
+                        destinationFile = fullfile(skymapDir, mapName);
+                        if ~exist(destinationFile, "file")
+                            copyfile(fullfile(thisR.get('output dir'), mapNamePath), skymapDir);
+                        end
+                        % Update mapnameTxt to reflect the new location
+                        mapnameTxt = sprintf(' "string filename" "skymaps/%s"', mapName);
+                    else
+                        % Handle case where skymap might be in a different directory and useDB flag is off
+                        skymapDestination = fullfile(thisR.get('output dir'), 'skymaps', mapName);
+                        if ~exist(skymapDestination, 'file')
+                            % Attempt to find the skymap file in the skymaps directory
+                            mapFile = fullfile(piDirGet('skymaps'), mapName);
+                            if isfile(mapFile)
+                                copyfile(mapFile, skymapDir);
+                            else
+                                error('Skymap not found: %s\n', mapFile);
+                            end
                         end
                     end
                 end
-
-                % Handle remote file path replacement for Docker preferences and database use
-                if ~isempty(getpref('ISETDocker', 'remoteHost')) && thisR.useDB && ~strncmpi(mapNamePath, '/', 1)
-                    remoteFolder = fileparts(thisR.inputFile);
-                    mapNameFullpath = fullfile(remoteFolder, mapNamePath);
-                    mapnameTxt = strrep(mapnameTxt, mapNamePath, mapNameFullpath);
+                
+                % If the skymap is in users local scene folder, we do not
+                % give the server full path to it, it might be a local
+                % skymap added by the user.
+          
+                if ~exist(fullfile(thisR.get('output dir'),'skymaps',mapName),'file')
+                    % Handle remote file path replacement for Docker preferences and database use
+                    if ~isempty(getpref('ISETDocker', 'remoteHost')) && thisR.useDB && ~strncmpi(mapNamePath, '/', 1)
+                        remoteFolder = fileparts(thisR.inputFile);
+                        mapNameFullpath = fullfile(remoteFolder, mapNamePath);
+                        mapnameTxt = strrep(mapnameTxt, mapNamePath, mapNameFullpath);
+                    end
                 end
 
                 % Append the updated mapname text to the light definition
@@ -411,7 +423,11 @@ end
 
 if writefile
     %% Write to scene_lights.pbrt file
-    warning('Writing to scene_lights.  Not sure we ever get here.')
+
+    % We get here when writing out a skymap.  That is relatively
+    % recent, as part of the mongodb skymap management. (BW).
+
+    % warning('Writing to scene_lights.  Not sure we ever get here.')
 
     [workingDir, n] = fileparts(thisR.outputFile);
     fname_lights = fullfile(workingDir, sprintf('%s_lights.pbrt', n));

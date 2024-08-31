@@ -470,22 +470,32 @@ end
 if isfield(thisR.camera,'motion')
 
     motionTranslate = thisR.get('camera motion translate');
-    motionStart     = thisR.get('camera motion rotation start');
-    motionEnd       = thisR.get('camera motion rotation end');
+    motionRotateStart     = thisR.get('camera motion rotation start');
+    motionTranslateStart     = thisR.get('camera motion translate start');
+ 
+    motionRotateEnd       = thisR.get('camera motion rotation end');
+    motionTranslateEnd       = thisR.get('camera motion translate end');
 
     fprintf(fileID,'ActiveTransform StartTime \n');
-    fprintf(fileID,'Translate 0 0 0 \n');
-    fprintf(fileID,'Rotate %f %f %f %f \n',motionStart(:,1)); % Z
-    fprintf(fileID,'Rotate %f %f %f %f \n',motionStart(:,2)); % Y
-    fprintf(fileID,'Rotate %f %f %f %f \n',motionStart(:,3));  % X
+    fprintf(fileID,'Translate %0.2f %0.2f %0.2f \n',...
+        [motionTranslateStart(1),...
+        motionTranslateStart(2),...
+        motionTranslateStart(3)]);
+    if ~isempty(thisR.get('camera motion rotation start'));
+        fprintf(fileID,'Rotate %f %f %f %f \n',motionRotateStart(:,1)); % Z
+        fprintf(fileID,'Rotate %f %f %f %f \n',motionRotateStart(:,2)); % Y
+        fprintf(fileID,'Rotate %f %f %f %f \n',motionRotateStart(:,3));  % X
+    end
     fprintf(fileID,'ActiveTransform EndTime \n');
     fprintf(fileID,'Translate %0.2f %0.2f %0.2f \n',...
-        [motionTranslate(1),...
-        motionTranslate(2),...
-        motionTranslate(3)]);
-    fprintf(fileID,'Rotate %f %f %f %f \n',motionEnd(:,1)); % Z
-    fprintf(fileID,'Rotate %f %f %f %f \n',motionEnd(:,2)); % Y
-    fprintf(fileID,'Rotate %f %f %f %f \n',motionEnd(:,3));  % X
+        [motionTranslateEnd(1),...
+        motionTranslateEnd(2),...
+        motionTranslateEnd(3)]);
+    if ~isempty(thisR.get('camera motion rotation end'))
+        fprintf(fileID,'Rotate %f %f %f %f \n',motionRotateEnd(:,1)); % Z
+        fprintf(fileID,'Rotate %f %f %f %f \n',motionRotateEnd(:,2)); % Y
+        fprintf(fileID,'Rotate %f %f %f %f \n',motionRotateEnd(:,3));  % X
+    end
     fprintf(fileID,'ActiveTransform All \n');
 end
 
@@ -777,18 +787,14 @@ end
 
 %%
 function piWriteMaterials(thisR)
-% Write both materials and textures files into the output directory
+% Write _materials.pbrt file with material and texture information
 
-% We create the materials file.  Its name is the same as the output pbrt
-% file, but it has an _materials inserted.
+% The materials file is <basename>_materials.pbrt
 outputDir  = thisR.get('output dir');
 basename   = thisR.get('output basename');
-% [~,n] = fileparts(thisR.inputFile);
 fname_materials = sprintf('%s_materials.pbrt',basename);
 thisR.set('materials output file',fullfile(outputDir,fname_materials));
 piMaterialWrite(thisR);
-
-
 end
 
 %%

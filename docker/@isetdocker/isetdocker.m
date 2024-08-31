@@ -1,4 +1,21 @@
 classdef isetdocker < handle
+    % Creates a new docker environment for remote execution.
+    %
+    % Isetdocker relies on parameters stored in Matlab
+    %
+    % getpref('ISETDocker')
+    %
+    % The ISETDocker parameters can be initialized, or changed, by
+    % running
+    %
+    %   thisDocker = isetdocker;
+    %   thisDocker.setUserPrefs;
+    %
+    % You will be asked a set of questions.  Answer them, and your
+    % info Matlab prefs will be updated.    
+    %
+    % See also
+    %  
     properties (GetAccess=public, SetAccess = public)
         % common
         name = 'ISET Docker Controls'
@@ -42,7 +59,7 @@ classdef isetdocker < handle
             % docker command, which is normally installed on Apple.  A
             % 0 means we are good.
             [status, result] = system('docker -v');
-            assert(isequal(result(1:6),'Docker'));
+            assert(isequal(result(1:6),'Docker'), 'Docker engine may not be running');
             if status
                 % status is not zero, so command failed. Maybe it is a
                 % path issue. 
@@ -274,8 +291,9 @@ classdef isetdocker < handle
             elseif strcmpi(obj.device, 'cpu')
                 gpuString = ' ';
             else
-                dCommand = sprintf('docker %s run -d -it --name %s %s', contextFlag, ourContainer, volumeMap);
+                gpuString = sprintf(' --gpus device=%s ',num2str(0));
             end
+            dCommand = sprintf('docker %s run -d -it %s --name %s  %s', contextFlag, gpuString, ourContainer, volumeMap);
 
             cmd = sprintf('%s %s %s', dCommand, useImage, placeholderCommand);
 
