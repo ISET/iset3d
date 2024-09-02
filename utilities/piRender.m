@@ -170,7 +170,7 @@ outF = strcat('renderings/',currName,'.exr');
 if renderDocker.verbosity > 0
     fprintf('[INFO]: Output file:  %s\n',outF);
 elseif renderDocker.verbosity > 1
-    fprintf('PBRT result info:  %s\n',result);
+    fprintf('[INFO]: PBRT result info:  %s\n',result);
 end
 
 

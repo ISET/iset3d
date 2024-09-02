@@ -1993,7 +1993,8 @@ switch ieParamFormat(param)  % lower case, no spaces
                             warning('Problem parsing theShape and determining the size.');
                         end                        
                     else
-                        warning('Only objects have a size');
+                        val = thisAsset.size;
+                        warning('Only objects have a size, using branch size');
                     end
                 otherwise
                     % Give it a try.

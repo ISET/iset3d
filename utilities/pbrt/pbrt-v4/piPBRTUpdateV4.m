@@ -1,4 +1,4 @@
-function outFile = piPBRTUpdateV4(inFile,outFile)
+function [outFile,result] = piPBRTUpdateV4(inFile,outFile)
 % Update PBRT V3 file to V4 format
 %
 % Synopsis
@@ -23,8 +23,6 @@ if ~exist('outFile','var'), outFile = ''; end
 %% First we call PBRT
 
 [sceneDir, fname,ext] = fileparts(inFile);
-dockerCMD = 'docker run -ti --rm';
-dockerImage = dockerWrapper.localImage();
 
 % Use default name for outFile
 if isempty(outFile)
@@ -32,15 +30,8 @@ if isempty(outFile)
 end
 
 %% Call the pbrt docker image
-
-VolumeCMD = sprintf('--workdir="%s" --volume="%s:%s"',sceneDir,sceneDir,sceneDir);
-CMD = sprintf('%s %s %s pbrt --upgrade %s > %s',dockerCMD, VolumeCMD, dockerImage, inFile, outFile);
-
-[status,result]=system(CMD);
-
-if status
-    error(result);
-end
+thisDocker = isetdocker;
+outFile = thisDocker.upgrade(inFile,outFile);
 
 %% Deal with some cases which were not handled properly 
 
@@ -95,12 +86,13 @@ outputMaterialfname = fullfile(outputDir, [fname, '_materials', ext]);
 inputGeometryfname  = fullfile(sceneDir,  [fname, '_geometry',  ext]);
 outputGeometryfname = fullfile(outputDir, [fname, '_geometry',  ext]);
 
-if exist(inputMaterialfname, 'file')
-    piPBRTUpdateV4(inputMaterialfname,outputMaterialfname);
-end
 
 if exist(inputGeometryfname, 'file')
     piPBRTUpdateV4(inputGeometryfname,outputGeometryfname);
+end
+
+if exist(inputMaterialfname, 'file')
+    piPBRTUpdateV4(inputMaterialfname,outputMaterialfname);
 end
 
 

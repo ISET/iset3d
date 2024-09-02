@@ -50,10 +50,10 @@ update   = p.Results.update;
 thisR_tmp = jsonread(JsonFile);
 
 % Check the lights.  Make sure they are a cell even if only one light.
-if isstruct(thisR_tmp.lights)
-    theLights = thisR_tmp.lights;
-    thisR_tmp.lights = {theLights};
-end
+% if isstruct(thisR_tmp.lights)
+%     theLights = thisR_tmp.lights;
+%     thisR_tmp.lights = {theLights};
+% end
 
 % The rotation field of the light struct has the wrong shape.
 

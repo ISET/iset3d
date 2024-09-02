@@ -68,7 +68,7 @@ for ss = 5:2:numel(thisLine)
 
     if isequal(keyName,'filename')
         [p,n,e] = fileparts(thisVal);
-        if ~isequal(p,'textures')
+        if ~isequal(p,'textures') && ~contains(p,{'textures/','Textures'})
             % Do we have the file in textures?
             if exist(fullfile(thisR.get('input dir'),'textures',[n,e]),'file')
                 thisVal = fullfile('textures',[n e]);

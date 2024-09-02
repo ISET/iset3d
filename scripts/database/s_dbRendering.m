@@ -63,6 +63,17 @@ scene = piRender(thisR,'docker',thisDocker);
 
 sceneWindow(scene);
 
+
+% There are a lot of remote skymaps stored
+remoteSkymaps = pbrtDB.contentFind('PBRTResources','type','skymap', 'show',true);
+
+% Need a function to remove skymap using type rather than name.
+thisR.set('light','all','delete');
+
+% Use the remote skymap
+thisR.set('skymap',remoteSkymaps(30));
+
+piWRS(thisR);
 %% Render a scene from data base
 
 % We a recipe.mat file in the database.  We do handle the case in

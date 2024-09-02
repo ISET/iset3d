@@ -225,8 +225,7 @@ if strcmpi(exporter, 'copy')
 else
     % Try to parse the assets
     % Build the asset tree of objects and lights
-    [trees, newWorld,] = parseObjectInstanceText(thisR, thisR.world);
-    infotxt = '';
+    [trees, newWorld,infotxt] = parseObjectInstanceText(thisR, thisR.world);
     info = addText(info,infotxt);
     thisR.world = newWorld;
 

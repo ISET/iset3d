@@ -145,6 +145,12 @@ for ii = 1:length(recipelist)
     if materialFlag
         % Combines the material lists in the two recipes
         if ~isempty(sceneR.materials)
+            if ~isfield(sceneR.materials,'order')
+                sceneR.materials.order = keys(sceneR.materials.list);
+            end
+            if ~isfield(thisR.materials,'order')
+                thisR.materials.order = keys(thisR.materials.list);
+            end
             sceneR.materials.list = [sceneR.materials.list; thisR.materials.list];
             for oo=1:numel(thisR.materials.order)
                 if ~any(strcmp(sceneR.materials.order, thisR.materials.order{oo}))
@@ -159,6 +165,12 @@ for ii = 1:length(recipelist)
     if textureFlag
         % Combines the lists in the recipes, and then the files
         if ~isempty(sceneR.textures)
+            if ~isfield(sceneR.textures,'order')
+                sceneR.textures.order = keys(sceneR.textures.list);
+            end
+            if ~isfield(thisR.textures,'order')
+                thisR.textures.order = keys(thisR.textures.list);
+            end
             sceneR.textures.list = [sceneR.textures.list; thisR.textures.list];
             for oo=1:numel(thisR.textures.order)
                 if ~any(strcmp(sceneR.textures.order, thisR.textures.order{oo}))

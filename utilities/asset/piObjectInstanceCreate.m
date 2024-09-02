@@ -81,7 +81,16 @@ motion   = p.Results.motion;
 graftNow = p.Results.graftnow;
 
 %% Find the asset idx and properties
-[idx,asset] = piAssetFind(thisR, 'name', assetname);
+num_trials=1;
+while num_trials<3
+        [idx,asset] = piAssetFind(thisR, 'name', assetname);
+        if isempty(idx)
+            num_trials = num_trials+1;
+            assetname = strrep(assetname,'_m_B','_B');
+        else 
+            num_trials = 10;
+        end
+end
 
 % ZL only addressed the first entry of the cell.  So, this seems OK.
 if iscell(asset)
@@ -124,13 +133,13 @@ thisR.assets = thisR.assets.set(idx, OBJsubtree_branch);
 
 InstanceSuffix = sprintf('_I_%d',indexCount);
 if ~isempty(position)
-    OBJsubtree_branch.translation{1} = position(:);
+    OBJsubtree_branch.translation = {position(:)};
 end
 if ~isempty(rotation)
-    OBJsubtree_branch.rotation{1}    = rotation;
+    OBJsubtree_branch.rotation = {rotation};
 end
 if ~isempty(scale)
-    OBJsubtree_branch.scale{1}    = scale;
+    OBJsubtree_branch.scale = {scale};
 end
 
 if ~isempty(motion)

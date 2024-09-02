@@ -37,7 +37,7 @@ thisR.set('film resolution',[256 256]);
 thisR.set('rays per pixel',256);
 thisR.set('n bounces',4); % Number of bounces traced for each ray
 
-thisR.set('skymap','sky-blue-sun.exr');
+thisR.set('skymap','environment_Reflection.exr');
 
 piWRS(thisR);
 
@@ -57,7 +57,7 @@ whitePoint = piLightCreate('mainLight_L',...
     'specscale float', 1,...
     'cameracoordinate', true);
 thisR.set('light',whitePoint,'add');
-thisR.set('skymap','sky-blue-sun.exr');
+thisR.set('skymap','sky-sunlight.exr');
 piWRS(thisR);
 
 %%
@@ -69,7 +69,7 @@ whitePoint = piLightCreate('mainLight_L',...
     'specscale float', 1,...
     'cameracoordinate', true);
 thisR.set('light',whitePoint,'add');
-thisR.set('skymap','sky-blue-sun.exr');
+thisR.set('skymap','sky-sunlight.exr');
 piWRS(thisR);
 
 %%
@@ -80,7 +80,7 @@ whitePoint = piLightCreate('mainLight_L',...
     'specscale float', 1,...
     'cameracoordinate', true);
 thisR.set('light',whitePoint,'add');
-thisR.set('skymap','sky-blue-sun.exr');
+thisR.set('skymap','sky-sunlight.exr');
 piWRS(thisR);
 
 %%

@@ -1,14 +1,14 @@
-function [trees, newWorld] = parseObjectInstanceText(thisR, txt)
+function [trees, newWorld, infotxt] = parseObjectInstanceText(thisR, txt)
 % Parse the geometry objects accounting for object instances
 %
 % Synopsis
-%   [trees, newWorld] = parseObjectInstanceText(thisR, txt)
+%   [trees, newWorld, infotxt] = parseObjectInstanceText(thisR, txt)
 %
 % Brief description
 %   The txt is the world text from a PBRT file.  It is parsed into
 %   objects creating the asset tree.  The assets include objects and
 %   lights.
-% 
+%
 %   This function relies heavily on parseGeometryText, which works on
 %   AttributeBegin/End sequences and certain other simple file
 %   formats.  The code here handles the case of ObjectBegin/End
@@ -22,6 +22,7 @@ function [trees, newWorld] = parseObjectInstanceText(thisR, txt)
 % Outputs
 %   trees    -  Assets in a tree format
 %   newWorld - Modified world text, after removing unnecessary lines.
+%   infotxt  - Text describing what was parsed
 %
 % See also
 %   parseGeometryText
@@ -30,6 +31,7 @@ function [trees, newWorld] = parseObjectInstanceText(thisR, txt)
 rootAsset = piAssetCreate('type', 'branch');
 rootAsset.name = 'root_B';
 trees = tree(rootAsset);
+infotxt = '';
 
 %% Identify the objects
 % This section might be placed in parseGeometryText.
@@ -46,9 +48,9 @@ objEndLocs   = find(contains(txt,'ObjectEnd'));
 % If there are objects, this block reads them and adds them to the
 % 'trees' variable.
 if ~isempty(objBeginLocs)
-    disp('Start Object processing.');
+    infotxt = addText(infotxt,sprintf('Start Object processing.\n'));
     for objIndex = 1:numel(objBeginLocs)
-        fprintf('Object %d: ',objIndex);
+        infotxt = addText(infotxt,sprintf('Object %d: ',objIndex));
 
         % Find its name.  Sometimes this is empty.  Hmm.
         objectName = erase(txt{objBeginLocs(objIndex)}(13:end),'"');
@@ -61,31 +63,31 @@ if ~isempty(objBeginLocs)
         % two additional subnodes defining the transform (2) and the
         % object itself (3).  We add the transformation and object to
         % the main tree we are building.
-        if ~isempty(subnodes)            
+        if ~isempty(subnodes)
             % To make it easy to set the isObjectInstance, we extract
             % the node from the tree and then set it back.
             subtree = subnodes.subtree(2);    % The tree below the root
             branchNode = subtree.Node{1};     % The branch node
-            branchNode.isObjectInstance = 1;  % This is a reference object 
+            branchNode.isObjectInstance = 1;  % This is a reference object
             % Name the branch to match the object name
             if length(objectName) < 3 || ~isequal(objectName(end-1:end),'_B')
-                branchNode.name = sprintf('%s_B',objectName);  
+                branchNode.name = sprintf('%s_B',objectName);
             else
                 branchNode.name = objectName;
             end
 
-            subtree = subtree.set(1, branchNode); % Get rid 
+            subtree = subtree.set(1, branchNode); % Get rid
             trees = trees.graft(1, subtree);
         end
 
         % Remove the object lines we processed, creating an empty cell
         txt(objBeginLocs(objIndex):objEndLocs(objIndex)) = cell(objEndLocs(objIndex)-objBeginLocs(objIndex)+1,1);
     end
-    
+
     % We remove the empty cells which were created as we removed the
     % objects.
     txt = txt(~cellfun('isempty',txt));
-    disp('Finished Object processing.');
+    infotxt = addText(infotxt,sprintf('Finished Object processing.\n'));
 
     % If we have any empty AttributeBegin/End blocks, remove them too.
     attBeginLocs = find(contains(txt,'AttributeBegin'));
@@ -104,7 +106,7 @@ end
 % processed and removed above. It does have AttributeBegin/End
 % sequences that we parse here, returning the subnodes of a tree.
 newWorld = txt;
-fprintf('Attribute processing: ');
+infotxt = addText(infotxt,sprintf('Attribute processing: \n'));
 [subnodes, parsedUntil] = parseGeometryText(thisR, newWorld,'');
 
 %% We assign the returned subnodes to the tree
@@ -113,10 +115,10 @@ fprintf('Attribute processing: ');
 if trees.Parent == 0
     % The subnodes return by parseGeometryText. There is a
     % root node and that's all we need.
-    trees = subnodes;   
+    trees = subnodes;
 else
     % We graft the returned subnodes onto a root.  I think this
-    % happens in the case of ObjectInstances.    
+    % happens in the case of ObjectInstances.
     if ~isempty(subnodes)
         subtree = subnodes.subtree(2);
         trees = trees.graft(1, subtree);

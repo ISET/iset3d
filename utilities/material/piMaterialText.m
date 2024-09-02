@@ -79,7 +79,7 @@ for ii=1:numel(matParams)
                         end
 
                         thisText = strrep(thisText,thisVal, imgFile);
-                        copyfile(imgFile,thisR.get('output dir'));
+                        copyfile(imgFile,fullfile(thisR.get('output dir'),'textures'));
                     end
                 end
             end

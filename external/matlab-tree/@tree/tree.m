@@ -293,19 +293,18 @@ classdef tree
         end
         
         
-        function t = show(obj)
+        function t = show(obj,new)
             % Bring up a uifigure with collapsible tree
             windowName = strcat('Assets Collection',':', datestr(datetime('now')));
-
+            
             % Check if the window already exists
             existingFig = findall(groot, 'Type', 'figure', 'Tag', 'assetsUI');
-
-            if isempty(existingFig)
+            if isempty(existingFig) || (exist('new','var')&& strcmp(new,'new'))
                 % Create a new uifigure if it doesn't exist
                 fig = uifigure('Name', windowName, 'Tag', 'assetsUI');
             else
                 % Use the existing figure
-                fig = existingFig;
+                fig = existingFig(1);
                 fig.Name = windowName; % Update the window name
                 figure(fig); % Bring the existing figure to the front
                 clf(fig); % Clear existing content
@@ -449,11 +448,12 @@ classdef tree
                         obj.Node{ii} = sprintf('%06dID_%s', ii, stripNames{ii});
                         names{ii} = obj.Node{ii};
                     end
+                   
                     
                     obj.mapFullName2Idx(names{ii}) = ii;
                     obj.mapShortName2Idx(stripNames{ii}) = ii;
                     
-                    if isequal(obj.Node{ii}.type, 'light')
+                    if isstruct(obj.Node{ii}) && isequal(obj.Node{ii}.type, 'light') 
                         obj.mapLgtFullName2Idx(names{ii}) = ii;
                         obj.mapLgtShortName2Idx(stripNames{ii}) = ii;
                     end

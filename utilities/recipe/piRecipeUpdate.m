@@ -103,8 +103,8 @@ function node = parseV1Assets(thisAsset)
         node.size.pmin = node.size.pmin(:)';
         node.size.pmax = node.size.pmax(:)';
         node.name = strcat(thisAsset.name, '_M');
-        node.translation = thisAsset.position(:)';
-        node.rotation = thisAsset.rotate;
+        node.translation = {thisAsset.position(:)'};
+        node.rotation = {thisAsset.rotate};
         if isfield(thisAsset, 'motion')
             node.motion = thisAsset.motion;
         end
@@ -115,8 +115,8 @@ function node = parseV1Assets(thisAsset)
         node.size.pmin = node.size.pmin(:)';
         node.size.pmax = node.size.pmax(:)';
         node.name = strcat(thisAsset.name, '_B');
-        node.translation = thisAsset.position(:)';
-        node.rotation = thisAsset.rotate;
+        node.translation = {thisAsset.position(:)'};
+        node.rotation = {thisAsset.rotate};
         if isfield(thisAsset, 'motion')
             node.motion = thisAsset.motion;
         end
@@ -133,6 +133,6 @@ txtLines = thisRV2.materials.txtLines;
 % separately, in Version 2
 % 
 warning('this will probably not work.  Maybe we need to set thisRV2.world = txtLines???')
-[thisRV2.materials.list, thisRV2.textures.list] = parseMaterialTexture(thisRV2);
+[thisRV2.materials.list, thisRV2.textures.list] = parseMaterialTexture(recipe);
 
 end

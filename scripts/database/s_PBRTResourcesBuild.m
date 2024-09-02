@@ -46,6 +46,7 @@ folders = dir(remoteServer, remoteDir);
 
 ResourcesTypes = {'asset','scene','bsdf','skymap','spd','lens','texture'};
 
+thisDocker = isetdocker();
 %% assets
 assetDir = fullfile(remoteDir,'asset');
 categories = dir(remoteServer, assetDir);
@@ -103,24 +104,40 @@ assets = ourDB.contentFind(collectionName, 'category','bus','type','asset', 'sho
 % thisScene = ourDB.contentFind(collectionName, queryStruct);
 %% Add a scene to the database, and render it remotely
 
-% Use the database.  We need a thisR.set('use db',true);
-%
-localFolder = '/Users/zhenyi/git_repo/dev/iset3d/data/scenes/ChessSet';
-% localFolder = '/Users/wandell/Documents/MATLAB/iset3d-v4/data/scenes/slantedEdge';
-
-pbrtFile = fullfile(localFolder, 'ChessSet.pbrt');
+sceneName       = 'ChessSet';
+% localFolder = fullfile(scenes(ii).folder, scenes(ii).name);
+localFolder = '/Users/zhenyi/git_repo/dev/iset3d-tiny/local/ChessSet';
+pbrtFile = fullfile(localFolder,[sceneName,'.pbrt']);
+exporter = 'PARSE';
 thisR = piRead(pbrtFile);
-piWrite(thisR);  
+
+% Add a light if there is none just for rendering.
+nLights = thisR.get('n lights');
+if nLights==0 && ~strcmp(exporter,'Copy')
+    lightName = 'new_spot_light_L';
+    newLight = piLightCreate(lightName,...
+        'type','spot',...
+        'specscale', 1, ...
+        'coneangle', 15,...
+        'conedeltaangle', 10, ...
+        'cameracoordinate', true);
+    thisR.set('light', newLight, 'add');
+    warning('The scene contain no lights, adding a spot light from the camera origin.');
+end
+piWrite(thisR);
 scene = piRender(thisR,'docker',thisDocker);
 
 sceneWindow(scene);
+% remove it and save the mat.
+if nLights == 0 && ~strcmp(exporter,'Copy')
+    thisR.set('lights','all','delete');
+end
+% use the database.
+thisR.set('use db',true);
+remoteDBDir     = ['/acorn/data/iset/PBRTResources/scene/',sceneName];
+remoteSceneFile = fullfile(remoteDBDir,[sceneName,'.pbrt']);
+recipeMATFile   = fullfile(localFolder,[sceneName,'.mat']);
 
-% Edit for a while.
-thisR.useDB = 1;
-remoteDBDir     = '/acorn/data/iset/PBRTResources/scene/ChessSet';
-remoteSceneFile = fullfile(remoteDBDir,'ChessSet.pbrt');
-recipeMATFile   = fullfile(localFolder,'ChessSet.mat');
-sceneName       = 'ChessSet';
 save(recipeMATFile,'thisR');
 
 % change all attached file paths to be absolute
@@ -130,7 +147,7 @@ save(recipeMATFile,'thisR');
 ourDB.contentCreate('collection Name',collectionName, ...
     'type','scene', ...
     'filepath',remoteDBDir,...
-    'name',sceneName,...
+    'name', sceneName,...
     'category','indoor',...
     'mainfile',[sceneName, '.pbrt'],...
     'source','iset3d',...
@@ -142,6 +159,8 @@ ourDB.contentCreate('collection Name',collectionName, ...
 thisDocker.upload(localFolder,remoteDBDir);
 % remove the mat file from local folder
 delete(recipeMATFile);
+
+remoteScenes = ourDB.contentFind('PBRTResources','type','scene', 'show',true);
 %% textures
 assetDir = fullfile(remoteDir,'skymap');
 skymaps = dir(remoteServer, assetDir);
@@ -150,9 +169,9 @@ for ii = 1:numel(skymaps) % first one is '@eaDir'
     if strcmp(skymaps(ii).name, '@eaDir')
         continue
     end
-
+    if ~strncmpi(skymaps(ii).name,'gla',3),continue;end
     thisSkymap = fullfile(skymaps(ii).folder, skymaps(ii).name);
-
+    
     ourDB.contentCreate('collection Name','PBRTResources', ...
         'type','skymap', ...
         'filepath',thisSkymap,...
@@ -167,7 +186,7 @@ for ii = 1:numel(skymaps) % first one is '@eaDir'
     fprintf('[INFO]: %s is added.\n', skymaps(ii).name);
 
 end
-remoteSkymaps = ourDB.contentFind('PBRTResources','type','skymap', 'show',true);
+% remoteSkymaps = ourDB.contentFind('PBRTResources','type','skymap', 'show',true);
 
 %%
 

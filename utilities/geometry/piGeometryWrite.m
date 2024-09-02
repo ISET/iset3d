@@ -158,8 +158,8 @@ for ii = 1:numel(children)
                 indentSpacing = '    ';
                 fprintf(fid, 'ObjectBegin "%s"\n', thisNode.name(10:end-2));
                 if ~isempty(thisNode.motion)
-                    fprintf(fid, strcat(spacing, indentSpacing,...
-                        'ActiveTransform StartTime \n'));
+                    fprintf(fid, [spacing, indentSpacing,...
+                        'ActiveTransform StartTime \n']);
                 end
 
                 spacing = ''; % faster if not a string
@@ -168,8 +168,8 @@ for ii = 1:numel(children)
                 % Write out motion
                 if ~isempty(thisNode.motion)
                     for jj = 1:size(thisNode.translation, 2)
-                        fprintf(fid, strcat(spacing, indentSpacing,...
-                            'ActiveTransform EndTime \n'));
+                        fprintf(fid, [spacing, indentSpacing,...
+                            'ActiveTransform EndTime \n']);
                         % 
                         % % First write out the same translation and rotation
                         % piGeometryTransformWrite(fid, thisNode, spacing, indentSpacing);
@@ -177,10 +177,10 @@ for ii = 1:numel(children)
                         if isfield(thisNode.motion, 'translation')
                             if ~isempty(thisNode.motion.translation(jj, :))
                                 pos = thisNode.motion.translation(jj,:);
-                                fprintf(fid, strcat(spacing, indentSpacing,...
+                                fprintf(fid, [spacing, indentSpacing,...
                                     sprintf('Translate %f %f %f', pos(1),...
                                     pos(2),...
-                                    pos(3)), '\n'));
+                                    pos(3)), '\n']);
                             end
                         end
 
@@ -188,12 +188,12 @@ for ii = 1:numel(children)
                                 ~isempty(thisNode.motion.rotation)
                             rot = thisNode.motion.rotation;
                             % Write out rotation
-                            fprintf(fid, strcat(spacing, indentSpacing,...
-                                sprintf('Rotate %f %f %f %f',rot(:,jj*3-2)), '\n')); % Z
-                            fprintf(fid, strcat(spacing, indentSpacing,...
-                                sprintf('Rotate %f %f %f %f',rot(:,jj*3-1)),'\n')); % Y
-                            fprintf(fid, strcat(spacing, indentSpacing,...
-                                sprintf('Rotate %f %f %f %f',rot(:,jj*3)), '\n'));   % X
+                            fprintf(fid, [spacing, indentSpacing,...
+                                sprintf('Rotate %f %f %f %f',rot(:,jj*3-2)), '\n']); % Z
+                            fprintf(fid, [spacing, indentSpacing,...
+                                sprintf('Rotate %f %f %f %f',rot(:,jj*3-1)),'\n']); % Y
+                            fprintf(fid, [spacing, indentSpacing,...
+                                sprintf('Rotate %f %f %f %f',rot(:,jj*3)), '\n']);   % X
                         end
                     end
                 end
@@ -321,8 +321,8 @@ for ii = 1:numel(children)
         % having an additional line below.  For now, this is not
         % functional.
         if ~isempty(thisNode.motion)
-            fprintf(fid, strcat(spacing, indentSpacing,...
-                'ActiveTransform StartTime \n'));
+            fprintf(fid, [spacing, indentSpacing,...
+                'ActiveTransform StartTime \n']);
         end
 
         % Transformation section
@@ -338,16 +338,16 @@ for ii = 1:numel(children)
 
         % Motion section
         if ~isempty(thisNode.motion)
-            fprintf(fid, strcat(spacing, indentSpacing,...
-                'ActiveTransform EndTime \n'));
+            fprintf(fid, [spacing, indentSpacing,...
+                'ActiveTransform EndTime \n']);
             for jj = 1:size(thisNode.translation, 2)
                 if isfield(thisNode.motion, 'translation')
                     if ~isempty(thisNode.motion.translation(jj, :))
                         pos = thisNode.motion.translation(jj,:);
-                        fprintf(fid, strcat(spacing, indentSpacing,...
+                        fprintf(fid, [spacing, indentSpacing,...
                             sprintf('Translate %f %f %f', pos(1),...
                             pos(2),...
-                            pos(3)), '\n'));
+                            pos(3)), '\n']);
                     end
                 end
 
@@ -355,20 +355,20 @@ for ii = 1:numel(children)
                         ~isempty(thisNode.motion.rotation)
                     rot = thisNode.motion.rotation;
                     % Write out rotation
-                    fprintf(fid, strcat(spacing, indentSpacing,...
-                        sprintf('Rotate %f %f %f %f',rot(:,3-2)), '\n')); % Z
-                    fprintf(fid, strcat(spacing, indentSpacing,...
-                        sprintf('Rotate %f %f %f %f',rot(:,3-1)),'\n')); % Y
-                    fprintf(fid, strcat(spacing, indentSpacing,...
-                        sprintf('Rotate %f %f %f %f',rot(:,3)), '\n'));   % X
+                    fprintf(fid, [spacing, indentSpacing,...
+                        sprintf('Rotate %f %f %f %f',rot(:,3-2)), '\n']); % Z
+                    fprintf(fid, [spacing, indentSpacing,...
+                        sprintf('Rotate %f %f %f %f',rot(:,3-1)),'\n']); % Y
+                    fprintf(fid, [spacing, indentSpacing,...
+                        sprintf('Rotate %f %f %f %f',rot(:,3)), '\n']);   % X
                 end
             end
         end
 
         % Reference object section (also if an instance (object copy))
         if ~isempty(referenceObjectExist) && isfield(thisNode,'referenceObject')
-            fprintf(fid, strcat(spacing, indentSpacing, ...
-                sprintf('ObjectInstance "%s"', thisNode.referenceObject), '\n'));
+            fprintf(fid, [spacing, indentSpacing, ...
+                sprintf('ObjectInstance "%s"', thisNode.referenceObject), '\n']);
         end
 
         % (fid, obj, thisNode, lvl, outFilePath, writeGeometryFlag, thisR)
@@ -397,8 +397,8 @@ for ii = 1:numel(children)
             ObjectWrite(fid, thisNode, rootPath, spacing, indentSpacing, thisR);
         else
             % use reference object
-            fprintf(fid, strcat(spacing, indentSpacing, ...
-                sprintf('ObjectInstance "%s"', thisNode.name), '\n'));
+            fprintf(fid, [spacing, indentSpacing, ...
+                sprintf('ObjectInstance "%s"', thisNode.name), '\n']);
         end
 
     elseif isequal(thisNode.type, 'light')
@@ -442,17 +442,23 @@ pointerT = 1; pointerR = 1; pointerS = 1;
 translation = zeros(3,1);
 rotation = piRotationMatrix;
 scale = ones(1,3);
-for tt = 1:numel(thisNode.transorder)
-    switch thisNode.transorder(tt)
-        case 'T'
-            translation = translation + thisNode.translation{pointerT}(:);
-            pointerT = pointerT + 1;
-        case 'R'
-            rotation = rotation + thisNode.rotation{pointerR};
-            pointerR = pointerR + 1;
-        case 'S'
-            scale = scale .* thisNode.scale{pointerS};
-            pointerS = pointerS + 1;
+
+% deal with old recipes
+if isfield(thisNode, 'transorder')
+    for tt = 1:numel(thisNode.transorder)
+        switch thisNode.transorder(tt)
+            case 'T'
+                translation = translation + thisNode.translation{pointerT}(:);
+                pointerT = pointerT + 1;
+            case 'R'
+                if ~isempty(thisNode.rotation{pointerR})
+                    rotation = rotation + thisNode.rotation{pointerR};
+                end
+                pointerR = pointerR + 1;
+            case 'S'
+                scale = scale .* thisNode.scale{pointerS};
+                pointerS = pointerS + 1;
+        end
     end
 end
 tMatrix = piTransformCompose(translation, rotation, scale);
@@ -495,7 +501,7 @@ function ObjectWrite(fid, thisNode, rootPath, spacing, indentSpacing,thisR)
 
 %% The participating media PBRT line.  More comments needed
 if ~isempty(thisNode.mediumInterface)
-    fprintf(fid, strcat(spacing, indentSpacing, sprintf("MediumInterface ""%s"" ""%s""\n", thisNode.mediumInterface.inside, thisNode.mediumInterface.outside)));
+    fprintf(fid, [spacing, indentSpacing, sprintf("MediumInterface ""%s"" ""%s""\n", thisNode.mediumInterface.inside, thisNode.mediumInterface.outside)]);
 end
 
 %% Write out material properties

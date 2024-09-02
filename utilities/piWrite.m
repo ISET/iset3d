@@ -224,6 +224,12 @@ piWriteHeader(thisR,fileID)
 %% Write media
 % Media can interact with the camera
 % and can be defined before WorldBegin
+
+% for some old recipes
+if  isempty(thisR.media)
+    thisR.media.list = [];
+end
+
 if ~isempty(thisR.media.list)
     piWriteMedia(thisR, overwritemedia);
 end

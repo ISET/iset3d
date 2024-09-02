@@ -191,19 +191,32 @@ classdef isetdocker < handle
 
             % Finalize the rsync command with source and destination paths
             rsyncCommand = rsyncCommand + " '" + localDir + "/' '" + remoteDir + "/'";
-            disp('[INFO]: Uploading data:');
             % Execute the rsync command
             [status, cmdout] = system(rsyncCommand);
 
             if status ~= 0
                 error(['Rsync failed with the following message: ', cmdout]);
             else
+                disp('[INFO]: Data uploaded:');
                 obj.formatAndPrint(string(cmdout));
-                disp('[INFO]: Data uploaded successfully.');
             end
         end
 
+        function remove(obj, remoteDir)
+            remoteHostPath = sprintf('%s@%s:',obj.remoteUser, obj.remoteHost);
+            if ~startsWith(remoteDir, {strcat(obj.remoteUser,'@')})
+                remoteDir = strcat(remoteHostPath,remoteDir);
+            end
+            rmCommand = 'rm -rf' + " " + remoteDir;
+            
+            [status, cmdout] = system(rmCommand);
+            if status ~=0
+                error(['Rm failed with the following message: ', cmdout]);
+            else
+                fprintf('[INFO]: %s is Removed.\n',remoteDir);
+            end
 
+        end
 
         function download(obj,remoteDir, localDir, excludePattern)
             % Construct the rsync command
@@ -229,15 +242,14 @@ classdef isetdocker < handle
 
             % Finalize the rsync command with source and destination paths
             rsyncCommand = rsyncCommand + " '" + remoteDir + "/' '" + localDir + "/'";
-            disp('[INFO]: Downloading data:');
             % Execute the rsync command
             [status, cmdout] = system(rsyncCommand);
 
             if status ~= 0
                 error(['Rsync failed with the following message: ', cmdout]);
             else
+                disp('[INFO]: Data downloaded:');
                 obj.formatAndPrint(cmdout);
-                disp('[INFO]: Data downloaded successfully.');
             end
         end
 

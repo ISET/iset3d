@@ -1,4 +1,4 @@
-function [trees, parsedUntil] = parseGeometryText(thisR, txt, name, beBlock)
+function [trees, parsedUntil,infotxt] = parseGeometryText(thisR, txt, name, beBlock)
 % function [trees, parsedUntil] = parseGeometryText(thisR, txt, name, beBlock)
 % Parse the text from a Geometry file, returning an asset subtree
 %
@@ -123,7 +123,7 @@ if isequal(txt{1},'WorldBegin'),  txt = txt(2:end); end
 % have counted (parsedUntil)
 % if isempty(txt{1}), warning('Empty text line.'); end
 cnt = 1;
-
+infotxt = '';
 while cnt <= length(txt)
 
     % For debugging, I removed the semicolon
@@ -378,7 +378,7 @@ parsedUntil = cnt;
 %% We build the tree that is returned from any of the defined subtrees
 
 % Finished with all the AttributeBegin/End blocks
-fprintf('Identified %d assets; parsed up to line %d\n',numel(subtrees),parsedUntil);
+infotxt = addText(infotxt,sprintf('Identified %d assets; parsed up to line %d\n',numel(subtrees),parsedUntil));
 
 % We create the root node here, placing it as the root of all of the
 % subtree branches.
