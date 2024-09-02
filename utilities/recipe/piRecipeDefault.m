@@ -1,12 +1,14 @@
 function [thisR, info] = piRecipeDefault(varargin)
-% Returns a recipe to an ISET3d (v4) standard scene
+% Returns a recipe to an ISET3d (V4) standard scene
 %
 % Syntax
 %   [thisR, info] = piRecipeDefault(varargin)
 %
 % Description:
-%  piRecipeDefault reads in PBRT scene text files in the data/V3
-%  repository.  It can also call ieWebGet to retrieve pbrt scenes,
+%  piRecipeDefault converts the PBRT scene text files into an ISET3d recipe
+%  for rendering.  The text files should be on your computer.
+%
+%  It can call ieWebGet to retrieve pbrt scenes,
 %  from the web and install them locally.
 %
 %  Some of these scenes are missing lights and will not render, or
@@ -113,18 +115,6 @@ switch ieParamFormat(sceneDir)
         sceneDir = 'chessset';
         sceneFile = [sceneDir,'.pbrt'];
         exporter = 'PARSE';
-    case 'chesssetpieces'
-        sceneDir = 'ChessSetPieces';
-        sceneFile = ['ChessSet','.pbrt'];
-        exporter = 'PARSE';
-    case 'chessset_2'
-        sceneDir = 'ChessSet_2';
-        sceneFile = ['chessSet2','.pbrt'];
-        exporter = 'Copy';
-    case 'chesssetscaled'
-        sceneDir = 'ChessSetScaled';
-        sceneFile = [sceneDir,'.pbrt'];
-        exporter = 'Copy';
 
     case 'checkerboard'
         sceneDir = 'checkerboard';
