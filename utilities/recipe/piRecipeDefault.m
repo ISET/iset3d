@@ -110,7 +110,7 @@ switch ieParamFormat(sceneDir)
         sceneFile = [sceneDir,'.pbrt'];
         exporter = 'PARSE';
     case 'chessset'
-        sceneDir = 'ChessSet';
+        sceneDir = 'chessset';
         sceneFile = [sceneDir,'.pbrt'];
         exporter = 'PARSE';
     case 'chesssetpieces'
