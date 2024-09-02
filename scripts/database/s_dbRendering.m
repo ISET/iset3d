@@ -43,7 +43,11 @@ thisDocker = isetdocker();
 % getpref('ISETDocker') % set up by isetdocker.setUserPrefs()
 
 % The local folder can can contain any PBRT scene
-pbrtFile = which('slantedEdge.pbrt');
+pbrtFile = which('slantededge.pbrt');
+if isempty(pbrtFile)
+    localPath = ieWebGet('deposit name','iset3d-scenes','deposit file','slantededge');
+    pbrtFile = fullfile(localPath,'slantededge.pbrt');
+end
 
 % localFolder = '/Users/zhenyi/git_repo/dev/iset3d/data/scenes/slantedEdge';
 % localFolder = '/Users/wandell/Documents/MATLAB/iset3d-v4/data/scenes/slantedEdge';
@@ -65,14 +69,6 @@ sceneWindow(scene);
 
 %% Render a scene from data base
 
-% We a recipe.mat file in the database.  We do handle the case in
-% which there is no recipe file.
-sceneName       = 'ChessSet';
-
-% The database is on acorn and accessible via that port.
-if isequal(getpref('db','port'),49153)
-else, setpref('db','port',49153); end
-
 % isetdb opens a connection to the MongoDB on acron.
 %
 % Zhenyi implemented a mongoDB collection.  We might rename in the
@@ -80,8 +76,24 @@ else, setpref('db','port',49153); end
 pbrtDB = isetdb;
 collectionName = 'PBRTResources'; % ourDB.collectionCreate(colName);
 
+% The database is on acorn and accessible via this port.
+if isequal(getpref('db','port'),49153)
+else, setpref('db','port',49153); end
+
+% All the remote scenes.  Find the one you want.
+remoteScenes = pbrtDB.contentFind('PBRTResources','type','scene');
+names = {remoteScenes.name};
+% ChessSet 1, kitchen is 29, living-room 31
+idx = find(strcmp(names,'ChessSet'));  
+%{
+for ii=1:numel(remoteScenes)
+   fprintf('%d:  %s\n',ii,names{ii});
+end
+%}
+
 % Returns a struct from the database defining properties of the scene.
-thisScene = pbrtDB.contentFind('PBRTResources', 'name',sceneName, 'show',true);
+% thisScene = pbrtDB.contentFind('PBRTResources', 'name',sceneName, 'show',true);
+thisScene = pbrtDB.contentFind('PBRTResources', 'name',names{idx}, 'show',true);
 
 % The scenes in this database have a recipe.mat.  The input file is on
 % acorn.  The docker has the information about the host, username, and
@@ -90,13 +102,9 @@ thisR = piRead(thisScene,'docker',thisDocker);
 
 thisR.set('spatial resolution',[512,512]);
 
-piWrite(thisR);
-
-scene = piRender(thisR,'docker',thisDocker);
-sceneWindow(scene);
+scene = piWRS(thisR,'docker',thisDocker);
 
 %% Add a database skymap to the scene
-
 
 % There are a lot of remote skymaps stored
 remoteSkymaps = pbrtDB.contentFind('PBRTResources','type','skymap', 'show',true);
@@ -105,7 +113,7 @@ remoteSkymaps = pbrtDB.contentFind('PBRTResources','type','skymap', 'show',true)
 thisR.set('light','all','delete');
 
 % Use the remote skymap
-thisR.set('skymap',remoteSkymaps(30));
+thisR.set('skymap',remoteSkymaps(5));
 
 piWRS(thisR);
 
