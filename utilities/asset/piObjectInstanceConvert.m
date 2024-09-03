@@ -2,7 +2,7 @@ function recipe = piObjectInstanceConvert(recipe)
     % convert old recipe into new recipe, mainly for day time scenes
     % --Zhenyi, 2024
     branchID = recipe.assets.getchildren(1);
-    assetBranch = recipe.get('asset', branchID, 'subtree','false');
+    assetBranch = recipe.get('asset', branchID(1), 'subtree','false');
     branchNode = assetBranch.Node{1};
     branchNode.isObjectInstance = 1;
     if isequal(branchNode.name(5:6),'ID')
@@ -16,7 +16,7 @@ function recipe = piObjectInstanceConvert(recipe)
     branchNode.referenceObject = '';
     branchNode.extraNode = [];
     branchNode.camera = [];
-    recipe.assets = recipe.assets.set(branchID, branchNode);
+    recipe.assets = recipe.assets.set(branchID(1), branchNode);
 
     % strip IDs for objects
     objIDs = recipe.get('objects');
