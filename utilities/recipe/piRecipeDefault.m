@@ -179,6 +179,11 @@ switch ieParamFormat(sceneDir)
         sceneDir = 'coordinate';
         sceneFile = ['coordinate','.pbrt'];
         exporter = 'PARSE';
+    case 'cornell-box'
+        % On SDR
+        sceneDir = 'cornell-box';
+        sceneFile = 'scene-v4.pbrt';
+        exporter = 'Copy';
     case {'cornellbox', 'cornell_box'}
         sceneDir = 'cornell_box';
         sceneFile = ['cornell_box','.pbrt'];
@@ -357,6 +362,7 @@ end
 
 % Local
 if isequal(sceneDir,'BlenderScene')
+    % Do we need this any more?
     FilePath = fullfile(piRootPath,'data','blender','BlenderScene');
 else
     FilePath = fullfile(piRootPath,'data','scenes',sceneDir);
@@ -368,7 +374,8 @@ end
 % If we can not find it, check on the web.
 fname = fullfile(FilePath,sceneFile);
 if ~exist(fname,'file')
-    fname = piSceneWebTest(sceneDir,sceneFile);
+    sceneDir = piSceneWebTest(sceneDir,sceneFile);
+    fname = fullfile(sceneDir,sceneFile);
 end
 
 %% If we are here, we found the file.  So create the recipe.
@@ -381,6 +388,7 @@ switch exporter
     case {'PARSE','Copy'}
         [thisR, info] = piRead(fname, 'exporter', exporter);
     case 'Blender'
+        % Do we need this any more?
         thisR = piRead_Blender(fname,'exporter',exporter);
     otherwise
         error('Unknown export type %s\n',exporter);

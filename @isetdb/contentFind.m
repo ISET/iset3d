@@ -13,16 +13,16 @@ function docIDBContent = contentFind(obj, collection, varargin)
 %  name:      Object names
 %  filepath:  Path to the data
 %  category:  Category of the data
-%  sizeInMB: 
-%  createdat:
-%  updatedat:
-%  author: 
-%  tags:
-%  description:
-%  format:
-%  mainfile:
-%  source:
-%  show:
+%  sizeInMB:  Document size
+%  createdat: When it was created
+%  updatedat: Has it been updated?
+%  author:    Who put it here
+%  tags:      For search help
+%  description: For people help
+%  format:    Good to know
+%  mainfile:  What file represents this
+%  source:    Original source of the file or information
+%  show:      Print out the results prior to return
 %
 % Description
 %  We are starting to build up a database of ISET3d related objects.
@@ -31,6 +31,8 @@ function docIDBContent = contentFind(obj, collection, varargin)
 %  (recipes), skymaps, or textures.
 %
 %  We have only started.  To add an object to the database see XXX.
+%
+%  We have not yet uploaded textures and material files.
 %
 % Author:  Zhenyi Liu, Dave Cardinal
 %
