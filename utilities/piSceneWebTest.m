@@ -1,20 +1,34 @@
 function fname = piSceneWebTest(sceneName,sceneFile)
-% Check for a web scene
+% Get a PBRTV4 (ISET3d) scene on the SDR
 %
-% The sceneName should correspond to one of the lowercase.zip files in the
-% ISET3D Scenes deposit on SDR.  There may be different acceptable
-% sceneFile strings for a sceneName.  For example, there are several
-% legitimate sceneFile names for bistro, dambreak, and others.
+% Synopsis
+%  fname = piSceneWebTest(sceneName,sceneFile)
 %
-% There is a scene called 'head' in both iset3d-scene and pbrtv4. By
-% default head gets the iset3d version, and head-pbrt gets the pbrtv4
-% version.
+% Input
+%   sceneName
+%   sceneFile
 %
-% For bistro, we have sceneName as bistro and different sceneFiles, such as
-% bistro_vespa
+% Optional key/val
+%   N/A
+%
+% Output
+%  fname
+%
+% Description
+%  The sceneName should correspond to one of the lowercase.zip files in the
+%  ISET3D Scenes deposit on SDR.  There may be different acceptable
+%  sceneFile strings for a sceneName.  For example, there are several
+%  legitimate sceneFile names for bistro, dambreak, and others.
+%
+%  There is a scene called 'head' in both iset3d-scene and pbrtv4. By
+%  default head gets the iset3d version, and head-pbrt gets the pbrtv4
+%  version.
+%
+%  For bistro, we have sceneName as bistro and different sceneFiles, such
+%  as bistro_vespa
 %
 % See also.
-%   piRecipeDefault, piRecipeCreate
+%   piRead, piRecipeDefault, piRecipeCreate
 %
 
 % See if the scene is already in data/scene/web
