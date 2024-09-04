@@ -38,47 +38,13 @@ sceneFile = fullfile(sceneDir,sceneFile);
 
 % Download the file to data/scene/web
 if ~isfolder(sceneDir)
-    
-    % Find the scene on the Stanford Digital Repository
-    switch sceneName
-        case {'bathroom','bathroom2','bedroom','classroom',...
-                'cornell-box','glass-of-water','kitchen','lamp',...
-                'living-room','living-room-2','living-room-3',...
-                'staircase','staircase2','teapot-full',...
-                'veach-ajar','veach-bidir','veach-mis'}
-            depositName = 'bitterli';
-            
-            % Bitterli made all the scene files have this name.
-            % Check.
-            tmp = split(sceneFile,'/');
-            assert(isequal(tmp{end},'scene-v4.pbrt'));           
-
-        case {'barcelona-pavilion','bistro','bunny-cloud','bunny-fur',...
-                'clouds','contemporary-bathroom','crown','dambreak',...
-                'disney-cloud','ganesha','hair','head-pbrt','killeroos',...
-                'landscape','lte-orb','pbrt-book','sanmiguel',...
-                'smoke-plume','sportscar','sssdragon',...
-                'transparent-machines','zero-day'}
-            depositName = 'pbrtv4';
-
-        case {'arealight','bunny','car','characters','checkerboard',...
-                'chessset','coordinate','cornell_box',...
-                'cornellboxreference','flashcards','flatsurface',...
-                'lettersatdepth','low-poly-tax','macbethchecker'...
-                'materialball','materialball_cloth','simplescene',...
-                'slantededge','stepfunction','teapot-set','testplane'}
-            depositName = 'iset3d-scenes';
-
-        otherwise
-            error('Scene not local and not on SDR: %s\n',sceneName);
-    end
-
+    depositName = piSceneDeposit(sceneName);
     [sceneDir, zipfilenames] = ieWebGet('deposit name', depositName, 'deposit file', [sceneName,'.zip'],  'unzip', true);
-
-elseif ~exist(sceneFile,'file') 
+elseif ~exist(sceneFile,'file')
     error('Folder exists, but sceneFile (%s) is not there.\n',sceneFile);
 else
     fprintf('File %s already present in data/scene/web.\n',sceneName)
 end
 
 end
+
