@@ -19,7 +19,8 @@
 %%
 ieInit; 
 clear ISETdb;
-piDockerConfig;
+if ~piDockerExists, piDockerConfig; end
+
 
 % set up connection to the database, it's 49153 if we are in Stanford
 % Network. 

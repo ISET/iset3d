@@ -8,6 +8,8 @@ classdef isetdb < handle
         dbPort    = getpref('db','port',27017); % port to use and connect to      
         dbName = 'iset';
         dbImage = 'mongo';
+        dbUsername = 'guest'
+        dbPassword = 'isetguest'
         connection;
     end
 
@@ -19,10 +21,14 @@ classdef isetdb < handle
             arguments
                 options.dbServer = getpref('db','server','localhost');
                 options.dbPort = getpref('db','port',27017);
+                options.dbUsername = getpref('db','username','guest');
+                options.dbPassword = getpref('db', 'password','isetguest');
             end
             obj.dbServer = options.dbServer;
             obj.dbPort = options.dbPort;
-
+            obj.dbUsername = options.dbUsername;
+            obj.dbPassword = options.dbPassword;
+           
             %DB Connect to db instance
             %   or start it if needed
 
@@ -46,7 +52,8 @@ classdef isetdb < handle
             end
 
             % Open the connection to the mongo database
-            obj.connection = mongoc(obj.dbServer, obj.dbPort, obj.dbName);
+            obj.connection = mongoc(obj.dbServer, obj.dbPort, obj.dbName, ...
+                UserName=obj.dbUsername, Password=obj.dbPassword);
             if isopen(obj.connection), return;
             else, warning("Unable to connect to iset database");
             end
