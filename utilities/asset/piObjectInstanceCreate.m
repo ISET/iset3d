@@ -139,7 +139,14 @@ if ~isempty(rotation)
     OBJsubtree_branch.rotation = {rotation};
 end
 if ~isempty(scale)
-    OBJsubtree_branch.scale = {scale};
+    if isfield(OBJsubtree_branch,'scale')
+        if OBJsubtree_branch.scale{1}(:) ~= ones(3,1)
+            disp(OBJsubtree_branch.scale{1});
+        end
+        OBJsubtree_branch.scale = {scale.*OBJsubtree_branch.scale{1}};
+    else
+        OBJsubtree_branch.scale = {scale};
+    end
 end
 
 if ~isempty(motion)

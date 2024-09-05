@@ -442,25 +442,31 @@ pointerT = 1; pointerR = 1; pointerS = 1;
 translation = zeros(3,1);
 rotation = piRotationMatrix;
 scale = ones(1,3);
-
-% deal with old recipes
-if isfield(thisNode, 'transorder')
-    for tt = 1:numel(thisNode.transorder)
-        switch thisNode.transorder(tt)
-            case 'T'
-                translation = translation + thisNode.translation{pointerT}(:);
-                pointerT = pointerT + 1;
-            case 'R'
-                if ~isempty(thisNode.rotation{pointerR})
-                    rotation = rotation + thisNode.rotation{pointerR};
-                end
-                pointerR = pointerR + 1;
-            case 'S'
-                scale = scale .* thisNode.scale{pointerS};
-                pointerS = pointerS + 1;
-        end
+if ~isfield(thisNode, 'transorder')
+    thisNode.transorder = 'TRS';
+    if ~iscell(thisNode.translation)
+        thisNode.translation = {thisNode.translation};
+        thisNode.rotation = {thisNode.rotation};
+        thisNode.scale = {thisNode.scale};
     end
 end
+% deal with old recipes
+for tt = 1:numel(thisNode.transorder)
+    switch thisNode.transorder(tt)
+        case 'T'
+            translation = translation + thisNode.translation{pointerT}(:);
+            pointerT = pointerT + 1;
+        case 'R'
+            if ~isempty(thisNode.rotation{pointerR})
+                rotation = rotation + thisNode.rotation{pointerR};
+            end
+            pointerR = pointerR + 1;
+        case 'S'
+            scale = scale .* thisNode.scale{pointerS};
+            pointerS = pointerS + 1;
+    end
+end
+
 tMatrix = piTransformCompose(translation, rotation, scale);
 tMatrix = reshape(tMatrix,[1,16]);
 

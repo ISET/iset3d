@@ -1,4 +1,4 @@
-function recipe = piObjectInstanceConvert(recipe)
+function [recipe,referenceOBJName] = piObjectInstanceConvert(recipe)
     % convert old recipe into new recipe, mainly for day time scenes
     % --Zhenyi, 2024
     branchID = recipe.assets.getchildren(1);
@@ -8,6 +8,7 @@ function recipe = piObjectInstanceConvert(recipe)
     if isequal(branchNode.name(5:6),'ID')
         branchNode.name = branchNode.name(8:end);
         branchNode.name = strrep(branchNode.name,'_B','_m_B');
+        referenceOBJName = branchNode.name;
     end
     branchNode.scale = {branchNode.scale};
     branchNode.translation = {branchNode.translation};
@@ -29,4 +30,12 @@ function recipe = piObjectInstanceConvert(recipe)
     end
     recipe.assets = recipe.assets.uniqueNames;
     recipe = piObjectInstanceCreate(recipe, branchNode.name);
+
+    %% deal with materials and textures order
+    if ~isfield(recipe.materials,'order')
+        recipe.materials.order = keys(recipe.materials.list);
+    end
+    if ~isfield(recipe.textures,'order')
+        recipe.textures.order = keys(recipe.textures.list);
+    end
 end

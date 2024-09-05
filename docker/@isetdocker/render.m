@@ -94,7 +94,7 @@ if ~isempty(getpref('ISETDocker','remoteHost'))
                 fprintf('[INFO]: Rendered remotely in: %4.2f sec\n', toc(renderStart))
             else
                 cprintf('red','[ERROR]: Docker Command: %s\n', containerCommand);
-                error('Error Rendering: %s', result);
+              error('Error Rendering: %s', result);
             end
 
         else
