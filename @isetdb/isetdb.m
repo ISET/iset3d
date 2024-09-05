@@ -52,7 +52,8 @@ classdef isetdb < handle
             end
         end
 
-        % How we close the connection
+        % How we close the connection.
+        % If we had an sftp, we should be using fclose()
         function close(obj)
             close(obj.connection);
         end

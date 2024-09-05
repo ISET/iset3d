@@ -18,7 +18,6 @@
 
 %%
 ieInit; 
-clear ISETdb;
 piDockerConfig;
 
 % set up connection to the database, it's 49153 if we are in Stanford
@@ -73,12 +72,16 @@ sceneWindow(scene);
 %
 % Zhenyi implemented a mongoDB collection.  We might rename in the
 % future.
-pbrtDB = isetdb;
-collectionName = 'PBRTResources'; % ourDB.collectionCreate(colName);
+if ~exist('pbrtDB','var')
+    pbrtDB = isetdb;
+    collectionName = 'PBRTResources'; % ourDB.collectionCreate(colName);
 
-% The database is on acorn and accessible via this port.
-if isequal(getpref('db','port'),49153)
-else, setpref('db','port',49153); end
+    % The database is on acorn and accessible via this port.
+    % NOTE:  This port is not the same as the one defined in isetdb
+    % itself, which is 27017,  Why?
+    if isequal(getpref('db','port'),49153)
+    else, setpref('db','port',49153); end
+end
 
 % All the remote scenes.  Find the one you want.
 remoteScenes = pbrtDB.contentFind('PBRTResources','type','scene');
