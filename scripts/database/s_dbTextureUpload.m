@@ -89,30 +89,40 @@ thisDocker.upload(localSceneFolder,remoteSceneDir);
 
 % This scene has multiple different main files that render a bit
 % differently.  We add them all to the database
-remoteTextureFile = fullfile(remoteTextureDir,'macbeth.png');
-[thisID, contentStruct] = ourDB.contentCreate('collection Name',collectionName, ...
+remoteTextureFile = fullfile(remoteTextureDir,'macbeth_001.png');
+[thisHash, contentStruct] = pbrtDB.contentCreate('collection Name',collectionName, ...
     'type','texture', ...
     'filepath',remoteTextureDir,...
     'name','macbeth',...
     'category','iset3d',...
-    'mainfile','macbeth.png',...
+    'mainfile','macbeth_001.png',...
     'source','unknown',...
     'tags','material',...
     'description','Classic Macbeth Chart',...
     'sizeInMB',piDirSizeGet(remoteTextureFile,remoteServer)/1024^2,... % MB
     'format','png'); 
 
-%% Check that we can render it
 
-thisTexture = pbrtDB.contentFind(collectionName, 'name','macbeth');
+thisTexture = pbrtDB.contentFind(collectionName, 'hash',thisHash);
+thisTexture = pbrtDB.contentFind(collectionName, 'hash',thisHash);
 
+thisTexture(1)
+
+% When I changed the file name and had to delete a database entry, I
+% used this
+%
+%  nRemoved = pbrtDB.contentRemove(collectionName, thisTexture(1));
+%
+
+%%
+
+
+%%
 % The scenes in this database have a recipe.mat.  The input file is on
 % acorn.  The docker has the information about the host, username, and
 % directories to find the recipe.
 thisR = piRead(thisScene,'docker',thisDocker);
-
 thisR.set('spatial resolution',[512,512]);
-
 scene = piWRS(thisR,'docker',thisDocker);
 
 

@@ -25,16 +25,17 @@ function docIDBContent = contentFind(obj, collection, varargin)
 %  show:      Print out the results prior to return
 %
 % Description
-%  We are starting to build up a database of ISET3d related objects.
+%  We are building up a database of ISET3d related objects.
 %  Potentially there will be other ISET objects in the database in the
-%  future.  These are used for ISET3d rendering, such as finding scenes
-%  (recipes), skymaps, or textures.
+%  future.  These are used for ISET3d rendering, such as finding
+%  scenes (recipes), skymaps, or textures.
 %
-%  We have only started.  To add an object to the database see XXX.
+%  We have only started.  To add an object to the database see
+%  s_dbSceneUpload and related.
 %
-%  We have not yet uploaded textures and material files.
+%  We are just starting to upload textures.
 %
-% Author:  Zhenyi Liu, Dave Cardinal
+% Author:  Zhenyi Liu, Dave Cardinal, Wandell
 %
 % See also
 %  s_dbRendering

@@ -90,13 +90,16 @@ classdef isetdb < handle
         end
 
         % Content is within a collection
-        function documents = contentRemove(obj,collection, struct)
+        function count = contentRemove(obj,collection, queryStruct)
 
-            queryString = queryConstruct(struct);
+            % This should be JSON-style Mongo Query.  
+            % queryString = queryConstruct(queryStruct);
+            queryString = jsonencode(queryStruct);
             try
-                documents = remove(obj.connection, collection, Query = queryString);
+                % count = remove(obj.connection, collection, Query = queryString);
+                count = remove(obj.connection, collection, queryString);
             catch
-                documents = [];
+                count = 0;
             end
         end
 
