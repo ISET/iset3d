@@ -59,7 +59,7 @@ p.addParameter('type', '',@ischar);
 p.addParameter('name', '',@ischar);
 p.addParameter('filepath', '',@ischar);
 p.addParameter('category', '',@ischar);
-p.addParameter('sizeInMB', '',@isnumeric);
+p.addParameter('sizeInMB', '' ,@isnumeric);
 p.addParameter('createdat', char(datetime('now')),@ischar);
 p.addParameter('updatedat', '',@ischar);
 p.addParameter('createdby', getenv('USER'),@ischar);
@@ -74,8 +74,13 @@ p.addParameter('mainfile', '',@ischar);
 p.addParameter('source','',@ischar);
 
 p.parse(varargin{:});
+
+if sizeInMB == 0
+    error('Input file or directory is empty.');
+end
 %% Generate SHA256 hash for the content
 contentStruct = contentSet(p.Results);
+contentStruct.sizeInMB = sizeInMB;
 hashSHA256 = hashStruct(contentStruct);
 contentStruct.hash = hashSHA256;
 queryString = sprintf("{""hash"": ""%s""}", hashSHA256);

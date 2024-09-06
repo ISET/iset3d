@@ -1,16 +1,20 @@
 function [thisR, info] = piRead(fname,varargin)
-% Read an parse a PBRT scene file, returning a rendering recipe
+% Read and (possibly) parse a PBRT scene file, returning a rendering recipe
 %
 % Syntax
 %    [thisR,info] = piRead(fname, varargin)
 %
 % Description
-%  Parses a pbrt scene file and returns the full set of rendering
-%  information in the slots of the "recipe" object. The recipe object
-%  contains all the information needed by PBRT to render the scene.
+%  Typically, this function reads and parses a pbrt scene file and returns
+%  the full set of rendering information in the slots of the "recipe"
+%  object. The recipe object contains all the information needed by PBRT to
+%  render the scene.
 %
-%  We extract blocks with these names from the text prior to
-%  WorldBegin block.  We call these the pbrtOptions
+%  In other cases, the recipe alread exists in our mongo database.  Then we
+%  simply download an existing recipe and return it.
+%
+%  When we read and parse, the function extract blocks with these names
+%  from the text prior to WorldBegin block.  We call these the pbrtOptions
 %
 %    Camera, Sampler, Film, PixelFilter, SurfaceIntegrator (V2, or
 %    Integrator in V3), Renderer, LookAt, Transform, ConcatTransform,
@@ -32,33 +36,34 @@ function [thisR, info] = piRead(fname,varargin)
 %  with GPUs and with the Resource files.  The rendering returns an
 %  ISET scene or oi, which we then show.
 %
-%  Because we commonly execute write, render and show, we also have a
-%  single function (piWRS) that performs all three of these functions
-%  in a single call.
+%  Because we commonly execute write, render and show following a read, we
+%  also have a single function (piWRS) that performs all three of these
+%  functions in a single call.
 %
 % Required inputs
-%   fname - full path to a pbrt scene file.  The geometry, materials
-%           and other needed files should be in relative path to the
-%           main scene file.
+%
+% fname - This parameter can be either:
+%
+%      * IDBContent describing a scene recipe in the database, or
+%      * a full path to a pbrt scene file.  The geometry, materials
+%        and other needed files should be in relative path to the
+%        main scene file.
 %
 % Optional key/value pairs
-%
-%   'read materials' - When PBRT scene file is exported by cinema4d,
-%        the exporterflag is set and we read the materials file.  If
-%        you do not want to read that file, set this to false.
-%
-%   exporter - The exporter determines ... (MORE HERE).
-%              One of 'PARSE','Copy'.  Default is PARSE.
+%   docker   - Use this isetdocker for IDBContent
+%   exporter - The exporter determines whether we try to parse the file to
+%              create a list of the assets (objects, lights) and materials
+%              in the recipe. In some cases the files are very complex. We
+%              do not parse, we just have PBRT execute the rendering. In
+%              that case set this value to 'Copy'. Default is 'PARSE'
 %
 % Output
-%   recipe - A @recipe object with the parameters needed to write a
+%   thisR - A @recipe object with the parameters needed to write a
 %            new pbrt scene file for rendering.  Normally, we write
 %            out the new files in (piRootPath)/local/scenename
 %   info   - Text describing information about the read
 %
 % Assumptions:
-%
-%  piRead assumes that
 %
 %     * There is a block of text before WorldBegin
 %     * After WorldBegin the assets are defined by PBRT commands, such
@@ -71,8 +76,8 @@ function [thisR, info] = piRead(fname,varargin)
 %
 %  piRead will not work with PBRT files that do not meet these criteria.
 %
-%  Text starting at WorldBegin to the end of the file (not just WorldEnd)
-%  is stored in recipe.world.
+%  Text from WorldBegin all the way to the end of the file (not just to
+%  WorldEnd) is stored in recipe.world.
 %
 % Authors: TL, ZLy, BW, Zhenyi
 %
@@ -81,11 +86,6 @@ function [thisR, info] = piRead(fname,varargin)
 
 % Examples:
 %{
- thisR = piRecipeCreate('MacBethChecker');
- thisR.set('skymap','room.exr');
- % thisR = piRecipeDefault('scene name','SimpleScene');
- % thisR = piRecipeDefault('scene name','teapot');
- piWRS(thisR);
 %}
 
 %% Parse the inputs
@@ -94,24 +94,19 @@ p = inputParser;
 
 info = '';
 
-% Parse the scene from server
-if isa(fname, 'IDBContent')
+%% Get the recipe from the database on the server
+if isa(fname, 'IDBContent')    
     p.addParameter('docker',[],@(x)(isa(x,'isetdocker'))); % isetdocker object
     p.parse(varargin{:});
     isetDocker = p.Results.docker;
     if isempty(isetDocker), isetDocker = isetdocker();end
-    remoteFile = strrep(fname.mainfile,'.pbrt','.mat');
-    localDir   = fullfile(piRootPath,'local',[fname.name]);
-    cd(isetDocker.sftpSession,fname.filepath);
-    mget(isetDocker.sftpSession, remoteFile, localDir);
-    recipeMat = fullfile(localDir, strrep(fname.mainfile,'.pbrt','.mat'));
-    thisload = matfile(recipeMat);
-    thisR = thisload.thisR;
-    thisR.set('input file',fullfile(fname.filepath, fname.mainfile));
-    thisR.set('output file',strrep(recipeMat,'.mat','.pbrt'));
-    info = addText(info,sprintf('[INFO]: Use a database scene: [%s].\n',[fname.filepath,'/',fname.mainfile]));
-    return
+
+    % Helper function below
+    [thisR,info] = piReadIDB(fname,isetDocker,'');
+    return;
 end
+
+%% Files exist locally.  Here we go.
 
 p.addRequired('fname', @(x)(exist(fname,'file')));
 validExporters = {'copy','parse'};
@@ -225,7 +220,7 @@ if strcmpi(exporter, 'copy')
 else
     % Try to parse the assets
     % Build the asset tree of objects and lights
-    [trees, newWorld,infotxt] = parseObjectInstanceText(thisR, thisR.world);
+    [trees, newWorld, infotxt] = parseObjectInstanceText(thisR, thisR.world);
     info = addText(info,infotxt);
     thisR.world = newWorld;
 
@@ -311,6 +306,7 @@ end
 end
 
 %% Helper functions
+% piReadIDB
 % piReadText
 % piReadOptions
 % piReadWorldText
@@ -319,6 +315,46 @@ end
 % piReadWorldInclude
 %
 
+%% Return a scene recipe from the image database 
+function [thisR, info] = piReadIDB(idbScene,isetDocker,info)
+%
+% Synopsis
+%  [thisR, info] = piReadIDB(idbScene,isetDocker,info)
+%
+% Input
+%   idbScene:   idbContent defining a scene with a recipe
+%   isetDocker: As its name
+%   info:       Text string.
+%
+% Output:
+%   thisR:  Created for rendering
+%   info:   Modified
+%
+% See also
+%
+
+% If we extract this function, it could run like this.
+%{
+  [thisR,info] = piReadIDB(thisScene,isetdocker,'');
+%}
+
+remoteFile = strrep(idbScene.mainfile,'.pbrt','.mat');
+localDir   = fullfile(piRootPath,'local',[idbScene.name]);
+cd(isetDocker.sftpSession,idbScene.filepath);
+mget(isetDocker.sftpSession, remoteFile, localDir);
+
+recipeMat = fullfile(localDir, strrep(idbScene.mainfile,'.pbrt','.mat'));
+
+% Access and change variables in MAT-file without loading file into memory.
+% I think this is because the matfile may have more than the recipe?
+thisload = matfile(recipeMat);
+thisR = thisload.thisR;
+thisR.set('input file',fullfile(idbScene.filepath, idbScene.mainfile));
+thisR.set('output file',strrep(recipeMat,'.mat','.pbrt'));
+
+info = addText(info,sprintf('[INFO]: Use a database scene: [%s].\n',[idbScene.filepath,'/',idbScene.mainfile]));
+
+end
 
 %% Step through each of the pbrtOption lines and updated the recipe
 function piReadOptions(thisR,pbrtOptions)

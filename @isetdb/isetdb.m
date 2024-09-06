@@ -4,8 +4,11 @@ classdef isetdb < handle
     % This object interacts with the MongoDB that we maintain with
     % scenes, assets and such. At Stanford these are stored on acorn.
     properties
-        dbServer  = getpref('db','server','localhost');
-        dbPort    = getpref('db','port',27017); % port to use and connect to      
+        dbServer  = getpref('db','server','localhost');       
+        % port to use and connect to.
+        % The standard port is 27017.
+        % But Synology at Stanford is set up with this one
+        dbPort    = getpref('db','port',49153); 
         dbName = 'iset';
         dbImage = 'mongo';
         connection;
@@ -52,7 +55,8 @@ classdef isetdb < handle
             end
         end
 
-        % How we close the connection
+        % How we close the connection.
+        % If we had an sftp, we should be using fclose()
         function close(obj)
             close(obj.connection);
         end
@@ -86,13 +90,16 @@ classdef isetdb < handle
         end
 
         % Content is within a collection
-        function documents = contentRemove(obj,collection, struct)
-
-            queryString = queryConstruct(struct);
+        function documents = contentRemove(obj,collection, IDBContentObject)
+            if ~isa(IDBContentObject,'IDBContent')
+                error('Content class is not IDBContent.');
+            end
+            mongoquery = queryConstruct(tmpStruct);
             try
-                documents = remove(obj.connection, collection, Query = queryString);
+                documents = remove(obj.connection, collection, mongoquery);
+                fprintf('[Info]:%d %s is removed from %s.\n',numel(documents), IDBContentObject.name,IDBContentObject.type);
             catch
-                documents = [];
+                documents = []; 
             end
         end
 

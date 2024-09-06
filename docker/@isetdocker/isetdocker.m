@@ -159,8 +159,12 @@ classdef isetdocker < handle
 
         function connect(obj)
             % Establish an SFTP connection
-            obj.sftpSession = sftp(obj.remoteHost, obj.remoteUser);
-
+            try
+                obj.sftpSession = sftp(obj.remoteHost, obj.remoteUser);
+            catch ME
+                disp(ME.message)
+                error('sftp session did not succeed.')
+            end
         end
 
         function disconnect(obj)
@@ -191,6 +195,7 @@ classdef isetdocker < handle
 
             % Finalize the rsync command with source and destination paths
             rsyncCommand = rsyncCommand + " '" + localDir + "/' '" + remoteDir + "/'";
+            disp('[INFO]: Uploading data:');
             % Execute the rsync command
             [status, cmdout] = system(rsyncCommand);
 
@@ -242,6 +247,7 @@ classdef isetdocker < handle
 
             % Finalize the rsync command with source and destination paths
             rsyncCommand = rsyncCommand + " '" + remoteDir + "/' '" + localDir + "/'";
+            disp('[INFO]: Downloading data:');
             % Execute the rsync command
             [status, cmdout] = system(rsyncCommand);
 
