@@ -159,8 +159,12 @@ classdef isetdocker < handle
 
         function connect(obj)
             % Establish an SFTP connection
-            obj.sftpSession = sftp(obj.remoteHost, obj.remoteUser);
-
+            try
+                obj.sftpSession = sftp(obj.remoteHost, obj.remoteUser);
+            catch ME
+                disp(ME.message)
+                error('sftp session did not succeed.')
+            end
         end
 
         function disconnect(obj)
