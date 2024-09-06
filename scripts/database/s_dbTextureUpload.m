@@ -53,8 +53,7 @@ remoteTextureFile = fullfile(remoteTextureDir,'macbeth_001.png');
     'format','png'); 
 
 
-thisTexture = pbrtDB.contentFind(collectionName, 'hash',thisHash);
-thisTexture = pbrtDB.contentFind(collectionName, 'hash',thisHash);
+thisTexture = pbrtDB.contentFind(collectionName, 'name','macbeth');
 
 thisTexture(1)
 
