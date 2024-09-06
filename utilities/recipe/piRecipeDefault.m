@@ -167,7 +167,7 @@ switch ieParamFormat(sceneDir)
     case 'snellenatdepth'
         sceneDir = 'snellenatdepth';
         sceneFile = 'snellen.pbrt';
-        exporter = 'Copy';
+        exporter = 'PARSE';
     case 'sphere'
         sceneDir = 'sphere';
         sceneFile = 'sphere.pbrt';
@@ -581,10 +581,7 @@ end
         sceneDir = 'CornellBoxLamp';
         sceneFile = ['CornellBoxLamp','.pbrt'];
         exporter = 'PARSE';
-    case 'snellenatdepth'
-        sceneDir = 'snellenAtDepth';
-        sceneFile = ['snellen','.pbrt'];
-        exporter = 'Copy';
+
     case 'villa' %27
 %{
                 [1m[31mWarning[0m: GBufferFilm is not supported by the "bdpt" integrator. The channels other than R, G, B will be zero.
