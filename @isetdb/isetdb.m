@@ -90,16 +90,16 @@ classdef isetdb < handle
         end
 
         % Content is within a collection
-        function documents = contentRemove(obj,collection, IDBContentObject)
-            if ~isa(IDBContentObject,'IDBContent')
-                error('Content class is not IDBContent.');
-            end
-            mongoquery = queryConstruct(tmpStruct);
+        function count = contentRemove(obj,collection, queryStruct)
+
+            % This should be JSON-style Mongo Query.  
+            % queryString = queryConstruct(queryStruct);
+            queryString = jsonencode(queryStruct);
             try
-                documents = remove(obj.connection, collection, mongoquery);
-                fprintf('[Info]:%d %s is removed from %s.\n',numel(documents), IDBContentObject.name,IDBContentObject.type);
+                % count = remove(obj.connection, collection, Query = queryString);
+                count = remove(obj.connection, collection, queryString);
             catch
-                documents = []; 
+                count = 0;
             end
         end
 

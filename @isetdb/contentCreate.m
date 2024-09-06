@@ -11,7 +11,8 @@ function [hashSHA256,contentStruct] = contentCreate(obj, varargin)
 %
 % Inputs
 %    obj: The database object representing the connection.
-%
+%    
+% Optional Key/Value Parameters
 %    'collectionname' (char): Name of the MongoDB collection.
 %    'type'          (char): Content type.
 %    'name'          (char): Content name.
@@ -29,9 +30,6 @@ function [hashSHA256,contentStruct] = contentCreate(obj, varargin)
 %    'mainfile'      (char): Main file associated with assets and scenes.
 %    'source'        (char): Source of the content.
 %
-% Optional Key/Value Parameters
-%   None
-%
 % Returns
 %     hashSHA256 (char): Unique SHA256 hash created by the MongoDB database.
 %     contentStruct (struct): Struct containing content information.
@@ -41,7 +39,10 @@ function [hashSHA256,contentStruct] = contentCreate(obj, varargin)
 %   provided content information. If a document with the same hash exists, it 
 %   checks for changes in the 'filepath' or 'description' fields and updates the
 %   document if necessary. The function generates a SHA256 hash based on the 
-%   content's struct to use as a unique identifier.
+%   content's struct to use as a unique identifier. 
+% 
+%   (We should be able to search on this, but that has not been
+%   properly implemented yet, BW, 9/7/2024).
 %
 % Example
 %   dbObj = MongoDatabase('ServerURI', 'mongodb://localhost:27017');
