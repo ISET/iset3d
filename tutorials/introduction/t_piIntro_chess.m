@@ -65,11 +65,13 @@ piWRS(thisR,'name','Point light');
 
 %% Add a skymap
 
-[~, skyMap] = thisR.set('skymap','room.exr');
+thisR.set('light','all','delete');
+
+[~, skyMap] = thisR.set('skymap','equiarea-rainbow.exr');
 
 thisR.show('lights');
 
-piWRS(thisR, 'name', 'Point light and skymap');
+piWRS(thisR, 'name', 'Rainbow skymap');
 
 %% Rotate the skymap
 
