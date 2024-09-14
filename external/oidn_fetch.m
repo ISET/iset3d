@@ -47,8 +47,14 @@ for i = 1:numel(releaseData.assets)
         disp(['Download completed: ', fileName]);
 
         % Unzip if it's a .tar.gz file
-        gunzip(fileName);
-        untar(strrep(fileName, '.gz', ''),fullfile(piRootPath,'external'));
+        % If not use regular zip
+        try
+            gunzip(fileName);
+            untar(strrep(fileName, '.gz', ''),fullfile(piRootPath,'external'));
+        catch
+            folderName = strrep(folderName, '.zip','');
+            unzip(fileName,fullfile(folderName,'..')); % parent
+        end
         
         % Delete both .tar and the tar.gz files
         delete(fileName);  
