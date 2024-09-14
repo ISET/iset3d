@@ -20,4 +20,4 @@ data/scenes/testplane/dgauss.22deg.3.0mm+microlens.json
 data/assets/*
 data-
 data+
-local
+local/*
