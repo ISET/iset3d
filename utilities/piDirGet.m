@@ -74,6 +74,9 @@ switch (resourceType)
         resourceDir = fullfile(ourData,'skymaps');
     case 'local'
         resourceDir = fullfile(ourRoot,'local');
+        if ~isfolder(resourceDir)
+            mkdir(resourceDir);
+        end
     case 'character-assets'
         % put characters in a sub-folder of assets for now
         resourceDir = fullfile(piDirGet('assets'),'characters');
