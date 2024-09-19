@@ -130,7 +130,7 @@ thisR.set('skymap','room.exr');
 piWRS(thisR);
 
 
-%% Now do a texture example
+%% Use a remote texture
 
 remoteTextures = pbrtDB.contentFind('PBRTResources','type','texture','show',true);
 
@@ -154,7 +154,7 @@ thisR.set('skymap','room.exr');
 
 % There are (annoyingly) two objects with the same name.
 idx = piAssetSearch(thisR,'object name','Plane_O');
-planeIDX = idx(1);
+planeIDX = idx(2);
 
 % We will replace this material
 materialName = thisR.get('asset',planeIDX,'material name');
@@ -165,8 +165,8 @@ newMat.material = piMaterialCreate(newName,'type','diffuse','reflectance val',ne
 newMat.texture = piTextureCreate(newName,...
             'format', 'spectrum',...
             'type', 'imagemap',...
-            'uscale', 128,...
-            'vscale', 128,...
+            'uscale', 256,...
+            'vscale', 32,...
             'filename', fullfile(remoteTextures.filepath,remoteTextures.mainfile));
 thisR.set('material', 'add', newMat);
 thisR.show('materials')
