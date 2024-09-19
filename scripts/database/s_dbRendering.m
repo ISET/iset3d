@@ -129,9 +129,56 @@ thisR.set('skymap','room.exr');
 
 piWRS(thisR);
 
+
+%% Now do a texture example
+
+remoteTextures = pbrtDB.contentFind('PBRTResources','type','texture','show',true);
+
+pbrtFile = which('slantededge.pbrt');
+if isempty(pbrtFile)
+    localPath = ieWebGet('deposit name','iset3d-scenes','deposit file','slantededge');
+    pbrtFile = fullfile(localPath,'slantededge.pbrt');
+end
+
+% localFolder = '/Users/zhenyi/git_repo/dev/iset3d/data/scenes/slantedEdge';
+% localFolder = '/Users/wandell/Documents/MATLAB/iset3d-v4/data/scenes/slantedEdge';
+% pbrtFile = fullfile(localFolder, 'slantedEdge.pbrt');
+thisR = piRead(pbrtFile);
+
+% Edit for a while.
+thisR.set('spatial resolution',[100,100]);
+
+% This must exist on your path.  It will be copied locally and then
+% sync'd to the remote machine.
+thisR.set('skymap','room.exr');
+
+% There are (annoyingly) two objects with the same name.
+idx = piAssetSearch(thisR,'object name','Plane_O');
+planeIDX = idx(1);
+
+% We will replace this material
+materialName = thisR.get('asset',planeIDX,'material name');
+
+% Here we create the material that will replace the original
+newName = 'happy';
+newMat.material = piMaterialCreate(newName,'type','diffuse','reflectance val',newName);
+newMat.texture = piTextureCreate(newName,...
+            'format', 'spectrum',...
+            'type', 'imagemap',...
+            'uscale', 128,...
+            'vscale', 128,...
+            'filename', fullfile(remoteTextures.filepath,remoteTextures.mainfile));
+thisR.set('material', 'add', newMat);
+thisR.show('materials')
+thisR.set('asset',planeIDX,'material name',newName);
+
+scene = piWRS(thisR);
+
+
 %%
 
 thisR.summarize;
+
 
 %% END
 

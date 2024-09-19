@@ -995,7 +995,7 @@ switch param
         end
 
         % At this point we have the material.
-        if numel(varargin{1}) == 1
+        if isscalar(varargin{1})
             % A material struct was sent in as the only argument.  We
             % should check it, make sure its name is unique, and then set
             % it.
@@ -1018,6 +1018,14 @@ switch param
     case {'textures', 'texture'}
         % thisR.set('texture',textureName,parameter,value);
         % thisR.set('texture',textures
+        
+        %{
+        if isa(val,'IDBContent') && strcmp(val.type,'texture')
+            % use a database skymap
+            skymapFileName = val.filepath;
+        end
+        %}
+
         if isempty(varargin)
             % At this point thisR.textures has a slot for list
             % (contains.Map) and a slot for order, a cell array of texture
@@ -1157,12 +1165,16 @@ switch param
             end
         end
         % Create a sky light with default params.
-        [~, f, ~] = fileparts(skymapFileName);
+        [~, lName, ~] = fileparts(skymapFileName);
         
-        lName = f; % in case we want to get fancy later
+        % If skymapFileName is from the remote server, piLightGet
+        % returns the proper file name. For remote that is the full
+        % path on acorn, and otherwise it is a path inside of the
+        % scene subdiretory, skymaps.
         envLight = piLightCreate(lName, ...
             'type', 'infinite',...
             'filename', skymapFileName);
+
         % In case we dont parse the scene
         if strcmpi(thisR.exporter,'copy')
             thisR.lights{1} = envLight; % tmp

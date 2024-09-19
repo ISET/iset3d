@@ -15,10 +15,8 @@
 thisDocker = isetdocker;
 pbrtDB = isetdb();
 
-remoteTextures = pbrtDB.contentFind('PBRTResources','type','texture');
-for ii=1:numel(remoteTextures)
-    fprintf('%d: %s\n',ii,remoteTextures(ii).name);
-end
+%
+remoteTextures = pbrtDB.contentFind('PBRTResources','type','texture','show',true);
 
 % There is contentRemove
 
