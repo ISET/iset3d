@@ -1,7 +1,7 @@
 %% Introducing iset3d calculations with the Chess Set
 %
 % Brief description:
-%  This script renders the chess set scene.  
+%  This script renders the chess set.  
 % 
 %  This script:
 %
