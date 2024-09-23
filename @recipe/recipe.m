@@ -235,13 +235,17 @@ classdef recipe < matlab.mixin.Copyable
                         if isequal(obj.get('light',lNames{ii},'type'),'infinite')
                             mapname = obj.get('light',lNames{ii},'filename');
                             if ~isempty(mapname)
-                                mapname = fullfile(obj.get('outputdir'),mapname);
-                                img = exrread(mapname);
-                                ieNewGraphWin;
-                                img = abs(img .^0.6);
-                                imagesc(img);
-                                [~,str,ext] = fileparts(mapname);
-                                title([str,ext]); axis image; axis off
+                                mapname = fullfile(obj.get('outputdir'),'skymaps',mapname);
+                                if exist(mapname,'file')
+                                    img = exrread(mapname);
+                                    ieNewGraphWin;
+                                    img = abs(img .^0.6);
+                                    imagesc(img);
+                                    [~,str,ext] = fileparts(mapname);
+                                    title([str,ext]); axis image; axis off
+                                else
+                                    warning('Skymap %s not found.  Perhaps remote.',mapname);
+                                end
                             end
                         end
                     end
