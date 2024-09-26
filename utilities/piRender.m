@@ -115,7 +115,7 @@ p.addParameter('verbose', 1, @isnumeric);
 p.addParameter('remote',true,@islogical);
 
 % Optional denoising -- OIDN-based for now
-p.addParameter('denoise','none',@ischar);
+p.addParameter('denoise','none',@(x)(ischar(x) || islogical(x)));
 
 % Return render command only
 p.addParameter('commandonly',false);
@@ -128,6 +128,16 @@ scalePupilArea   = p.Results.scalepupilarea;
 meanLuminance    = p.Results.meanluminance;     
 meanIlluminance  = p.Results.meanilluminance;   
 wave             = p.Results.wave;
+
+% Deal with denoise string names.
+if islogical(p.Results.denoise)
+    if    p.Results.denoise,  denoiseFlag = 'exr_radiance';
+    else, denoiseFlag = 'none';
+    end
+else
+    denoiseFlag = p.Results.denoise;
+end
+
 
 %% Set up the isetdocker -- add test for have prefs but no object
 if ~ispref('ISETDocker') && isempty(renderDocker)
@@ -195,8 +205,8 @@ if status
 end
 
 %% EXR-based denoising option here
-if ~isequal(p.Results.denoise, 'none')
-    piEXRDenoise(outFile,'channels', p.Results.denoise);
+if ~isequal(denoiseFlag, 'none')
+    piEXRDenoise(outFile,'channels', denoiseFlag);
 end
 
 %% Convert the returned data to an ieObject

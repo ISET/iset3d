@@ -6,23 +6,22 @@
 ieInit;
 if ~piDockerExists, piDockerConfig; end
 
-%% Load the EIA chart
-eia = piAssetLoad('eia');
-thisR = eia.thisR;
+%% Load the chess scene
 
-% Add a light
-thisR.set('skymap','sky-sunlight.exr');
-% piWRS(thisR);
+thisR = piRecipeDefault('scene name','chessset');
 
 %%  Increasing pinhole size 
-radius = [0,logspace(-3,-1.8,3)];
+radius = [0,logspace(-3,-2,3)];
+img = cell(4,1);
 for ii=1:numel(radius)
     thisR.set('lens radius',radius(ii));
-    piWRS(thisR,'name',sprintf('Radius %.3f mm',radius(ii)));
+    scene = piWRS(thisR,'name',sprintf('Radius %.3f mm',radius(ii)));
+    scene = piAIdenoise(scene);
+    img{ii} = sceneGet(scene,'srgb');
+    ieReplaceObject(scene);
 end
 
-%% An image for the slide
-imageMultiview('scene',1:4,true);
-
+%% 
+ieNewGraphWin; montage(img);
 %% End
 
