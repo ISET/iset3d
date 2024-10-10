@@ -74,17 +74,11 @@ sceneWindow(scene);
 % future.
 if ~exist('pbrtDB','var')
     pbrtDB = isetdb;
-    collectionName = 'PBRTResources'; % ourDB.collectionCreate(colName);
-
-    % The database is on acorn and accessible via this port.
-    % NOTE:  This port is not the same as the one defined in isetdb
-    % itself, which is 27017,  Why?
-    if isequal(getpref('db','port'),49153)
-    else, setpref('db','port',49153); end
 end
 
+collectionName = 'PBRTResources'; % ourDB.collectionCreate(colName);
 % All the remote scenes.  Find the one you want.
-remoteScenes = pbrtDB.contentFind('PBRTResources','type','scene');
+remoteScenes = pbrtDB.contentFind(collectionName,'type','scene');
 names = {remoteScenes.name};
 % ChessSet 1, kitchen is 29, living-room 31
 idx = find(strcmp(names,'ChessSet'));  

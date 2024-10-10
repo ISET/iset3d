@@ -1,36 +1,46 @@
 classdef isetdb < handle
     % Initialize an ISET database object.  
     % 
-    % This object interacts with the MongoDB that we maintain with
-    % scenes, assets and such. At Stanford these are stored on acorn.
     properties
-        dbServer  = getpref('db','server','localhost');       
-        % port to use and connect to.
-        % The standard port is 27017.
-        % But Synology at Stanford is set up with this one
-        dbPort    = getpref('db','port',49153); 
-        dbName = 'iset';
-        dbImage = 'mongo';
-        dbUsername = 'guest'
-        dbPassword = 'isetguest'
-        connection;
+        dbServer
+        dbPort
+        dbName
+        dbImage
+        dbUsername
+        dbPassword
+        connection
     end
 
     methods
-        % default is a local Docker container, but we also want
-        % to support storing remotely to a running instance
         function obj = isetdb(options)
-
+            % The values can be overwritten in the call to isetdb in the
+            % form isetdb("dbProp", "dbPropValue", etc).  If they are not,
+            % they are overwritten by the "db" pref field, if not we
+            % provide generic values
             arguments
-                options.dbServer = getpref('db','server','localhost');
-                options.dbPort = getpref('db','port',27017);
-                options.dbUsername = getpref('db','username','guest');
-                options.dbPassword = getpref('db', 'password','isetguest');
+                options.dbServer = getpref("db","dbServer","localhost");
+                options.dbPort = getpref("db","dbPort", 27017);
+                options.dbName = getpref("db","dbName", "iset");
+                options.dbImage = getpref("db","dbImage","mongodb");
+                options.dbUsername = getpref("db","dbUsername","guest");
+                options.dbPassword = getpref("db", "dbPassword","isetguest");
+                options.connect = true; %in case we just want a blank struct
             end
             obj.dbServer = options.dbServer;
             obj.dbPort = options.dbPort;
+            obj.dbName = options.dbName;
+            obj.dbImage = options.dbImage;
             obj.dbUsername = options.dbUsername;
             obj.dbPassword = options.dbPassword;
+            if options.connect
+                obj.connection = mongoc(obj.dbServer, obj.dbPort, obj.dbName, ...
+                UserName=obj.dbUsername, Password=obj.dbPassword);
+            end
+        end
+
+        function connect(obj)
+        % default is a local Docker container, but we also want
+        % to support storing remotely to a running instance
            
             %DB Connect to db instance
             %   or start it if needed
@@ -55,12 +65,11 @@ classdef isetdb < handle
             end
 
             % Open the connection to the mongo database
+            % succeeds or throws an error.  We could do a 'try' and 'catch' if
+            % we want to avoid blowing up entirely
             obj.connection = mongoc(obj.dbServer, obj.dbPort, obj.dbName, ...
                 UserName=obj.dbUsername, Password=obj.dbPassword);
-            if isopen(obj.connection), return;
-            else, warning("Unable to connect to iset database");
-            end
-        end
+        end  
 
         % How we close the connection.
         % If we had an sftp, we should be using fclose()
@@ -110,6 +119,9 @@ classdef isetdb < handle
             end
         end
 
+    end
+    methods (Static = true)
+        setDBUserPrefs();
     end
 end
 
