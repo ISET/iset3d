@@ -1,4 +1,6 @@
-%% Illustrate rendering as the pinhole aperture size increases
+%% s_opticsPinhole
+% 
+% Illustrate rendering as the pinhole aperture size increases
 %
 % PBRT sets the pinhole radius of the perspective
 
@@ -21,7 +23,7 @@ for ii=1:numel(radius)
     ieReplaceObject(scene);
 end
 
-%% 
+%%
 ieNewGraphWin; montage(img);
 %% End
 
