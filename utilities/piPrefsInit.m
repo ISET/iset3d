@@ -2,7 +2,8 @@ function piPrefsInit
 % If ISET3d pref is not set, we set them.
 %
 % See also
-%  
+%
+
 if ~ispref('ISET3d') || ~ispref('ISET3d','wave')
     setpref('ISET3d','verbose',1);
     setpref('ISET3d','meanluminance',100);

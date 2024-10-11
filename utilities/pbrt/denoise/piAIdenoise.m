@@ -246,6 +246,6 @@ if ~doBatch
     if exist(outputTmp,'file'), delete(outputTmp); end
 end
 
-fprintf("Denoised in: %2.3f\n", toc);
+if ~quiet, fprintf("Denoised in: %2.3f sec\n", toc); end
 
 end

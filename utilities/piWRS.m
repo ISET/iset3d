@@ -40,6 +40,8 @@ function [obj, results, thisD] = piWRS(thisR,varargin)
 %             from the local computer.  (Better comment needed)
 %    'denoise' - Run the piAIdenoise prior to returning
 %    'main file only' - piWrite flag
+%    'verbosity'  - Set isetdocker verbosity level (0 quiet, 1,2,3
+%                   noisy)
 %
 % Returns
 %   obj     - a scene or oi
@@ -73,6 +75,7 @@ p.addParameter('meanluminance',-1,@isscalar);
 p.addParameter('replace',false,@islogical);
 p.addParameter('mainfileonly',false,@islogical);
 p.addParameter('pushresources',false,@islogical);
+p.addParameter('verbosity',1,@isnumeric);
 
 % allow parameter passthrough
 p.KeepUnmatched = true;
@@ -97,11 +100,13 @@ if isempty(renderType)
     renderType = [{'radiance'},{'depth'},{'normal'}];
 end
 
+% Initialize this docker and its level of verbosity
 if ~isempty(p.Results.docker)
     thisD = p.Results.docker;
 else
     thisD = isetdocker();
 end
+thisD.verbosity = p.Results.verbosity;
 
 name = p.Results.name;
 show = p.Results.show;

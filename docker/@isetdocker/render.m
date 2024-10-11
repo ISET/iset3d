@@ -1,12 +1,32 @@
 function [status, result, containerCommand] = render(obj, thisR, commandonly)
+% Render a recipe with the docker container
+%
+% Inputs
+%   obj    - The isetdocker
+%   thisR  - Render recipe
+%   commandonly - Just return the command
+%
+% Key/val
+%   N/A
+%
+% Returns
+%   status
+%   result
+%   containerCommand
+%
+% See also
+%
+
+%% Initialize
 p = inputParser();
 
 p.KeepUnmatched = true;
 
-verbose = 1; % 0, 1, 2
+verbose = obj.verbosity; % 0, 1, 2, 3
 if ~exist('commandonly','var')
     commandonly = false;
 end
+
 %% Build up the render command
 pbrtFile     = thisR.outputFile;
 outputFolder = fileparts(thisR.outputFile);

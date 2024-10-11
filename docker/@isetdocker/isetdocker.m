@@ -153,7 +153,7 @@ classdef isetdocker < handle
                     end
                 end
             else
-                disp('[INFO]:Remote Host is empty, use local.')
+                if obj.verbosity, disp('[INFO]:Remote Host is empty, use local.'); end
             end
         end
 
@@ -195,7 +195,7 @@ classdef isetdocker < handle
 
             % Finalize the rsync command with source and destination paths
             rsyncCommand = rsyncCommand + " '" + localDir + "/' '" + remoteDir + "/'";
-            disp('[INFO]: Uploading data:');
+            if obj.verbosity, disp('[INFO]: Uploading data:'); end
             % Execute the rsync command
             [status, cmdout] = system(rsyncCommand);
 
@@ -203,7 +203,7 @@ classdef isetdocker < handle
                 error(['Rsync failed with the following message: ', cmdout]);
             else
                 obj.formatAndPrint(string(cmdout));
-                disp('[INFO]: Data uploaded successfully.');
+                if obj.verbosity, disp('[INFO]: Data uploaded successfully.'); end
             end
         end
 
@@ -233,7 +233,7 @@ classdef isetdocker < handle
 
             % Finalize the rsync command with source and destination paths
             rsyncCommand = rsyncCommand + " '" + remoteDir + "/' '" + localDir + "/'";
-            disp('[INFO]: Downloading data:');
+            if obj.verbosity, disp('[INFO]: Downloading data:'); end
             % Execute the rsync command
             [status, cmdout] = system(rsyncCommand);
 
@@ -241,7 +241,7 @@ classdef isetdocker < handle
                 error(['Rsync failed with the following message: ', cmdout]);
             else
                 obj.formatAndPrint(cmdout);
-                disp('[INFO]: Data downloaded successfully.');
+                if obj.verbosity, disp('[INFO]: Data downloaded successfully.'); end
             end
         end
 
@@ -255,7 +255,7 @@ classdef isetdocker < handle
             %
             % See also
             %
-            verbose = obj.verbosity;
+            % verbose = obj.verbosity;
             useImage = getpref('ISETDocker','dockerImage');
             rng('shuffle'); % make random numbers random
             uniqueid = randi(20000);
@@ -314,9 +314,7 @@ classdef isetdocker < handle
                 error("[ERROR]:Failed to start Docker container: %s", result);
             else
                 % obj.dockerContainerID = result; % hex name for it
-                if verbose > 0
-                    fprintf("[INFO]: STARTED Docker successfully\n");
-                end
+                if obj.verbosity, fprintf("[INFO]: STARTED Docker successfully\n"); end
             end
             % save container name
             setpref('ISETDocker','PBRTContainer',ourContainer);
@@ -379,7 +377,7 @@ classdef isetdocker < handle
 
                 % Display only lines that indicate transferred files or important info
                 if contains(line, {'sent','bytes','bytes/sec'})
-                    disp(strcat('[INFO]:',' ',strrep(line,'sent',' Sent')));
+                    if obj.verbosity, disp(strcat('[INFO]:',' ',strrep(line,'sent',' Sent'))); end
                 end
             end
 
@@ -427,10 +425,11 @@ classdef isetdocker < handle
             gpuString = gpuString(strlength(gpuString) > 0);
             gpuString = split(gpuString,', ');
 
+            % Should preallocate or ignore warning.
             for i=1:size(gpuString,1)
-                gpuAttrs(i).id = gpuString(i,1);
-                gpuAttrs(i).name = gpuString(i,2);
-                gpuAttrs(i).mem = gpuString(i,3);
+                gpuAttrs(i).id     = gpuString(i,1);
+                gpuAttrs(i).name   = gpuString(i,2);
+                gpuAttrs(i).mem    = gpuString(i,3);
                 gpuAttrs(i).driver = gpuString(i,4);
             end
 
