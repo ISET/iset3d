@@ -51,7 +51,7 @@ end
 %
 %  sceneCreate('empty')
 %
-% Tried that October 13, 2024.  If the validations pass, I will leave it.
+% Tried on October 13, 2024.  The validations are passing, I will leave it.
 %
 %{
 patchSize = 8;

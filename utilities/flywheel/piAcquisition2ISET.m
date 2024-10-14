@@ -1,4 +1,6 @@
 function ieObject = piAcquisition2ISET(acquisition, st, varargin)
+% Deprecated: 
+% 
 % Collects PBRT files from an acquisition and creates a scene or oi
 %
 % Syntax
