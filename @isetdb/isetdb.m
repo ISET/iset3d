@@ -2,12 +2,12 @@ classdef isetdb < handle
     % Initialize an ISET database object.  
     % 
     properties
-        dbServer
-        dbPort
-        dbName
-        dbImage
-        dbUsername
-        dbPassword
+        dbServer    = "localhost"
+        dbPort      = 27017
+        dbName      = "iset"
+        dbImage     = "mongodb"
+        dbUsername  = "demo"
+        dbPassword  = "demopass"
         connection
     end
 
@@ -18,21 +18,28 @@ classdef isetdb < handle
             % they are overwritten by the "db" pref field, if not we
             % provide generic values
             arguments
-                options.dbServer = getpref("db","dbServer","localhost");
-                options.dbPort = getpref("db","dbPort", 27017);
-                options.dbName = getpref("db","dbName", "iset");
-                options.dbImage = getpref("db","dbImage","mongodb");
-                options.dbUsername = getpref("db","dbUsername","guest");
-                options.dbPassword = getpref("db", "dbPassword","isetguest");
-                options.connect = true; %in case we just want a blank struct
+                options.dbServer
+                options.dbPort
+                options.dbName
+                options.dbImage
+                options.dbUsername
+                options.dbPassword
+                options.noconnect = false; %usually we want to connect at creation
             end
-            obj.dbServer = options.dbServer;
-            obj.dbPort = options.dbPort;
-            obj.dbName = options.dbName;
-            obj.dbImage = options.dbImage;
-            obj.dbUsername = options.dbUsername;
-            obj.dbPassword = options.dbPassword;
-            if options.connect
+
+            props = properties(obj);
+            for ii=1:numel(props)
+                if strcmp(props{ii},"connection")
+                    % obj.connection should only be set by calling mongoc()
+                    continue;
+                end
+                if isfield(options, props{ii})
+                    obj.(props{ii}) = options.(props{ii});
+                else
+                    obj.(props{ii}) = getpref("db",props{ii},obj.(props{ii}));
+                end
+            end
+            if ~options.noconnect
                 obj.connection = mongoc(obj.dbServer, obj.dbPort, obj.dbName, ...
                 UserName=obj.dbUsername, Password=obj.dbPassword);
             end
