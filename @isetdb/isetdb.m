@@ -2,8 +2,7 @@ classdef isetdb < handle
     % Initialize an ISET database object.  
     % 
     properties
-        dbServer    = "localhost"
-        dbPort      = 27017
+        dbServer    = "localhost:27017"
         dbName      = "iset"
         dbImage     = "mongodb"
         dbUsername  = "demo"
@@ -13,34 +12,41 @@ classdef isetdb < handle
 
     methods
         function obj = isetdb(options)
-            % The values can be overwritten in the call to isetdb in the
-            % form isetdb("dbProp", "dbPropValue", etc).  If they are not,
+            % The obj values can be set in the call to isetdb in the
+            % form isetdb(dbProp=dbPropValue, etc).  If they are not,
             % they are overwritten by the "db" pref field, if not we
-            % provide generic values
+            % let the generic values flow through
             arguments
                 options.dbServer
-                options.dbPort
                 options.dbName
                 options.dbImage
                 options.dbUsername
                 options.dbPassword
                 options.noconnect = false; %usually we want to connect at creation
+                options.noprefs = false; %don't populate with isetdb prefs
             end
-
+            
             props = properties(obj);
             for ii=1:numel(props)
                 if strcmp(props{ii},"connection")
                     % obj.connection should only be set by calling mongoc()
                     continue;
                 end
+                
                 if isfield(options, props{ii})
+                    % if we passed in an option, that overrides
                     obj.(props{ii}) = options.(props{ii});
-                else
-                    obj.(props{ii}) = getpref("db",props{ii},obj.(props{ii}));
+                elseif ~options.noprefs && ispref("db") && ispref("db",props{ii})
+                    % check for a preference, otherwise just let the value
+                    % from the properties section flow through
+                    obj.(props{ii}) = getpref("db",props{ii});
                 end
             end
             if ~options.noconnect
-                obj.connection = mongoc(obj.dbServer, obj.dbPort, obj.dbName, ...
+                foo = split(obj.dbServer,':');
+                [servername, port] = foo{:};
+                port = str2double(port);
+                obj.connection = mongoc(servername, port, obj.dbName, ...
                 UserName=obj.dbUsername, Password=obj.dbPassword);
             end
         end
@@ -128,7 +134,7 @@ classdef isetdb < handle
 
     end
     methods (Static = true)
-        setDBUserPrefs();
+        setDbUserPrefs();
     end
 end
 
