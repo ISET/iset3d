@@ -113,6 +113,7 @@ if p.Results.show
         disp('[INFO]: Number of requested items is larger than 20, showing only the first 20 here.')
         disp(struct2table(documents(1:20)));
    elseif isempty(documents)
+       docIDBContent = [];
        return;
    else
        % Print it
