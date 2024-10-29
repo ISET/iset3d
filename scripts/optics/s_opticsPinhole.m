@@ -3,6 +3,13 @@
 % Illustrate rendering as the pinhole aperture size increases
 %
 % PBRT sets the pinhole radius of the perspective
+%
+% I suspect that the units of the pinhole diameter are not correct
+% here.  The blurring is too great for the 20 micron pinhole. This is
+% a question of the units in PBRT.
+%
+% This script is amplified in fise_01Pinhole.mlx (psych221).
+%
 
 %%
 ieInit;
