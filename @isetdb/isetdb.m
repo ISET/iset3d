@@ -43,10 +43,9 @@ classdef isetdb < handle
                 end
             end
             if ~options.noconnect
-                foo = split(obj.dbServer,':');
-                [servername, port] = foo{:};
-                port = str2double(port);
-                obj.connection = mongoc(servername, port, obj.dbName, ...
+                [server] = split(obj.dbServer,':');
+                port = str2double(server(2));
+                obj.connection = mongoc(server{1}, port, obj.dbName, ...
                 UserName=obj.dbUsername, Password=obj.dbPassword);
             end
         end
