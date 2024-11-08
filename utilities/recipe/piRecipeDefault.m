@@ -496,9 +496,11 @@ end
 
 % If we can not find it, check on the web.
 fname = fullfile(FilePath,sceneFile);
-if ~exist(fname,'file')
+if ~exist(fname,'file') 
     sceneDir = piSceneWebTest(sceneDir,sceneFile);
     fname = fullfile(sceneDir,sceneFile);
+elseif ~strcmp(fname, which(fname))
+    error('File exists on your path, but not where expected.')
 end
 
 %% If we are here, we found the file.  So create the recipe.
