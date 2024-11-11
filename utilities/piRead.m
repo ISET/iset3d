@@ -1,16 +1,20 @@
-function thisR = piRead(fname,varargin)
-% Read an parse a PBRT scene file, returning a rendering recipe
+function [thisR, info] = piRead(fname,varargin)
+% Read and (possibly) parse a PBRT scene file, returning a rendering recipe
 %
 % Syntax
-%    thisR = piRead(fname, varargin)
+%    [thisR,info] = piRead(fname, varargin)
 %
 % Description
-%  Parses a pbrt scene file and returns the full set of rendering
-%  information in the slots of the "recipe" object. The recipe object
-%  contains all the information needed by PBRT to render the scene.
+%  Typically, this function reads and parses a pbrt scene file and returns
+%  the full set of rendering information in the slots of the "recipe"
+%  object. The recipe object contains all the information needed by PBRT to
+%  render the scene.
 %
-%  We extract blocks with these names from the text prior to
-%  WorldBegin block.  We call these the pbrtOptions
+%  In other cases, the recipe alread exists in our mongo database.  Then we
+%  simply download an existing recipe and return it.
+%
+%  When we read and parse, the function extract blocks with these names
+%  from the text prior to WorldBegin block.  We call these the pbrtOptions
 %
 %    Camera, Sampler, Film, PixelFilter, SurfaceIntegrator (V2, or
 %    Integrator in V3), Renderer, LookAt, Transform, ConcatTransform,
@@ -32,32 +36,34 @@ function thisR = piRead(fname,varargin)
 %  with GPUs and with the Resource files.  The rendering returns an
 %  ISET scene or oi, which we then show.
 %
-%  Because we commonly execute write, render and show, we also have a
-%  single function (piWRS) that performs all three of these functions
-%  in a single call.
+%  Because we commonly execute write, render and show following a read, we
+%  also have a single function (piWRS) that performs all three of these
+%  functions in a single call.
 %
 % Required inputs
-%   fname - full path to a pbrt scene file.  The geometry, materials
-%           and other needed files should be in relative path to the
-%           main scene file.
+%
+% fname - This parameter can be either:
+%
+%      * IDBContent describing a scene recipe in the database, or
+%      * a full path to a pbrt scene file.  The geometry, materials
+%        and other needed files should be in relative path to the
+%        main scene file.
 %
 % Optional key/value pairs
-%
-%   'read materials' - When PBRT scene file is exported by cinema4d,
-%        the exporterflag is set and we read the materials file.  If
-%        you do not want to read that file, set this to false.
-%
-%   exporter - The exporter determines ... (MORE HERE).
-%              One of 'PARSE','Copy'.  Default is PARSE.
+%   docker   - Use this isetdocker for IDBContent
+%   exporter - The exporter determines whether we try to parse the file to
+%              create a list of the assets (objects, lights) and materials
+%              in the recipe. In some cases the files are very complex. We
+%              do not parse, we just have PBRT execute the rendering. In
+%              that case set this value to 'Copy'. Default is 'PARSE'
 %
 % Output
-%   recipe - A @recipe object with the parameters needed to write a
+%   thisR - A @recipe object with the parameters needed to write a
 %            new pbrt scene file for rendering.  Normally, we write
 %            out the new files in (piRootPath)/local/scenename
+%   info   - Text describing information about the read
 %
 % Assumptions:
-%
-%  piRead assumes that
 %
 %     * There is a block of text before WorldBegin
 %     * After WorldBegin the assets are defined by PBRT commands, such
@@ -70,8 +76,8 @@ function thisR = piRead(fname,varargin)
 %
 %  piRead will not work with PBRT files that do not meet these criteria.
 %
-%  Text starting at WorldBegin to the end of the file (not just WorldEnd)
-%  is stored in recipe.world.
+%  Text from WorldBegin all the way to the end of the file (not just to
+%  WorldEnd) is stored in recipe.world.
 %
 % Authors: TL, ZLy, BW, Zhenyi
 %
@@ -80,38 +86,31 @@ function thisR = piRead(fname,varargin)
 
 % Examples:
 %{
- thisR = piRecipeCreate('MacBethChecker');
- thisR.set('skymap','room.exr');
- % thisR = piRecipeDefault('scene name','SimpleScene');
- % thisR = piRecipeDefault('scene name','teapot');
- piWRS(thisR);
 %}
 
 %% Parse the inputs
 varargin =ieParamFormat(varargin);
 p = inputParser;
 
-% Parse the scene from server
-if isstruct(fname) && isfield(fname, 'hash')
+info = '';
+
+%% Get the recipe from the database on the server
+if isa(fname, 'IDBContent')    
     p.addParameter('docker',[],@(x)(isa(x,'isetdocker'))); % isetdocker object
     p.parse(varargin{:});
     isetDocker = p.Results.docker;
-    remoteFile = strrep(fname.mainfile,'.pbrt','.mat');
-    localDir   = fullfile(piRootPath,'local',[fname.name]);
-    cd(isetDocker.sftpSession,fname.filepath);
-    mget(isetDocker.sftpSession, remoteFile, localDir);
-    recipeMat = fullfile(localDir, strrep(fname.mainfile,'.pbrt','.mat'));
-    thisload = matfile(recipeMat);
-    thisR = thisload.thisR;
-    thisR.set('input file',fullfile(fname.filepath, fname.mainfile));
-    thisR.set('output file',strrep(recipeMat,'.mat','.pbrt'));
-    fprintf('[INFO]: Use a database scene: [%s].\n',[fname.filepath,'/',fname.mainfile]);
-    return
+    if isempty(isetDocker), isetDocker = isetdocker();end
+
+    % Helper function below
+    [thisR,info] = piReadIDB(fname,isetDocker,'');
+    return;
 end
 
+%% Files exist locally.  Here we go.
+
 p.addRequired('fname', @(x)(exist(fname,'file')));
-validExporters = {'Copy','PARSE'};
-p.addParameter('exporter', 'PARSE', @(x)(ismember(x,validExporters)));
+validExporters = {'copy','parse'};
+p.addParameter('exporter', 'parse', @(x)(ismember(lower(x),validExporters)));
 
 % We use meters in PBRT, assimp uses centimeter as base unit
 % Blender scene has a scale factor equals to 100.
@@ -122,12 +121,25 @@ p.addParameter('exporter', 'PARSE', @(x)(ismember(x,validExporters)));
 %    local/outputdirname/outdirname.pbrt
 p.parse(fname,varargin{:});
 
+%% Initialize the recipe
+
 thisR = recipe;
 thisR.version = 4;
 
 infile = fname;
-%% Init ISET prefs
-piPrefsInit
+
+% 8/27/2024 Place the scene directory on the Matlab path.  This is
+% important for finding parameter files in the subdirectory.  It
+% matters in piParameterGet() for finding an spd.
+inPath = fileparts(infile); pathCell = strsplit(path,pathsep);
+if ~any(strcmp(inPath,pathCell))
+    addpath(genpath(inPath));
+end
+
+% Make sure ISET3d prefs are set.  If not, set some defaults.  Where
+% should this be?  Why here?
+piPrefsInit;
+
 %% Exist checks on the whole path.
 if exist(infile,'file')
     if ~isempty(which(infile))
@@ -171,10 +183,8 @@ pbrtOptions = piReadWorldText(thisR, txtLines);
 % Act on the pbrtOptions, setting the recipe slots (i.e., thisR).
 piReadOptions(thisR,pbrtOptions);
 
-
-
 %% Read Materials and Textures
-if ~strcmpi(exporter, 'Copy')
+if ~strcmpi(exporter, 'copy')
     %% Insert the text from the Include files
 
     % These are usually _geometry.pbrt and _materials.pbrt.  At this
@@ -199,17 +209,19 @@ if ~strcmpi(exporter, 'Copy')
     % Convert texture file format to PNG
     thisR = piTextureFileFormat(thisR);
 
-    fprintf('[INFO]: Read %d materials and %d textures.\n', materialLists.Count, textureList.Count);
+    info = addText(info,sprintf('[INFO]: Read %d materials and %d textures.\n', materialLists.Count, textureList.Count));
+    
 end
 %% Decide whether to Copy or Parse to get the asset tree filled up
 
-if strcmpi(exporter, 'Copy')
+if strcmpi(exporter, 'copy')
     % On Copy we copy the assets, we do not parse them.
     % It would be best if we could always parse the objects.
 else
     % Try to parse the assets
     % Build the asset tree of objects and lights
-    [trees, newWorld] = parseObjectInstanceText(thisR, thisR.world);
+    [trees, newWorld, infotxt] = parseObjectInstanceText(thisR, thisR.world);
+    info = addText(info,infotxt);
     thisR.world = newWorld;
 
     if exist('trees','var') && ~isempty(trees)
@@ -244,7 +256,7 @@ else
         % transform [...] / Translate/ rotate/ scale/
         % material ... / NamedMaterial
         % shape ...
-        disp('[INFO]: No tree returned by parseObjectInstanceText. recipe.assets is empty');
+        info = addText(info,'[INFO]: No tree returned by parseObjectInstanceText. recipe.assets is empty');
     end
 end
 
@@ -294,6 +306,7 @@ end
 end
 
 %% Helper functions
+% piReadIDB
 % piReadText
 % piReadOptions
 % piReadWorldText
@@ -302,6 +315,46 @@ end
 % piReadWorldInclude
 %
 
+%% Return a scene recipe from the image database 
+function [thisR, info] = piReadIDB(idbScene,isetDocker,info)
+%
+% Synopsis
+%  [thisR, info] = piReadIDB(idbScene,isetDocker,info)
+%
+% Input
+%   idbScene:   idbContent defining a scene with a recipe
+%   isetDocker: As its name
+%   info:       Text string.
+%
+% Output:
+%   thisR:  Created for rendering
+%   info:   Modified
+%
+% See also
+%
+
+% If we extract this function, it could run like this.
+%{
+  [thisR,info] = piReadIDB(thisScene,isetdocker,'');
+%}
+
+remoteFile = strrep(idbScene.mainfile,'.pbrt','.mat');
+localDir   = fullfile(piRootPath,'local',[idbScene.name]);
+cd(isetDocker.sftpSession,idbScene.filepath);
+mget(isetDocker.sftpSession, remoteFile, localDir);
+
+recipeMat = fullfile(localDir, strrep(idbScene.mainfile,'.pbrt','.mat'));
+
+% Access and change variables in MAT-file without loading file into memory.
+% I think this is because the matfile may have more than the recipe?
+thisload = matfile(recipeMat);
+thisR = thisload.thisR;
+thisR.set('input file',fullfile(idbScene.filepath, idbScene.mainfile));
+thisR.set('output file',strrep(recipeMat,'.mat','.pbrt'));
+
+info = addText(info,sprintf('[INFO]: Use a database scene: [%s].\n',[idbScene.filepath,'/',idbScene.mainfile]));
+
+end
 
 %% Step through each of the pbrtOption lines and updated the recipe
 function piReadOptions(thisR,pbrtOptions)
@@ -450,6 +503,9 @@ flipping = 0;
 if(isempty(lookAtBlock))
     % If it is empty, use the default
     thisR.lookAt = struct('from',[0 0 0],'to',[0 1 0],'up',[0 0 1]);
+    from = thisR.get('from');
+    to   = thisR.get('to');
+    up   = thisR.get('up');
 else
     % We have values
     %     values = textscan(lookAtBlock{1}, '%s %f %f %f %f %f %f %f %f %f');
@@ -459,7 +515,7 @@ else
     up = [values{8} values{9} values{10}];
 end
 
-% If there's a transform, we transform the LookAt. % to change
+% If there's a transform, we transform the LookAt.
 if ~isempty(txtLines)
     [~, transformBlock] = piBlockExtract(txtLines,'blockName','Transform');
     if(~isempty(transformBlock))
@@ -470,7 +526,7 @@ if ~isempty(txtLines)
     end
 end
 % If there's a concat transform, we use it to update the current camera
-% position. % to change
+% position.
 [~, concatTBlock] = piBlockExtract(txtLines,'blockName','ConcatTransform');
 if(~isempty(concatTBlock))
     values = textscan(concatTBlock{1}, '%s [%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f]');
@@ -500,17 +556,19 @@ blockLine = []; % make sure we return something to avoid an error.
 
 % How many lines of text?
 nline = numel(txtLines);
-s = [];ii=1;
+s = []; ii=1;
 
 while ii<=nline
-    blockLine = txtLines{ii};
     % There is enough stuff to make it worth checking
-    if length(blockLine) >= 5 % length('Shape')
-        % If the blockLine matches the BlockName, do something
-        if strncmp(blockLine, blockName, length(blockName))
-            s=[];
+    if length(txtLines{ii}) >= 5 % length('Shape')
+        % If the start of the text matches the BlockName, do something
+        if strncmp(txtLines{ii}, blockName, length(blockName))
+            % s=[];
 
-            % If it is Transform, do this and then return
+            % We return this.
+            blockLine = txtLines{ii};
+
+            % If it is Transform or these others, just return the blockLine
             if (strcmp(blockName,'Transform') || ...
                     strcmp(blockName,'LookAt')|| ...
                     strcmp(blockName,'ConcatTransform')|| ...
@@ -518,7 +576,8 @@ while ii<=nline
                 return;
             end
 
-            % It was not Transform.  So figure it out.
+            % It was not Transform or the others.  So figure which of
+            % the other types it might be. 
             thisLine = strrep(blockLine,'[','');  % Get rid of [
             thisLine = strrep(thisLine,']','');   % Get rid of ]
             thisLine = textscan(thisLine,'%q');   % Find individual words into a cell array

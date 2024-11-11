@@ -1,28 +1,59 @@
 classdef isetdb < handle
     % Initialize an ISET database object.  
     % 
-    % This object interacts with the MongoDB that we maintain with
-    % scenes, assets and such. At Stanford these are stored on acorn.
     properties
-        dbServer  = getpref('db','server','localhost');
-        dbPort    = getpref('db','port',27017); % port to use and connect to      
-        dbName = 'iset';
-        dbImage = 'mongo';
-        connection;
+        dbServer    = "localhost:27017"
+        dbName      = "iset"
+        dbImage     = "mongodb"
+        dbUsername  = "demo"
+        dbPassword  = "demopass"
+        connection
     end
 
     methods
+        function obj = isetdb(options)
+            % The obj values can be set in the call to isetdb in the
+            % form isetdb(dbProp=dbPropValue, etc).  If they are not,
+            % they are overwritten by the "db" pref field, if not we
+            % let the generic values flow through
+            arguments
+                options.dbServer
+                options.dbName
+                options.dbImage
+                options.dbUsername
+                options.dbPassword
+                options.noconnect = false; %usually we want to connect at creation
+                options.noprefs = false; %don't populate with isetdb prefs
+            end
+            
+            props = properties(obj);
+            for ii=1:numel(props)
+                if strcmp(props{ii},"connection")
+                    % obj.connection should only be set by calling mongoc()
+                    continue;
+                end
+                
+                if isfield(options, props{ii})
+                    % if we passed in an option, that overrides
+                    obj.(props{ii}) = options.(props{ii});
+                elseif ~options.noprefs && ispref("db") && ispref("db",props{ii})
+                    % check for a preference, otherwise just let the value
+                    % from the properties section flow through
+                    obj.(props{ii}) = getpref("db",props{ii});
+                end
+            end
+            if ~options.noconnect
+                [server] = split(obj.dbServer,':');
+                port = str2double(server(2));
+                obj.connection = mongoc(server{1}, port, obj.dbName, ...
+                UserName=obj.dbUsername, Password=obj.dbPassword);
+            end
+        end
+
+        function connect(obj)
         % default is a local Docker container, but we also want
         % to support storing remotely to a running instance
-        function obj = isetdb(options)
-
-            arguments
-                options.dbServer = getpref('db','server','localhost');
-                options.dbPort = getpref('db','port',27017);
-            end
-            obj.dbServer = options.dbServer;
-            obj.dbPort = options.dbPort;
-
+           
             %DB Connect to db instance
             %   or start it if needed
 
@@ -46,13 +77,14 @@ classdef isetdb < handle
             end
 
             % Open the connection to the mongo database
-            obj.connection = mongoc(obj.dbServer, obj.dbPort, obj.dbName);
-            if isopen(obj.connection), return;
-            else, warning("Unable to connect to iset database");
-            end
-        end
+            % succeeds or throws an error.  We could do a 'try' and 'catch' if
+            % we want to avoid blowing up entirely
+            obj.connection = mongoc(obj.dbServer, obj.dbPort, obj.dbName, ...
+                UserName=obj.dbUsername, Password=obj.dbPassword);
+        end  
 
-        % How we close the connection
+        % How we close the connection.
+        % If we had an sftp, we should be using fclose()
         function close(obj)
             close(obj.connection);
         end
@@ -86,16 +118,22 @@ classdef isetdb < handle
         end
 
         % Content is within a collection
-        function documents = contentRemove(obj,collection, struct)
+        function count = contentRemove(obj,collection, queryStruct)
 
-            queryString = queryConstruct(struct);
+            % This should be JSON-style Mongo Query.  
+            % queryString = queryConstruct(queryStruct);
+            queryString = jsonencode(queryStruct);
             try
-                documents = remove(obj.connection, collection, Query = queryString);
+                % count = remove(obj.connection, collection, Query = queryString);
+                count = remove(obj.connection, collection, queryString);
             catch
-                documents = [];
+                count = 0;
             end
         end
 
+    end
+    methods (Static = true)
+        setDbUserPrefs();
     end
 end
 

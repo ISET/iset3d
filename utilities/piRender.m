@@ -33,7 +33,7 @@ function [ieObject, result, thisD, outFile] = piRender(thisR, varargin)
 %  ourdocker  - Specify the docker wrapper to use.  Default is build
 %               from scratch with defaults in the Matlab getprefs('docker')
 %
-%  verbose    - How much to print to standard output:
+%  verbosity  - How much to print to standard output:
 %               0 Silent
 %               1 Minimal
 %               2 Legacy -- for compatibility
@@ -92,8 +92,12 @@ function [ieObject, result, thisD, outFile] = piRender(thisR, varargin)
   thisDocker = isetdocker('localRender',true,'gpuRendering', false,'verbosity',0);
   scene = piWRS(thisR,'our docker',thisDocker);
 %}
-%% Init ISET prefs
+
+%% Init ISET prefs.
+
+%  If ISET3d prefs are not already set, this will initialize.
 piPrefsInit
+
 %%  Name of the pbrt scene file and whether we use a pinhole or lens model
 
 p = inputParser;
@@ -107,15 +111,17 @@ p.addParameter('meanilluminance',getpref('ISET3d','meanilluminance'),@isnumeric)
 p.addParameter('scalepupilarea',true,@islogical);
 p.addParameter('reuse',false,@islogical);
 p.addParameter('docker',[],@(x)(isa(x,'isetdocker'))); % isetdocker object
+
 % This passed to piDat2ISET, which is where we do the construction.
 p.addParameter('wave', getpref('ISET3d','wave'), @isnumeric);
 
-p.addParameter('verbose', 1, @isnumeric);
+% Passed to isetdocker
+p.addParameter('verbosity', 1, @isnumeric);
 
 p.addParameter('remote',true,@islogical);
 
 % Optional denoising -- OIDN-based for now
-p.addParameter('denoise','none',@ischar);
+p.addParameter('denoise','none',@(x)(ischar(x) || islogical(x)));
 
 % Return render command only
 p.addParameter('commandonly',false);
@@ -128,6 +134,17 @@ scalePupilArea   = p.Results.scalepupilarea;
 meanLuminance    = p.Results.meanluminance;     
 meanIlluminance  = p.Results.meanilluminance;   
 wave             = p.Results.wave;
+verbosity        = p.Results.verbosity;
+
+% Deal with denoise string names.
+if islogical(p.Results.denoise)
+    if    p.Results.denoise,  denoiseFlag = 'exr_radiance';
+    else, denoiseFlag = 'none';
+    end
+else
+    denoiseFlag = p.Results.denoise;
+end
+
 
 %% Set up the isetdocker -- add test for have prefs but no object
 if ~ispref('ISETDocker') && isempty(renderDocker)
@@ -135,7 +152,7 @@ if ~ispref('ISETDocker') && isempty(renderDocker)
 else
     if isempty(renderDocker)
         renderDocker = isetdocker();
-        disp('[INFO]: Render Locally.');
+        if verbosity, disp('[INFO]: Render Locally.'); end
     else
         % renderDocker is fine
     end
@@ -166,14 +183,15 @@ outF = strcat('renderings/',currName,'.exr');
 
 [status, result] = renderDocker.render(thisR, p.Results.commandonly);
 if getpref('ISETDocker','batch'), ieObject =[]; return;end
+
 % Lots of output when verbosity is 2.
 % Append the renderCommand and output file
 if renderDocker.verbosity > 0
     fprintf('[INFO]: Output file:  %s\n',outF);
-elseif renderDocker.verbosity > 1
-    fprintf('PBRT result info:  %s\n',result);
+    if renderDocker.verbosity > 1
+        fprintf('PBRT result info:  %s\n',result);
+    end
 end
-
 
 
 % The user wants the isetdocker.
@@ -195,8 +213,8 @@ if status
 end
 
 %% EXR-based denoising option here
-if ~isequal(p.Results.denoise, 'none')
-    piEXRDenoise(outFile,'channels', p.Results.denoise);
+if ~isequal(denoiseFlag, 'none')
+    piEXRDenoise(outFile,'channels', denoiseFlag);
 end
 
 %% Convert the returned data to an ieObject

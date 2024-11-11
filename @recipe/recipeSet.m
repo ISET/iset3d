@@ -699,7 +699,7 @@ switch param
     case 'nmicrolens'
         % Number of microlens/pinhole samples for a light field camera
         %
-        if length(val) == 1, val(2) = val(1); end
+        if isscalar(val), val(2) = val(1); end
         thisR.camera.num_pinholes_h.value = val(1);
         thisR.camera.num_pinholes_h.type = 'float';
         thisR.camera.num_pinholes_w.value = val(2);
@@ -767,7 +767,7 @@ switch param
         % Number of spatial samples on the film (or retinal) surface. The
         % number of samples may be spread over larger or smaller field of
         % view.
-        if length(val) == 1, val(2) = val(1); end
+        if isscalar(val), val(2) = val(1); end
         thisR.film.xresolution.value = val(1);
         thisR.film.yresolution.value = val(2);
         thisR.film.xresolution.type = 'integer';
@@ -995,7 +995,7 @@ switch param
         end
 
         % At this point we have the material.
-        if numel(varargin{1}) == 1
+        if isscalar(varargin{1})
             % A material struct was sent in as the only argument.  We
             % should check it, make sure its name is unique, and then set
             % it.
@@ -1018,6 +1018,14 @@ switch param
     case {'textures', 'texture'}
         % thisR.set('texture',textureName,parameter,value);
         % thisR.set('texture',textures
+        
+        %{
+        if isa(val,'IDBContent') && strcmp(val.type,'texture')
+            % use a database skymap
+            skymapFileName = val.filepath;
+        end
+        %}
+
         if isempty(varargin)
             % At this point thisR.textures has a slot for list
             % (contains.Map) and a slot for order, a cell array of texture
@@ -1103,7 +1111,7 @@ switch param
         % thisR.set('skypmap',filename)
         % add a skymap by filename
         % See piDockerImgtool for creating skymaps
-        if isstruct(val) && strcmp(val.type,'skymap')
+        if isa(val,'IDBContent') && strcmp(val.type,'skymap')
             % use a database skymap
             skymapFileName = val.filepath;
         else
@@ -1157,30 +1165,47 @@ switch param
             end
         end
         % Create a sky light with default params.
-        [~, f, ~] = fileparts(skymapFileName);
-
-        lName = f; % in case we want to get fancy later
+        [~, lName, ~] = fileparts(skymapFileName);
+        
+        % If skymapFileName is from the remote server, piLightGet
+        % returns the proper file name. For remote that is the full
+        % path on acorn, and otherwise it is a path inside of the
+        % scene subdiretory, skymaps.
         envLight = piLightCreate(lName, ...
             'type', 'infinite',...
             'filename', skymapFileName);
-        thisR.set('lights', envLight, 'add');
 
-        if ~isempty(varargin) && isequal(varargin{1},'rotation val')
-            thisR.set('light', lName, 'rotate', varargin{2});
+        % In case we dont parse the scene
+        if strcmpi(thisR.exporter,'copy')
+            thisR.lights{1} = envLight; % tmp
+            lightTxt = piLightWrite(thisR);
+            % Add a new skymap or replace the exisiting one
+            location = find(contains(thisR.world,{'LightSource "infinite"'}));
+            if ~isempty(location)
+                thisR.world{location}=lightTxt{1}.line{2};
+            else
+                thisR.world{end+1} = lightTxt{1}.line{2};
+            end            
+            thisR.lights = []; % empty it
         else
-            % For V4 we do not usually need the -90 rotation as we did
-            % for V3. For V4 the 'up' direction seems to mainly be
-            % z-up. But scenes where it is y-up, we need the rotation.
-            % (Check with Zhenyi).
-            up = thisR.get('up');
-            if up(2) > up(3)
-                % This is a y-up recipe, so by default we rotate the skypmap
-                thisR.set('light', lName, 'rotate', [-90 0 0]);
+            thisR.set('lights', envLight, 'add');
+
+            if ~isempty(varargin) && isequal(varargin{1},'rotation val')
+                thisR.set('light', lName, 'rotate', varargin{2});
+            else
+                % For V4 we do not usually need the -90 rotation as we did
+                % for V3. For V4 the 'up' direction seems to mainly be
+                % z-up. But scenes where it is y-up, we need the rotation.
+                % (Check with Zhenyi).
+                up = thisR.get('up');
+                if up(2) > up(3)
+                    % This is a y-up recipe, so by default we rotate the skypmap
+                    thisR.set('light', lName, 'rotate', [-90 0 0]);
+                end
             end
         end
-
         out = envLight;
-
+        
     case {'light', 'lights'}
         % Calling convention
         %
@@ -1459,7 +1484,7 @@ switch param
         end
         param = varargin{1};
         % If only one element in varargin, it should be a node struct.
-        if numel(varargin) == 1 && ~ischar(varargin{1})
+        if isscalar(varargin) && ~ischar(varargin{1})
             thisR.assets = thisR.assets.set(id, varargin{1});
             out = varargin{1};
             thisR.assets = thisR.assets.uniqueNames;
@@ -1797,6 +1822,9 @@ switch param
                     thisR.metadata.illuminanceRecipe = illumR;
             end
         end
+
+    case {'usedb'}
+        thisR.useDB = val;
     otherwise
         error('Unknown parameter %s\n',param);
 end

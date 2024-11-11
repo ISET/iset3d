@@ -105,20 +105,20 @@ switch object.type
 end
 
 if p.Results.useNvidia
-    outputTmp = fullfile(piRootPath,'local',sprintf('tmp_input_%05d%05d.exr',randi(1000),randi(1000)));
-    DNImg_pth = fullfile(piRootPath,'local',sprintf('tmp_dn_%05d%05d.exr',randi(1000),randi(1000)));
+    outputTmp = fullfile(piDirGet('local'),sprintf('tmp_input_%05d%05d.exr',randi(1000),randi(1000)));
+    DNImg_pth = fullfile(piDirGet('local'),sprintf('tmp_dn_%05d%05d.exr',randi(1000),randi(1000)));
 elseif doBatch
     outputTmp = {};
     DNImg_pth = {};
     for ii = 1:chs
         % see if we can use only the channel number
         % would be an issue if we do multiple renders in parallel
-        outputTmp{ii} = fullfile(piRootPath,'local',sprintf('tmp_input-%d.pfm',ii));
-        DNImg_pth{ii} = fullfile(piRootPath,'local',sprintf('tmp_dn-%d.pfm',ii));
+        outputTmp{ii} = fullfile(piDirGet('local'),sprintf('tmp_input-%d.pfm',ii));
+        DNImg_pth{ii} = fullfile(piDirGet('local'),sprintf('tmp_dn-%d.pfm',ii));
     end
 else
-    outputTmp = fullfile(piRootPath,'local',sprintf('tmp_input_%05d%05d.pfm',randi(1000),randi(1000)));
-    DNImg_pth = fullfile(piRootPath,'local',sprintf('tmp_dn_%05d%05d.pfm',randi(1000),randi(1000)));
+    outputTmp = fullfile(piDirGet('local'),sprintf('tmp_input_%05d%05d.pfm',randi(1000),randi(1000)));
+    DNImg_pth = fullfile(piDirGet('local'),sprintf('tmp_dn_%05d%05d.pfm',randi(1000),randi(1000)));
 end
 
 % Empty array to store results
@@ -246,6 +246,6 @@ if ~doBatch
     if exist(outputTmp,'file'), delete(outputTmp); end
 end
 
-fprintf("Denoised in: %2.3f\n", toc);
+if ~quiet, fprintf("Denoised in: %2.3f sec\n", toc); end
 
 end

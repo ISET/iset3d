@@ -52,6 +52,7 @@ if isfield(thisR.textures,'list') && ~isempty(thisR.textures.list)
     nn = 1;
     TextureTex = [];
     textureTxt = [];
+    % When the texture is remote, piTextureText has the full path. 
     for ii = 1:numel(textureKeys)
         tmpTxt = piTextureText(thisR.textures.list(textureKeys{ii}), thisR);
         if piContains(tmpTxt,'texture tex')

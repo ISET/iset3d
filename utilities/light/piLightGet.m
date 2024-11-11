@@ -156,14 +156,14 @@ if pbrtText && ~isempty(val) &&...
             % filename. 
             % 
             % Point, distant, infant, area, spot do not.
-            %
-            % We for goniometric in v4 this changed to filename from mapname
-            % Below, mapname is for skymaps
 
-            % Use skymaps only where they belong
-            % or in the instanced folder
+            % When the skymap is remote, the path is a full path,
+            % starting with '/'.  In that case we do nothing.
+            % Otherwise, we add a prefix and put the skymap into the
+            % local 'skymaps' folder.  We don't know what the
+            % instanced case is for.  Let's ask DJC.
             if contains(val,'instanced/'),    prefix = '';
-            elseif ~contains(val,'skymaps/') && ~strncmp(val,'/',1), prefix = 'skymaps/';
+            elseif ~contains(val,'skymaps/') && ~isequal(val(1),'/'), prefix = 'skymaps/';
             else,                             prefix = '';
             end
             
