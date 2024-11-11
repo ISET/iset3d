@@ -130,13 +130,22 @@ if pbrtText && ~isempty(val) &&...
                     % copied in the target directory.
                     
                     % use 'scale' to scale the radiance.
-                    lightSpectrum = sprintf('"spds/lights/%s.spd"', ieParamFormat(lght.spd.value));
+                    lightSpectrum = sprintf('"spds/lights/%s.spd"', ieParamFormat(lght.spd.value));                
                 else
                     lightSpectrum = sprintf('"%s"', lght.spd.value);
                 end
             elseif isnumeric(lght.spd.value)
-                txt = piNum2String(lght.spd.value * spectrumScale);
-                lightSpectrum = ['[' ,txt,']'];
+                if strcmpi(lght.spd.type,'blackbody')
+                    % Simple blackbody case.  The spectrum scale
+                    % should be handled by PBRT.
+                    txt = piNum2String(lght.spd.value);
+                    lightSpectrum = ['[' ,txt,']'];
+                else
+                    % What condition might this be? Is it a case where
+                    % we set a spectrum by hand? (BW)
+                    txt = piNum2String(lght.spd.value * spectrumScale);
+                    lightSpectrum = ['[' ,txt,']'];
+                end
             end
             switch lght.type
                 case {'point', 'goniometric', 'projection', 'spot', 'spotlight'} % I
