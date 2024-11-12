@@ -117,26 +117,44 @@ if pbrtText && ~isempty(val) &&...
                 txt = sprintf('AreaLightSource "diffuse"');
             end
         case 'spd'
-            if ~isempty(lght.specscale.value), spectrumScale = lght.specscale.value;
-            else, spectrumScale = 1;
-            end
+            % if ~isempty(lght.specscale.value), spectrumScale = lght.specscale.value;
+            % else, spectrumScale = 1;
+            % end
             
             if ischar(lght.spd.value)
                 [~, ~, ext] = fileparts(lght.spd.value);
                 if ~isequal(ext, '.spd')
-                    % If the extension is not .spd, the spectrum is an
-                    % isetcam mat file. Otherwise, the spd file exists
-                    % from the input folder already, it should be
-                    % copied in the target directory.
-                    
-                    % use 'scale' to scale the radiance.
-                    lightSpectrum = sprintf('"spds/lights/%s.spd"', ieParamFormat(lght.spd.value));
+                    % If the extension is not .spd, the data are in an
+                    % isetcam mat file. The mat-file should exist.  It
+                    % is loaded and re-written as a PBRT spd file
+                    % inside of the function piLightWrite (line 60).
+                    % We assign the same name to the spd file, but
+                    % with the extension spd and forcing everything to
+                    % lower case and no spaces.
+                    % 
+                    lightSpectrum = sprintf('"spds/lights/%s.spd"', ieParamFormat(lght.spd.value));                
                 else
+                    % If the extension is .spd, then the file should
+                    % exist in the input folder already, and it should
+                    % be copied in the target directory.  So we do not
+                    % need to go here.
                     lightSpectrum = sprintf('"%s"', lght.spd.value);
                 end
             elseif isnumeric(lght.spd.value)
-                txt = piNum2String(lght.spd.value * spectrumScale);
-                lightSpectrum = ['[' ,txt,']'];
+                if strcmpi(lght.spd.type,'blackbody')
+                    % Simple blackbody case.  The spectrum scale
+                    % should be handled by PBRT.
+                    assert(isequal(numel(lght.spd.value),1));
+                    txt = piNum2String(lght.spd.value);
+                    lightSpectrum = ['[' ,txt,']'];
+                else
+                    % What condition might this be? Maybe it is a case where
+                    % we set the light spectrum numerically? (BW)
+                    % Set 'spd scale' to scale the radiance.  It was
+                    % done here,  but that seems wrong.                    
+                    txt = piNum2String(lght.spd.value);
+                    lightSpectrum = ['[' ,txt,']'];
+                end
             end
             switch lght.type
                 case {'point', 'goniometric', 'projection', 'spot', 'spotlight'} % I
