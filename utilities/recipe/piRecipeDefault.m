@@ -208,8 +208,8 @@ switch ieParamFormat(sceneDir)
         sceneDir = 'classroom';
         sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
-    case 'cornell-box'
-        % On SDR
+    case 'cornell-box-sdr'
+        % On SDR.  No assets parsed.
         sceneDir = 'cornell-box';
         sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
