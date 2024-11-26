@@ -163,6 +163,9 @@ classdef isetdocker < handle
                 obj.sftpSession = sftp(obj.remoteHost, obj.remoteUser);
             catch ME
                 disp(ME.message)
+                if strcmp(version('-release'),'2024b')
+                    disp('There is a known problem with sftp in 2024b. Try 2024a or earlier!');
+                end
                 error('sftp session did not succeed.')
             end
         end
