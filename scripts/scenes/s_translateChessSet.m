@@ -25,8 +25,11 @@ thisR.set('render type',{'radiance','depth'});
 %% The main way we write, render and show the recipe.  The render flag
 % is optional, and there are several other optional piWRS flags.
 
-% Now render a bunch of versions while translating the camera
-numsteps = 64;
+% Now render many images while translating the camera.
+% This will produce a 'cube' of luminance images that we can slice through
+% to see some surprising structure.  It is also the equivalent of what we
+% might measure if we had an array of cameras along a straight line.
+numsteps = 128;
 totaltravel = .1;
 stepsize = totaltravel/numsteps;
 
@@ -35,10 +38,12 @@ lookAt = initialLookAt;
 lookAt.from(1) = lookAt.from(1) - totaltravel/2;
 lookAt.to(1)   = lookAt.to(1)   - totaltravel/2;
 
-%% Maybe use remote method
+%% Maybe use remote rendering method because it is chess set.
+
 for ii=1:numsteps
+    fprintf('Step %d\n',ii);
     recipeSet(thisR,'lookAt',lookAt);
-    thisScene = piWRS(thisR,'render flag','rgb');
+    thisScene = piWRS(thisR,'show',false,'remote resources', true);
     if ii==1
         sz = sceneGet(thisScene,'size');
         lum = zeros(sz(1),sz(2),numsteps);
@@ -48,12 +53,29 @@ for ii=1:numsteps
     lookAt.to(1) = lookAt.to(1) + stepsize;
 end
 
+%%  Have a look at a cross-section one row at a time
+
+% The motion is right/left.  This reveals the epipolar geometry, but I need
+% a better explanation.
+tst = permute(lum,[2 3 1]);
+hcViewer(tst.^0.5);
+
+%%  Have a look at a cross-section one colun at a time
+
+% Because of the direction of motion, the columns are just a scan of the
+% original image
+tst = permute(lum,[1 3 2]);
+hcViewer(tst.^0.5);
+
+% Fix a column
+% for ii=1:size(lum,2)
+%     imagesc(squeeze(lum(:,ii,:).^0.5)); axis image
+%     title(sprintf('col %d',ii));
+%     pause(0.1);
+% end
 
 %% Have a look at the luminance images face on
 
-ieNewGraphWin; axis image; colormap(gray);
-for ii=1:numsteps
-    imagesc(lum(:,:,ii).^0.5); axis image
-    pause(0.5);
-end
+hcViewer(lum.^0.5)
 
+%%
