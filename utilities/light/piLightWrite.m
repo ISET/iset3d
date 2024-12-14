@@ -217,8 +217,10 @@ for ii = 1:numel(thisR.lights)
                 end
             else
                 % Retrieve filename and pbrt text for thisLight, assuming 'true' specifies detailed retrieval
+                % All this path stuff should be figured out before we
+                % get this deep into the process.
                 [mapNamePath, mapnameTxt] = piLightGet(thisLight, 'filename val', 'pbrt text', true);
-                if contains(mapNamePath,getpref('ISETDocker','PBRTResources'))
+                if ispref('ISETDocker','PBRTResources') && contains(mapNamePath,getpref('ISETDocker','PBRTResources'))
                     useRemoteSkymap = 1;
                 else
                     useRemoteSkymap = 0;
