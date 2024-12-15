@@ -121,7 +121,7 @@ classdef isetdocker < handle
             % Check and set 'remoteUser' preference
             if ~isempty(args.remoteuser)
                 obj.remoteUser = args.remoteuser; % Set from input argument
-                setpref('ISETDocker', 'remoteUser', args.remotehser); % Save to preferences
+                setpref('ISETDocker', 'remoteUser', args.remoteuser); % Save to preferences
             else
                 obj.remoteUser = getpref('ISETDocker', 'remoteUser'); % Retrieve from preferences
             end
