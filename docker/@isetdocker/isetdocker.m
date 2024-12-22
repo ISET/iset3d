@@ -384,8 +384,10 @@ classdef isetdocker < handle
             end
 
         end
+    end
 
-        function [rStatus, gpuAttrs] = getGpuAttrs(obj, remoteUser, remoteHost)
+    methods (Static = true)
+        function [rStatus, gpuAttrs] = getGpuAttrs(remoteUser, remoteHost)
             % getGpuAttrs
             % Get a vector of strings with descriptions of the GPU resources
             %
@@ -411,8 +413,8 @@ classdef isetdocker < handle
 
 
             %% Build the query command
-            if ~exist('remoteUser','var'), remoteUser = obj.remoteUser;end
-            if ~exist('remoteHost','var'), remoteHost = obj.remoteHost;end
+          %  if ~exist('remoteUser','var'), remoteUser = obj.remoteUser;end
+          %  if ~exist('remoteHost','var'), remoteHost = obj.remoteHost;end
 
             rShell = 'ssh';
             remoteCommand = 'nvidia-smi --query-gpu="index","name","memory.total","driver_version" --format="csv","noheader"';
@@ -436,9 +438,10 @@ classdef isetdocker < handle
             end
 
         end
-
     end
-    methods (Static = true)
+
+    methods (Static=true)
+        % static methods in other files
         setUserPrefs();
     end
 end

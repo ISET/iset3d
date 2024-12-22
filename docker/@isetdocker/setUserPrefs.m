@@ -67,7 +67,7 @@ switch renderContext
         dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-ti';
     case 'remote-mux'
         remoteHost = 'mux.stanford.edu';
-        dockerImage = 'digitalprodev/pbrt-v4-gpu-volta-mux';
+        dockerImage = 'vistalab/pbrt-v4-gpu';
     case 'default'
         remoteHost = '';
     otherwise
@@ -89,7 +89,7 @@ device = input('Choose a device (GPU/CPU) [g/c]: ', 's');
 if strcmpi(device,'g')
     device = 'gpu';
     if ~isempty(remoteHost) && ~isempty(remoteUser)
-        [status, remoteGPUAttrs]=obj.getGpuAttrs(remoteUser, remoteHost);
+        [status, remoteGPUAttrs]=isetdocker.getGpuAttrs(remoteUser, remoteHost);
         if ~status
             fprintf('Avaliable GPU on %s:\n',renderContext);
             for ii  = 1:numel(remoteGPUAttrs)
