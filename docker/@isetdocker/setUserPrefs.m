@@ -17,8 +17,7 @@ function setUserPrefs(obj)
 %   and saves preferences using MATLAB's setpref function.
 %
 % Example:
-%   myObj = isetdocker();
-%   setUserPrefs(myObj);
+% isetdocker.setUserPrefs();
 %
 % Zhenyi, Stanford, 2024
 
@@ -32,7 +31,7 @@ if ispref(prefGroupName)
         updateChoice = input('Do you want to check your preferences? [y/n]: ', 's');
         if strcmpi(updateChoice, 'y')
             disp('-----Preferences Summary-----');
-            listPrefs(groupName)
+            listPrefs(prefGroupName)
         end
         return;
     end

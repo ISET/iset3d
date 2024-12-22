@@ -8,8 +8,7 @@ classdef isetdocker < handle
     % The ISETDocker parameters can be initialized, or changed, by
     % running
     %
-    %   thisDocker = isetdocker;
-    %   thisDocker.setUserPrefs;
+    %   isetdocker.setUserPrefs;
     %
     % You will be asked a set of questions.  Answer them, and your
     % info Matlab prefs will be updated.    
@@ -438,5 +437,8 @@ classdef isetdocker < handle
 
         end
 
+    end
+    methods (Static = true)
+        setUserPrefs();
     end
 end
