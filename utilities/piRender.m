@@ -54,8 +54,9 @@ function [ieObject, result, thisD, outFile] = piRender(thisR, varargin)
 %              text also contains parameters about the optics,
 %              including the distance from the back of the lens to
 %              film and the in-focus distance given the lens-film distance.
-%   thisD    - the isetdocker used for the rendering.  Useful if
-%              you want to use it next as the ourdocker specification.
+%   renderDocker    - the isetdocker used for the rendering.  Useful if
+%                     you want to use it next as the ourdocker
+%                     specification. 
 %
 % See also
 %   s_piReadRender*.m, piRenderResult, isetdocker
@@ -182,7 +183,7 @@ outF = strcat('renderings/',currName,'.exr');
 % machine and with what parameters the docker image/containter is invoked.
 
 [status, result] = renderDocker.render(thisR, p.Results.commandonly);
-try getpref('ISETDocker','batch'), ieObject =[]; return;end
+% try getpref('ISETDocker','batch'), ieObject =[]; return; end
 
 % Lots of output when verbosity is 2.
 % Append the renderCommand and output file
