@@ -115,6 +115,9 @@ piWRS(thisR);
 %%
 switch ieParamFormat(rName)
     case {'macbethchecker','macbethchart'}
+        % Necessary if wwe are getting it from the SDR
+        rName = 'macbethchecker';   % Should automate this.
+        
         thisR = piRecipeDefault('scene name',rName);
         thisR = thisR.set('lights','all','delete');
 

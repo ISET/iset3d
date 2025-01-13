@@ -145,7 +145,7 @@ switch ieParamFormat(sceneDir)
         sceneFile = [sceneDir,'.pbrt'];
         exporter = 'PARSE';
     case {'macbethchecker','macbethchart'}
-        sceneDir = 'MacBethChecker';
+        sceneDir = 'macbethchecker';
         sceneFile = [sceneDir,'.pbrt'];
         exporter = 'PARSE';
     case {'materialball'}
