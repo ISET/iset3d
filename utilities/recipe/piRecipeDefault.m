@@ -499,7 +499,8 @@ fname = fullfile(FilePath,sceneFile);
 if ~exist(fname,'file') 
     sceneDir = piSceneWebTest(sceneDir,sceneFile);
     fname = fullfile(sceneDir,sceneFile);
-elseif ~strcmp(fname, which(fname))
+elseif ~strcmpi(fname, which(fname))
+    % Ignoring case.  Might be a bad idea (BW).
     error('File exists on your path, but not where expected.')
 end
 
