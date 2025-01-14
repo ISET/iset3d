@@ -183,7 +183,7 @@ outF = strcat('renderings/',currName,'.exr');
 % machine and with what parameters the docker image/containter is invoked.
 
 [status, result] = renderDocker.render(thisR, p.Results.commandonly);
-% try getpref('ISETDocker','batch'), ieObject =[]; return; end
+if getpref('ISETDocker','batch', false), ieObject =[]; return; end
 
 % Lots of output when verbosity is 2.
 % Append the renderCommand and output file
