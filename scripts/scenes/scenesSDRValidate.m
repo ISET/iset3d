@@ -21,10 +21,10 @@ sdrFiles = {'arealight','bunny','car','characters','checkerboard',...
 % characters, chesset, cornellboxreference
 
 %%
-for ff = 9:numel(sdrFiles)
-    sdrFiles{ff}
+for ff = 1:numel(sdrFiles)
+    disp(sdrFiles{ff})
     % Download and render it
-    thisR = piRecipeCreate(sdrFiles{ff});
+    thisR = piRecipeDefault('scene name',sdrFiles{ff});
     scene = piWRS(thisR);
 end
 

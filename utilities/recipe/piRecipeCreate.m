@@ -85,20 +85,20 @@ end
 %% 
 %{
   rList = thisR.list;
-    {'ChessSet'               } - OK
-    {'CornellBoxReference'    } - Requires HDR because light is bright
+    {'chessset'               } - OK
+    {'cornellboxreference'    } - Requires HDR because light is bright
     {'head'                   } - Working on it
-    {'MacBethChecker'         } - Needs a light
-    {'SimpleScene'            } - Renders
+    {'macbethchecker'         } - Needs a light
+    {'simplescene'            } - Renders
     {'arealight'              } - Broken
     {'bunny'                  } - Needs a light
     {'car'                    } - Needs a light
     {'checkerboard'           } - OK
     {'coordinate'             } - Needs a light
     {'cornell_box'            } - Needs a light
-    {'flatSurface'            } - OK but boring.
-    {'flatSurfaceWhiteTexture'} - Not sure about the texture
-    {'lettersAtDepth'         } - OK
+    {'flatsurface'            } - OK but boring.
+    {'flatsurfacewhitetexture'} - Not sure about the texture
+    {'lettersatdepth'         } - OK
     {'materialball'           } - OK
     {'materialball_cloth'     } - OK
     {'slantedEdge'            } - Needs a light
