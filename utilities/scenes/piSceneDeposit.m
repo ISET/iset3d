@@ -1,5 +1,5 @@
 function subdirName = piSceneDeposit(sceneName)
-% Return the subdiretory of the SDR deposit for this sceneName
+% Return the subdirectory of the SDR deposit for this sceneName
 %
 % Synopsis
 %  subdirName = piSceneDeposit(sceneName)
