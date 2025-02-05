@@ -52,11 +52,12 @@ switch renderContextChoice
     case 2
         renderContext = 'remote-mux';
     case 3
+        % Should become vistalab/pbrt-v4-gpu
         renderContext = 'default';
         dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-ti';
     case 4
         renderContext = 'default';
-        dockerImage = 'digitalprodev/pbrt-v4-gpu-volta-mux';
+        dockerImage = 'vistalab/pbrt-v4-gpu';
     otherwise
         renderContext = input('Enter your custom render context: ', 's');
 end
