@@ -1,5 +1,5 @@
 function sdrNames = piSDRSceneNames
-% Return the names of the SDR scenes
+% Return the names of the SDR scenes.  Used with piSceneDeposit.
 %
 % Synopsis
 %  sdrNames = piSDRSceneNames
@@ -22,7 +22,7 @@ function sdrNames = piSDRSceneNames
 % This should match the case statements in piRecipeDefault
 %
 % See also
-%   piSceneWebTest, ieWebGet
+%   piSceneDeposit, piSceneWebTest, ieWebGet
 
 % Find the scene on the Stanford Digital Repository
 names = {'bathroom','bathroom2','bedroom','classroom',...
@@ -31,7 +31,6 @@ names = {'bathroom','bathroom2','bedroom','classroom',...
     'staircase','staircase2','teapot-full',...
     'veach-ajar','veach-bidir','veach-mis'};
 sdrNames.bitterli.names = names;
-
 
 names = {'barcelona-pavilion-day','barcelona-pavilion-night',...
     'bistro', ...
@@ -45,7 +44,7 @@ names = {'barcelona-pavilion-day','barcelona-pavilion-night',...
     'smoke-plume','sportscar',...
     'sssdragon','transparent-machines',...
     'zero-day'
-    }
+    };
 sdrNames.pbrtv4 = names;
 
 names = {'arealight','bunny','car','characters','checkerboard',...
