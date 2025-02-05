@@ -27,8 +27,11 @@ function [sceneDir, zipfilenames] = piSceneWebTest(sceneName,sceneFile)
 %  For bistro, we have sceneName as bistro and different sceneFiles, such
 %  as bistro_vespa
 %
+%  The file piSceneDeposit has a list of the scenes in the different
+%  subdirectories of the SDR.
+%
 % See also.
-%   piRead, piRecipeDefault, piRecipeCreate
+%   piSceneDeposit, piRead, piRecipeDefault, piRecipeCreate
 %
 
 % See if the scene is already in data/scene/web
