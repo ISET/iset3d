@@ -7,7 +7,7 @@ function validPreset = preset(obj, presetName, varargin)
 % humaneye
 % orange-cpu
 % localgpu
-% 
+%
 % See also
 %   isetdocker
 
@@ -19,7 +19,7 @@ end
 presetName = ieParamFormat(presetName);
 
 validNames = {'localgpu','localgpu-alt','remotemux','remotemux-0','remotemux-1','remoteorange','remoteorange-0', ...,
-    'remoteorange-1','humaneye', 'remotecnidl','orange-cpu'};
+    'remoteorange-1','humaneye', 'remotecnidl','remoteorange-cpu','orange-cpu'};
 if ~ismember(presetName,validNames)
     disp('Valid Presets are: ')
     disp(validNames);
@@ -111,8 +111,6 @@ switch presetName
         validNames_str = string(validNames);
         validNames_str{end+1} = ' ';
         warning('Preset Name is not valid. Consider using these valid names: %s',strjoin(flip(validNames_str),'\n'));
-
-
 end
 
 setpref('ISETDocker','device',  obj.device);
@@ -125,10 +123,3 @@ end
 setpref('ISETDocker','renderContext',  obj.renderContext);
 
 end
-
-
-
-
-
-
-
