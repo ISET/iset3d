@@ -23,7 +23,7 @@ classdef isetdocker < handle
         dockerImage = '';
         % remote
         remoteHost = '';
-        remoteUser = ''
+        remoteUser = '';
         workDir = '';
         renderContext = ''; % control remote docker from local
         sftpSession = [];
