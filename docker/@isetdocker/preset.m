@@ -55,20 +55,20 @@ switch presetName
                 obj.dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-ti';
                 switch presetName
                     case 'localgpu'
-                        obj.deviceID = 1;
+                        obj.deviceID = '1';
                     case 'localgpu-alt'
-                        obj.deviceID = 0;
+                        obj.deviceID = '0';
                 end
             case {'mux', 'muxreconrt'}
                 obj.dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-mux';
                 switch presetName
                     case 'localgpu'
-                        obj.deviceID = 0;
+                        obj.deviceID = '0';
                     case 'localgpu-alt'
-                        obj.deviceID = 1;
+                        obj.deviceID = '1';
                 end
             otherwise
-                obj.deviceID=-1;
+                obj.deviceID = '';
         end
 
     case {'remotemux', 'remoteorange', 'remoteorange-0', 'remoteorange-1','remotemux-0','remotemux-1', 'remotecnidl'}
@@ -92,19 +92,19 @@ switch presetName
         switch presetName
             case {'remotemux','remotemux-0'}
                 obj.dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-mux';
-                obj.deviceID = 0;
+                obj.deviceID = '0';
             case 'remotemux-1'
                 obj.dockerImage = 'digitalprodev/pbrt-v4-gpu-volta-mux';
-                obj.deviceID = 1;
+                obj.deviceID = '1';
             case {'remoteorange','remoteorange-1'}
                 obj.dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-ti';
-                obj.deviceID = 1;
+                obj.deviceID = '1';
             case 'remoteorange-0'
                 obj.dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-ti';
-                obj.deviceID = 0;
+                obj.deviceID = '0';
             case 'remotecnidl'
                 obj.dockerImage = 'camerasimulation/pbrt-v4-gpu-ampere-cnidl';
-                obj.deviceID = 9; % pick the last one for now
+                obj.deviceID = '9'; % pick the last one for now
         end
 
     otherwise

@@ -1,4 +1,4 @@
-classdef isetdocker < handle
+ classdef isetdocker < handle
     % Creates a new docker environment for remote execution.
     %
     % Isetdocker relies on parameters stored in Matlab
@@ -19,7 +19,7 @@ classdef isetdocker < handle
         % common
         name = 'ISET Docker Controls'
         device = ''
-        deviceID = [];
+        deviceID = '';
         dockerImage = '';
         % remote
         remoteHost = '';
@@ -43,7 +43,7 @@ classdef isetdocker < handle
             p.addParameter('preset','',@ischar);
 
             p.addParameter('device','', @ischar);
-            p.addParameter('deviceid',[], @isnumeric);
+            p.addParameter('deviceid','', @ischar);
             p.addParameter('dockerimage', '', @ischar);
 
             p.addParameter('remotehost','',@ischar);
@@ -98,7 +98,12 @@ classdef isetdocker < handle
                 obj.deviceID = args.deviceid; % Set from input argument
                 setpref('ISETDocker', 'deviceID', args.deviceid); % Save to preferences
             else
-                obj.deviceID = getpref('ISETDocker', 'deviceID'); % Retrieve from preferences
+                deviceID = getpref('ISETDocker', 'deviceID'); % Retrieve from preferences
+                if ~ischar(deviceID)
+                   deviceID = mat2str(deviceID);
+                   warning("deviceID should be a string, not a number!\nplease fix your ISETDocker pref");
+                end
+                obj.deviceID = deviceID;
             end
 
             % Check and set 'dockerImage' preference
@@ -293,11 +298,11 @@ classdef isetdocker < handle
 
             if strcmpi(obj.device, 'gpu')
                 % want: --gpus '"device=#"'
-                gpuString = sprintf(' --gpus device=%s ',num2str(obj.deviceID));
+                gpuString = sprintf(' --gpus device=%s ',obj.deviceID);
             elseif strcmpi(obj.device, 'cpu')
                 gpuString = ' ';
             else
-                gpuString = sprintf(' --gpus device=%s ',num2str(0));
+                gpuString = sprintf(' --gpus device=%s ','0');
             end
             dCommand = sprintf('docker %s run -d -it %s --name %s  %s', contextFlag, gpuString, ourContainer, volumeMap);
 

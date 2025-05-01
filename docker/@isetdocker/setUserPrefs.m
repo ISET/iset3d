@@ -25,14 +25,12 @@ prefGroupName = 'ISETDocker';
 
 % Check if preferences have already been set
 if ispref(prefGroupName)
-    updateChoice = input('User preferences already set. Do you want to update them? [y/n]: ', 's');
+    disp('Preferences already set:');
+    listPrefs(prefGroupName)
+    disp('');
+    updateChoice = input('Do you want to update these preferences? [Y/n]: ', 's');
     if strcmpi(updateChoice, 'n')
         disp('Preferences update canceled.');
-        updateChoice = input('Do you want to check your preferences? [y/n]: ', 's');
-        if strcmpi(updateChoice, 'y')
-            disp('-----Preferences Summary-----');
-            listPrefs(prefGroupName)
-        end
         return;
     end
 end
@@ -101,10 +99,10 @@ if strcmpi(device,'g')
         end
     end
     % Prompt user for device ID
-    deviceID = input('Enter device ID: ');
+    deviceID = input('Enter device ID: ','s');
 elseif strcmpi(device,'c')
     device = 'cpu';
-    deviceID = -1;
+    deviceID = '';
     dockerImage = 'digitalprodev/pbrt-v4-cpu';
     customImageChoice = input('Use digitalprodev/pbrt-v4-cpu, do you want to set your own? [y/n]: ', 's');
     if strcmpi(customImageChoice, 'y')
