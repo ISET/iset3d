@@ -7,6 +7,8 @@ classdef isetdb < handle
         dbImage     = "mongodb"
         dbUsername  = "demo"
         dbPassword  = "demopass"
+    end
+    properties (Access = private)
         connection
     end
 
@@ -50,6 +52,13 @@ classdef isetdb < handle
             end
         end
 
+        function isopen(obj)
+            if obj.connection
+                obj.connection.isopen;
+            else
+            end
+        
+        end
         function connect(obj)
         % default is a local Docker container, but we also want
         % to support storing remotely to a running instance

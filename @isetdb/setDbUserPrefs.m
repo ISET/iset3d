@@ -25,9 +25,9 @@ while true
     if strcmpi(UpdateChoice, 'y')
         % go through update dialog
         for ii=1:numel(props)
-            if strcmp(props{ii}, "connection")
-                continue;
-            end
+        %    if strcmp(props{ii}, "connection")
+        %        continue;
+        %    end
             fprintf("\nChoose a %s value:\n", props{ii});
             fprintf("0) %s\t(current value)\n", newvals.(props{ii}));
             choices = siteDbVals.(props{ii});
