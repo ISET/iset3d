@@ -98,9 +98,14 @@
                 setpref('ISETDocker', 'deviceID', args.deviceid); % Save to preferences
             else
                 deviceID = getpref('ISETDocker', 'deviceID'); % Retrieve from preferences
-                if ~ischar(deviceID)
-                   deviceID = mat2str(deviceID);
-                   warning("deviceID should be a string, not a number!\nplease fix your ISETDocker pref");
+                if ~ischar(deviceID) && ~isstring(deviceID)
+                    if  isnumeric(deviceID) && isscalar(deviceID)
+                        deviceID = num2str(deviceID);
+                        fprintf("ISETDocker.deviceID is a char type, not a number!\n");
+                        fprintf("please fix your ISETDocker pref\n");
+                    else
+                        error("ISETDocker.deviceID should be a char array or string")
+                    end
                 end
                 obj.deviceID = deviceID;
             end
