@@ -50,7 +50,6 @@
             p.addParameter('remoteuser','',@ischar);
             p.addParameter('workdir', '', @ischar);
             p.addParameter('rendercontext', '', @ischar);
-            p.addParameter('remotemachine','',@ischar);
             p.addParameter('verbosity',1,@isnumeric);
 
             % We only need the local docker command interface, not
