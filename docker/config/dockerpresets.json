@@ -1,0 +1,46 @@
+[
+  {
+    "label": "default local CPU",
+    "renderContext": "default",
+    "remoteHost": "",
+    "device": "cpu",
+    "deviceID": "",
+    "dockerImage": "vistalab/pbrt-v4-cpu",
+    "remoteUser": "",
+    "workDir": "/Users/daw/ISET/iset3d-tiny/local",
+    "PBRTResources": "/Users/daw/ISET/iset3d-tiny/data"
+  },
+  {
+    "label": "orange 3090 remote",
+    "renderContext": "remote-orange",
+    "remoteHost": "orange.stanford.edu",
+    "device": "gpu",
+    "deviceID": "0",
+    "dockerImage": "digitalprodev/pbrt-v4-gpu-ampere-ti",
+    "remoteUser": "dwfedora",
+    "workDir": "/home/dwfedora/ISETRemoteRender",
+    "PBRTResources": "/acorn/data/iset/PBRTResources"
+  },
+  {
+    "label": "orange 3070 remote",
+    "renderContext": "remote-orange",
+    "remoteHost": "orange.stanford.edu",
+    "device": "gpu",
+    "deviceID": "1",
+    "dockerImage": "digitalprodev/pbrt-v4-gpu-ampere-ti",
+    "remoteUser": "dwfedora",
+    "workDir": "/home/dwfedora/ISETRemoteRender",
+    "PBRTResources": "/acorn/data/iset/PBRTResources"
+  },
+  {
+    "label": "mux cpu remote",
+    "renderContext": "remote-mux",
+    "remoteHost": "mux.stanford.edu",
+    "device": "cpu",
+    "deviceID": "-1",
+    "dockerImage": "vistalab/pbrt-v4-cpu",
+    "remoteUser": "daw",
+    "workDir": "/home/daw/ISETRemoteRender",
+    "PBRTResources": "/acorn/data/iset/PBRTResources"
+  }
+]
