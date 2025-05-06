@@ -6,9 +6,9 @@
     "device": "cpu",
     "deviceID": "",
     "dockerImage": "vistalab/pbrt-v4-cpu",
-    "remoteUser": "",
-    "workDir": "/Users/daw/ISET/iset3d-tiny/local",
-    "PBRTResources": "/Users/daw/ISET/iset3d-tiny/data"
+    "remoteUser": "N/A",
+    "workDir": "$[piRootPath]/local",
+    "PBRTResources": "[piRootPath]/data"
   },
   {
     "label": "orange 3090 remote",
@@ -17,8 +17,8 @@
     "device": "gpu",
     "deviceID": "0",
     "dockerImage": "digitalprodev/pbrt-v4-gpu-ampere-ti",
-    "remoteUser": "dwfedora",
-    "workDir": "/home/dwfedora/ISETRemoteRender",
+    "remoteUser": "$ORANGE-USER-NAME",
+    "workDir": "$ORANGE-HOME/ISETRemoteRender",
     "PBRTResources": "/acorn/data/iset/PBRTResources"
   },
   {
@@ -28,8 +28,8 @@
     "device": "gpu",
     "deviceID": "1",
     "dockerImage": "digitalprodev/pbrt-v4-gpu-ampere-ti",
-    "remoteUser": "dwfedora",
-    "workDir": "/home/dwfedora/ISETRemoteRender",
+    "remoteUser": "$ORANGE-USER-NAME",
+    "workDir": "$ORANGE-HOME/ISETRemoteRender",
     "PBRTResources": "/acorn/data/iset/PBRTResources"
   },
   {
@@ -39,8 +39,8 @@
     "device": "cpu",
     "deviceID": "-1",
     "dockerImage": "vistalab/pbrt-v4-cpu",
-    "remoteUser": "daw",
-    "workDir": "/home/daw/ISETRemoteRender",
+    "remoteUser": "$MUX-USER-NAME",
+    "workDir": "$MUX-HOME/ISETRemoteRender",
     "PBRTResources": "/acorn/data/iset/PBRTResources"
   }
 ]

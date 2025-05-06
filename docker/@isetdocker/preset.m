@@ -52,7 +52,8 @@ switch presetName
         host = strtrim(host); % trim trailing spaces
         switch host
             case 'orange'
-                obj.dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-ti';
+                % Updated by DAW May 6, 2025
+                obj.dockerImage = 'vistalab/pbrt-v4-gpu';
                 switch presetName
                     case 'localgpu'
                         obj.deviceID = '1';
@@ -60,7 +61,8 @@ switch presetName
                         obj.deviceID = '0';
                 end
             case {'mux', 'muxreconrt'}
-                obj.dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-mux';
+                % Updated by DAW May 6, 2025
+                obj.dockerImage = 'vistalab/pbrt-v4-gpu';
                 switch presetName
                     case 'localgpu'
                         obj.deviceID = '0';
@@ -73,6 +75,7 @@ switch presetName
 
     case {'remotemux', 'remoteorange', 'remoteorange-0', 'remoteorange-1','remotemux-0','remotemux-1', 'remotecnidl'}
         % Render remotely on GPU
+        obj.label  = [getenv("USER"),'-',presetName];
         obj.device = 'gpu';
 
         % pick the correct context
@@ -91,18 +94,19 @@ switch presetName
         % also pick GPU and docker image
         switch presetName
             case {'remotemux','remotemux-0'}
-                obj.dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-mux';
+                obj.dockerImage = 'vistalab/pbrt-v4-gpu';
                 obj.deviceID = '0';
             case 'remotemux-1'
-                obj.dockerImage = 'digitalprodev/pbrt-v4-gpu-volta-mux';
+                obj.dockerImage = 'vistalab/pbrt-v4-gpu';
                 obj.deviceID = '1';
             case {'remoteorange','remoteorange-1'}
-                obj.dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-ti';
+                obj.dockerImage = 'vistalab/pbrt-v4-gpu';
                 obj.deviceID = '1';
             case 'remoteorange-0'
-                obj.dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-ti';
+                obj.dockerImage = 'vistalab/pbrt-v4-gpu';
                 obj.deviceID = '0';
             case 'remotecnidl'
+                % Needs to be updated.  See DAW.
                 obj.dockerImage = 'camerasimulation/pbrt-v4-gpu-ampere-cnidl';
                 obj.deviceID = '9'; % pick the last one for now
         end
@@ -113,6 +117,7 @@ switch presetName
         warning('Preset Name is not valid. Consider using these valid names: %s',strjoin(flip(validNames_str),'\n'));
 end
 
+setpref('ISETDocker','label',  obj.label);
 setpref('ISETDocker','device',  obj.device);
 setpref('ISETDocker','deviceID',obj.deviceID);
 setpref('ISETDocker','dockerImage',  obj.dockerImage);

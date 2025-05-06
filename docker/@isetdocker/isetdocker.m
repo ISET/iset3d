@@ -18,9 +18,13 @@
     properties (GetAccess=public, SetAccess = public)
         % common
         name = 'ISET Docker Controls'
-        device = ''
+        label = 'label';
+
+        % 
+        device = '';
         deviceID = '';
         dockerImage = '';
+
         % remote
         remoteHost = '';
         remoteUser = '';
@@ -267,6 +271,7 @@
             % See also
             %
             % verbose = obj.verbosity;
+
             useImage = getpref('ISETDocker','dockerImage');
             rng('shuffle'); % make random numbers random
             uniqueid = randi(20000);
@@ -282,7 +287,7 @@
                 ourContainer = ['pbrt-cpu-' uName];
             end
 
-            % attach all
+            % Set volumes for render resources and acorn resources
             
             workDirPBRT = getpref('ISETDocker','workDir');
             volumeMap = sprintf("-v %s:%s", ...
@@ -320,6 +325,7 @@
 
             [status, result] = system(cmd);
 
+            
             if status ~= 0
                 cprintf('red','[ERROR]: Runing Command: %s \n',cmd);
                 error("[ERROR]:Failed to start Docker container: %s", result);
