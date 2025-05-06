@@ -34,6 +34,15 @@ if ispref(prefGroupName)
         return;
     end
 end
+%{ later maybe
+host = input('Docker Host? [local]: ','s')
+if strcmpi(host,'local')
+    render context
+else
+    %ping host
+    %look for docker on host
+end
+%}
 
 % Define presets for the render context and prompt user to choose or type their own
 disp('Available render contexts:');
