@@ -1,24 +1,13 @@
 [
   {
-    "label": "default local CPU",
-    "renderContext": "default",
-    "remoteHost": "",
-    "device": "cpu",
-    "deviceID": "",
-    "dockerImage": "vistalab/pbrt-v4-cpu",
-    "remoteUser": "N/A",
-    "workDir": "$[piRootPath]/local",
-    "PBRTResources": "[piRootPath]/data"
-  },
-  {
     "label": "orange 3090 remote",
     "renderContext": "remote-orange",
     "remoteHost": "orange.stanford.edu",
     "device": "gpu",
     "deviceID": "0",
-    "dockerImage": "digitalprodev/pbrt-v4-gpu-ampere-ti",
-    "remoteUser": "$ORANGE-USER-NAME",
-    "workDir": "$ORANGE-HOME/ISETRemoteRender",
+    "dockerImage": "vistalab/pbrt-v4-gpu",
+    "remoteUser": "$USER-NAME",
+    "workDir": "$HOME/ISETRemoteRender",
     "PBRTResources": "/acorn/data/iset/PBRTResources"
   },
   {
@@ -27,9 +16,31 @@
     "remoteHost": "orange.stanford.edu",
     "device": "gpu",
     "deviceID": "1",
-    "dockerImage": "digitalprodev/pbrt-v4-gpu-ampere-ti",
-    "remoteUser": "$ORANGE-USER-NAME",
-    "workDir": "$ORANGE-HOME/ISETRemoteRender",
+    "dockerImage": "vistalab/pbrt-v4-gpu",
+    "remoteUser": "$USER-NAME",
+    "workDir": "$HOME/ISETRemoteRender",
+    "PBRTResources": "/acorn/data/iset/PBRTResources"
+  },
+  {
+    "label": "orange cpu remote",
+    "renderContext": "remote-orange",
+    "remoteHost": "orange.stanford.edu",
+    "device": "cpu",
+    "deviceID": "-1",
+    "dockerImage": "vistalab/pbrt-v4-cpu",
+    "remoteUser": "$USER_NAME",
+    "workDir": "$HOME/ISETRemoteRender",
+    "PBRTResources": "/acorn/data/iset/PBRTResources"
+  },
+  {
+    "label": "mux gpu remote",
+    "renderContext": "remote-mux",
+    "remoteHost": "mux.stanford.edu",
+    "device": "gpu",
+    "deviceID": "0",
+    "dockerImage": "vistalab/pbrt-v4-gpu",
+    "remoteUser": "USER-NAME",
+    "workDir": "$HOME/ISETRemoteRender",
     "PBRTResources": "/acorn/data/iset/PBRTResources"
   },
   {
@@ -39,8 +50,19 @@
     "device": "cpu",
     "deviceID": "-1",
     "dockerImage": "vistalab/pbrt-v4-cpu",
-    "remoteUser": "$MUX-USER-NAME",
-    "workDir": "$MUX-HOME/ISETRemoteRender",
+    "remoteUser": "USER-NAME",
+    "workDir": "$HOME/ISETRemoteRender",
     "PBRTResources": "/acorn/data/iset/PBRTResources"
+  },
+  {
+    "label": "default local CPU",
+    "renderContext": "default",
+    "remoteHost": "",
+    "device": "cpu",
+    "deviceID": "",
+    "dockerImage": "vistalab/pbrt-v4-cpu",
+    "remoteUser": "N/A",
+    "workDir": "$[piRootPath]/local",
+    "PBRTResources": "[piRootPath]/data"
   }
 ]
