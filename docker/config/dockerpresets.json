@@ -6,7 +6,7 @@
     "device": "gpu",
     "deviceID": "0",
     "dockerImage": "vistalab/pbrt-v4-gpu",
-    "remoteUser": "$USER-NAME",
+    "remoteUser": "$USER",
     "workDir": "$HOME/ISETRemoteRender",
     "PBRTResources": "/acorn/data/iset/PBRTResources"
   },
@@ -17,7 +17,7 @@
     "device": "gpu",
     "deviceID": "1",
     "dockerImage": "vistalab/pbrt-v4-gpu",
-    "remoteUser": "$USER-NAME",
+    "remoteUser": "$USER",
     "workDir": "$HOME/ISETRemoteRender",
     "PBRTResources": "/acorn/data/iset/PBRTResources"
   },
@@ -28,7 +28,7 @@
     "device": "cpu",
     "deviceID": "-1",
     "dockerImage": "vistalab/pbrt-v4-cpu",
-    "remoteUser": "$USER_NAME",
+    "remoteUser": "$USER",
     "workDir": "$HOME/ISETRemoteRender",
     "PBRTResources": "/acorn/data/iset/PBRTResources"
   },
@@ -39,7 +39,7 @@
     "device": "gpu",
     "deviceID": "0",
     "dockerImage": "vistalab/pbrt-v4-gpu",
-    "remoteUser": "USER-NAME",
+    "remoteUser": "$USER",
     "workDir": "$HOME/ISETRemoteRender",
     "PBRTResources": "/acorn/data/iset/PBRTResources"
   },
@@ -50,7 +50,7 @@
     "device": "cpu",
     "deviceID": "-1",
     "dockerImage": "vistalab/pbrt-v4-cpu",
-    "remoteUser": "USER-NAME",
+    "remoteUser": "$USER",
     "workDir": "$HOME/ISETRemoteRender",
     "PBRTResources": "/acorn/data/iset/PBRTResources"
   },
@@ -59,10 +59,10 @@
     "renderContext": "default",
     "remoteHost": "",
     "device": "cpu",
-    "deviceID": "",
+    "deviceID": "-1",
     "dockerImage": "vistalab/pbrt-v4-cpu",
     "remoteUser": "N/A",
-    "workDir": "$[piRootPath]/local",
-    "PBRTResources": "[piRootPath]/data"
+    "workDir": "$piRootPath/local",
+    "PBRTResources": "$piRootPath]/data"
   }
 ]
