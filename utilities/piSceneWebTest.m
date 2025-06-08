@@ -1,5 +1,5 @@
 function [sceneDir, zipfilenames] = piSceneWebTest(sceneName,sceneFile)
-% Get a PBRTV4 (ISET3d) scene on the SDR
+% Get a PBRTV4 (ISET3d) scene from the Stanford Digital Repository (SDR)
 %
 % Synopsis
 %  [sceneDir, zipfilenames] = piSceneWebTest(sceneName,sceneFile)
@@ -18,11 +18,15 @@ function [sceneDir, zipfilenames] = piSceneWebTest(sceneName,sceneFile)
 %  zipfilenames - Cell array of files in the directory
 %
 % Description
-%  The sceneName should correspond to one of the lowercase.zip files
-%  in the ISET3D Scenes deposit on SDR.  There may be different
-%  acceptable sceneFile strings for a sceneName.  For example, there
-%  are several legitimate sceneFile names for bistro, dambreak, and
-%  others.
+%  The sceneName should correspond to one of the lowercase.zip files in the
+%  ISET3D Scenes deposit on SDR. To see all the scene names we currently
+%  know about use
+%
+%    piSDRSceneNames
+% 
+%  There may be different acceptable
+%  sceneFile strings for a sceneName.  For example, there are several
+%  legitimate sceneFile names for the scenes bistro, dambreak, and others.
 %
 %  For bistro, we have sceneName as bistro and different sceneFiles, such
 %  as bistro_vespa
