@@ -25,11 +25,6 @@
 % See also
 %   t_piIntro_*
 
-% History:
-%   10/28/20  dhb  Explicitly show how to compute and look at depth map and
-%                  illumination map. The header comments said it did the
-%                  latter two, and now it does.
-
 %% init
 ieInit;
 if ~piDockerExists, piDockerConfig; end
