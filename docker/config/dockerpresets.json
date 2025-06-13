@@ -5,7 +5,7 @@
     "remoteHost": "orange.stanford.edu",
     "device": "gpu",
     "deviceID": "0",
-    "dockerImage": "vistalab/pbrt-v4-gpu",
+    "dockerImage": "vistalab/pbrt-v4-gpu-orange",
     "remoteUser": "$USER",
     "workDir": "$HOME/ISETRemoteRender",
     "PBRTResources": "/acorn/data/iset/PBRTResources"
@@ -16,7 +16,7 @@
     "remoteHost": "orange.stanford.edu",
     "device": "gpu",
     "deviceID": "1",
-    "dockerImage": "vistalab/pbrt-v4-gpu",
+    "dockerImage": "vistalab/pbrt-v4-gpu-orange",
     "remoteUser": "$USER",
     "workDir": "$HOME/ISETRemoteRender",
     "PBRTResources": "/acorn/data/iset/PBRTResources"
@@ -27,7 +27,7 @@
     "remoteHost": "orange.stanford.edu",
     "device": "cpu",
     "deviceID": "-1",
-    "dockerImage": "vistalab/pbrt-v4-cpu",
+    "dockerImage": "vistalab/pbrt-v4-cpu-intel",
     "remoteUser": "$USER",
     "workDir": "$HOME/ISETRemoteRender",
     "PBRTResources": "/acorn/data/iset/PBRTResources"
