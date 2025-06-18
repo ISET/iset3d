@@ -313,7 +313,11 @@
             else
                 gpuString = sprintf(' --gpus device=%s ','0');
             end
-            dCommand = sprintf('docker %s run -d -it %s --name %s  %s', contextFlag, gpuString, ourContainer, volumeMap);
+
+            envString = "--env NVIDIA_DRIVER_CAPABILITIES=compute,graphics,utility";
+           
+            dCommand = sprintf('docker %s run -d -it %s %s --name %s  %s', ...
+                contextFlag, envString, gpuString, ourContainer, volumeMap);
 
             cmd = sprintf('%s %s %s', dCommand, useImage, placeholderCommand);
 

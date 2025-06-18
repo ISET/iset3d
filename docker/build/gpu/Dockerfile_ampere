@@ -21,11 +21,12 @@ add-apt-repository ppa:graphics-drivers && \
 add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
 apt-get update
 
-# add debugging tools
-RUN apt-get install -y bash cmake vim iputils-ping
-
 RUN apt-get update -yq && apt-get install -yq --no-install-recommends \
-	libgl1-mesa-dev \
+	bash \
+    cmake \
+    vim \
+    iputils-ping \
+    libgl1-mesa-dev \
     build-essential \
 	gcc-9 \
 	g++-9 \
@@ -64,17 +65,18 @@ RUN apt-get update -yq && apt-get install -y git \
 && cd assimp \
 && mkdir build \
 && cd build \
-&& cmake .. \
-&& make -j18 \
+&& cmake -DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic" \
+            -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic" .. \
+&& make -j$(nproc) \
 && make install
 
-# Now we can copy them in since they are in our local folder thanks to the build shell file
-COPY libnvidia-rtcore.so.1 /usr/lib/x86_64-linux-gnu/libnvidia-rtcore.so.1
-COPY libnvoptix.so.1 /usr/lib/x86_64-linux-gnu/libnvoptix.so.1
-COPY libcuda.so.1 /usr/lib/x86_64-linux-gnu/libcuda.so.1
-
 WORKDIR /pbrt/pbrt-v4/build 
-RUN cmake -DPBRT_GPU_SHADER_MODEL=sm_80 -DCMAKE_BUILD_TYPE=MINSIZEREL -DPBRT_OPTIX7_PATH=/pbrt/NVIDIA-OptiX-SDK-8.0.0-linux64-x86_64/ .. && make -j24
+RUN cmake -DPBRT_GPU_SHADER_MODEL=sm_80 \
+          -DCMAKE_BUILD_TYPE=MINSIZEREL \
+          -DPBRT_OPTIX7_PATH=/pbrt/NVIDIA-OptiX-SDK-8.0.0-linux64-x86_64 \
+          -DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic" \
+          -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic" .. \
+    && make -j$(nproc)
 
 ENV PATH $PATH:/pbrt/pbrt-v4/build
 
