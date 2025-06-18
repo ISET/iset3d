@@ -28,12 +28,12 @@ if ~exist('commandonly','var')
 end
 
 %% Build up the render command
-pbrtFile     = thisR.outputFile;
-outputFolder = fileparts(thisR.outputFile);
-[sceneFolder,currName,~] = fileparts(pbrtFile);
-strparts     = strsplit(sceneFolder,filesep);
-sceneFolder  = strparts{end};
-iDockerPrefs = getpref('ISETDocker');
+pbrtOutputFile = thisR.get('output file'); 
+outputFolder   = thisR.get('output folder'); 
+sceneFolder    = thisR.get('input basename');
+currName       = thisR.get('output basename');
+
+iDockerPrefs   = getpref('ISETDocker');
 
 % Check that the container is running remotely.  If not, start.
 if isfield(iDockerPrefs,'PBRTContainer')
@@ -105,7 +105,7 @@ if ~isempty(getpref('ISETDocker','remoteHost'))
         renderStart = tic;
         if verbose > 1
             [status, result] = system(containerCommand, '-echo');
-            fprintf('[INFO]: Rendered remotely in: %4.2f sec\n', toc(renderStart))
+            fprintf('[INFO]: Rendered in: %4.2f sec\n', toc(renderStart))
             fprintf('[INFO]: Returned parameter result is\n***\n%s', result);
         elseif verbose == 1
 
@@ -139,7 +139,7 @@ else
     outF = fullfile(outputFolder,'renderings',[currName,'.exr']);
     
     % Add support for 'remoteResources' even in local case
-    renderCommand = sprintf('pbrt %s --outfile %s %s', device, outF, pbrtFile);
+    renderCommand = sprintf('pbrt %s --outfile %s %s', device, outF, pbrtOutputFile);
 
     containerCommand = sprintf('docker %s exec %s %s sh -c " %s "',...
         contextFlag, flags, ourContainer, renderCommand);

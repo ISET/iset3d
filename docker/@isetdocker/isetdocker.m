@@ -165,7 +165,7 @@
                     end
                 end
             else
-                if obj.verbosity, disp('[INFO]:Remote Host is empty, use local.'); end
+                if obj.verbosity, disp('[INFO]:Remote Host is empty, using local.'); end
             end
         end
 
