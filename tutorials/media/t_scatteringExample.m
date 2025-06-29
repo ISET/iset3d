@@ -1,9 +1,28 @@
-% This script demonstrates how to estimate medium scattering from simulated
-% measurements. The key idea is to measure the radiance passing through a
-% small (unit) volume of the medium at different angles between the camera
-% and the incident light.
+%% t_scatteringExample
 %
+% Synopsis
+%  This script demonstrates a scattering example in iset3d, simulating how
+%  light interacts with a small unit volume of participating medium at
+%  various angles between the camera and incident light. It initializes the
+%  iset3d environment, sets up rendering configurations (now streamlined to
+%  default settings), and defines the scene parameters such as cube size,
+%  image resolution, and field of view. 
+% 
+%  The script 
+%    * constructs a test chart scene, 
+%    * configures it for scattering studies, and 
+%    * runs a series of renderings to compare energy transmission through
+%    the medium under different geometric conditions. 
+% 
+%  Results are collected for each configuration to analyze the effect of
+%  scattering and absorption properties, enabling visualization and
+%  quantitative assessment of light transport in participating media.
+% 
 % Henryk Blasinski, 2025
+%
+% See also
+%   t_absorptionExample
+%
 
 close all;
 clear all;
