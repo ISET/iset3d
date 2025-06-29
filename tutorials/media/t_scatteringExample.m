@@ -3,7 +3,7 @@
 % small (unit) volume of the medium at different angles between the camera
 % and the incident light.
 %
-% Henryk Blasinski, 2024
+% Henryk Blasinski, 2025
 
 close all;
 clear all;
@@ -11,19 +11,6 @@ clc;
 %%
 ieInit
 piDockerConfig();
-
-
-% Define rendering parameters
-dw = isetdocker('device','cpu', ...
-    'deviceID', -1, ...
-    'dockerImage','vistalab/pbrt-v4-cpu-arm', ...
-    'remoteHost','', ...
-    'remoteUser','', ...
-    'WorkDir',[piRootPath '/local'], ...
-    'renderContext', 'default', ...
-    'verbosity', 1 ...
-    );
-
 
 unitCubeSize = 0.0001;
 resolution = [320 240];
@@ -49,7 +36,7 @@ for angle=angles
 
     testChart.set('pixel samples', 1024);
 
-    referenceScene = piWRS(testChart, 'ourDocker', dw, 'meanluminance', -1);
+    referenceScene = piWRS(testChart, 'meanluminance', -1);
 
     data = sceneGet(referenceScene, 'roi mean energy', roi);    
     allData = cat(2, allData, data(:));
