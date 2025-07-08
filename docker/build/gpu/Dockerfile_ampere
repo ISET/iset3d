@@ -1,7 +1,13 @@
 # Dockerize Stanford University's Vistalab's versio of pbrt-v4 for running on GPUs.
-
-# 11.4 is known to work. 11.6 might also
-FROM nvidia/cuda:11.4.1-devel-ubuntu20.04
+#
+# We recommend using the recent releases of Ubuntu, CUDA, and OptiX when possible
+# 
+#
+# We start with the nvidia cuda docker container from https://hub.docker.com/r/nvidia/cuda/tags
+#
+# 12.4 is known to work. versions as early as 11.6 might also
+#
+FROM nvidia/cuda:12.4.1-devel-ubuntu22.04
 
 MAINTAINER Zhenyi Liu <zhenyiliu@stanford.edu>
 MAINTAINER David Cardinal <david.cardinal@stanford.edu>
@@ -15,13 +21,15 @@ add-apt-repository ppa:graphics-drivers && \
 add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
 apt-get update
 
-# add debugging tools
-RUN apt-get install -y bash vim iputils-ping
-
 RUN apt-get update -yq && apt-get install -yq --no-install-recommends \
-	build-essential \
-	gcc-7 \
-	g++-7 \
+	bash \
+    cmake \
+    vim \
+    iputils-ping \
+    libgl1-mesa-dev \
+    build-essential \
+	gcc-9 \
+	g++-9 \
 	make \
 	bison \
 	flex \
@@ -32,20 +40,14 @@ RUN apt-get update -yq && apt-get install -yq --no-install-recommends \
 	doxygen \
 	wget \
 	ninja-build \
-       apt-utils \
-       ca-certificates \
-       curl && \
-    rm -rf /var/lib/apt/lists/*
-
-
-# Update cmake and install
-RUN apt-get purge cmake -y && apt autoremove -y \
-&& wget https://cmake.org/files/v3.18/cmake-3.18.1.tar.gz \
-&& tar -xzvf cmake-3.18.1.tar.gz \
-&& cd cmake-3.18.1 \
-&& ./bootstrap \
-&& make -j8 \
-&& make install
+    apt-utils \
+    ca-certificates \
+    curl \
+    libxinerama-dev \
+    libxcursor-dev \
+    libxi-dev \
+    libxrandr-dev && \
+ rm -rf /var/lib/apt/lists/*
 
 
 # Setup folder structure
@@ -53,26 +55,28 @@ RUN mkdir /pbrt
 WORKDIR /pbrt/
 
 # get optiX
-COPY NVIDIA-OptiX-SDK-7.2.0-linux64-x86_64 /pbrt/NVIDIA-OptiX-SDK-7.2.0-linux64-x86_64
 
-# Pull the git repos for Vistalab version of pbrt-v4 and modified assimp, and build
+COPY NVIDIA-OptiX-SDK-8.0.0-linux64-x86_64 /pbrt/NVIDIA-OptiX-SDK-8.0.0-linux64-x86_64
+
+# Pull the git repos for Stanford SCIEN version of pbrt-v4 and modified assimp, and build
 RUN apt-get update -yq && apt-get install -y git \
-&& git clone -b omni --recursive https://github.com/scienstanford/pbrt-v4.git \
+&& git clone -b master --recursive https://github.com/scienstanford/pbrt-v4.git \
 && git clone https://github.com/Zhenyi-Liu/assimp.git \
 && cd assimp \
 && mkdir build \
 && cd build \
-&& cmake .. \
-&& make -j8 \
+&& cmake -DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic" \
+            -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic" .. \
+&& make -j$(nproc) \
 && make install
 
-# build-in Nvidia libs -- REQUIRES THAT YOU SYMLINK CURRENT VERSIONS TO THE WORKING DIR!
-COPY libnvoptix.so.1 /usr/lib/x86_64-linux-gnu/libnvoptix.so.1
-COPY libnvidia-rtcore.so.1 /usr/lib/x86_64-linux-gnu/libnnvidia-rtcore.so.1
-
-WORKDIR /pbrt/pbrt-v4/build
-# RUN cmake -DPBRT_GPU_SHADER_MODEL=sm_80 -DCMAKE_BUILD_TYPE=MINSIZEREL -DPBRT_OPTIX7_PATH=/pbrt/NVIDIA-OptiX-SDK-7.2.0-linux64-x86_64/ .. && make -j12 
-RUN cmake -GNinja -DPBRT_GPU_SHADER_MODEL=sm_80 -DCMAKE_BUILD_TYPE=MINSIZEREL -DPBRT_OPTIX7_PATH=/pbrt/NVIDIA-OptiX-SDK-7.2.0-linux64-x86_64/ .. && ninja -j12 
+WORKDIR /pbrt/pbrt-v4/build 
+RUN cmake -DPBRT_GPU_SHADER_MODEL=sm_80 \
+          -DCMAKE_BUILD_TYPE=MINSIZEREL \
+          -DPBRT_OPTIX7_PATH=/pbrt/NVIDIA-OptiX-SDK-8.0.0-linux64-x86_64 \
+          -DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic" \
+          -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic" .. \
+    && make -j$(nproc)
 
 ENV PATH $PATH:/pbrt/pbrt-v4/build
 

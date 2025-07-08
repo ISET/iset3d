@@ -160,4 +160,26 @@ end
 newlines(piContains(newlines,'Warning'))=[];
 newlines = newlines(~cellfun('isempty', newlines));
 
+%% MakeNamedMaterial lines with string type "mix" need a pair [ ]
+
+% Find strings that start with 'MakedNamedMaterial' and contain 'mix'
+result = cellfun(@(x) startsWith(x, 'MakeNamedMaterial') & contains(x,'mix'), newlines); 
+idx = find(result);
+
+%% Fix up the mix material line
+% 
+% Insert the brackets following the two strings after 'string materials' 
+for ii=1:numel(idx)
+    str = newlines{idx(ii)};
+    x = strfind(str,'"string materials"') + length('"string materials"') - 1;
+    nextQuotes = strfind(str((x+1):end),'"');
+    if x + nextQuotes(4) == length(str)
+        % Nothing beyond the material names
+        newlines{idx(ii)} = [ str(1:x),' [',str((x+1):end),' ]'];
+    else
+        % Insert
+        newlines{idx(ii)} = [ str(1:x),'[ ',str((x+1):(x+nextQuotes(4))),'] ', str((x+nextQuotes(4)+1):end)];
+    end
+end
+
 end

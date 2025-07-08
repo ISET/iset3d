@@ -117,7 +117,11 @@ if remoteRender
 end
 
 overwritelensfile   = p.Results.overwritelensfile;
-overwritepbrtfile   = true;
+
+if ~isequal(thisR.exporter,'copy'),  overwritepbrtfile   = true;
+else,                                overwritepbrtfile   = false;
+end
+
 overwritemedia      = true;
 
 overwritematerials  = p.Results.overwritematerials;
@@ -339,9 +343,11 @@ if(isfile(outFile))
         % A pbrt scene file exists.  We delete here and write later.
         delete(outFile);
     else
-        % Do not overwrite is set, and yet it exists. We don't like this
-        % condition, so we throw an error.
-        error('PBRT file %s exists.',outFile);
+        % Do not overwrite is set and it exists.  This could be an
+        % exporter 'copy' case.  Otherwise, we are surprised.
+        if ~isequal(thisR.exporter,'copy')
+            warning('PBRT file %s exists. Surprised.',outFile);
+        end
     end
 end
 
@@ -568,7 +574,6 @@ for ofns = outerFields'
         end
     end
 
-
     % Write out the main type and subtypes
     fprintf(fileID,'%s "%s" \n',thisR.(ofn).type,...
         thisR.(ofn).subtype);
@@ -599,18 +604,6 @@ for ofns = outerFields'
                     strcmp(ifn,'medium'))
                 continue;
             end
-
-            %{
-             Many fields are written out in here.  
-             (There is an issue with mmUnits, that I need to discuss
-             with Zheng/Zhenyi.  [1m[31mError[0m:
-             contemporary-bathroom.pbrt:13:2: "mmUnits": unused parameter.
-             Probably a missing implementation V4?  (BW). 
-             Some examples are: 
-               type, subtype, lensfile retinaDistance
-               retinaRadius pupilDiameter retinaSemiDiam ior1 ior2 ior3 ior4
-               pixelsamples xresolution yresolution maxdepth
-            %}
 
             currValue = thisR.(ofn).(ifn).value;
             currType  = thisR.(ofn).(ifn).type;
@@ -718,19 +711,13 @@ basename = thisR.get('output basename');
 lineMaterials = find(contains(thisR.world, {'_materials.pbrt'}));
 lineGeometry  = find(contains(thisR.world, {'_geometry.pbrt'}));
 lineLights    = find(contains(thisR.world, {'_lights.pbrt'}));
-lineMedia     = find(contains(thisR.world, {'_media.pbrt'}));
+lineMedia     = find(contains(thisR.world, {'_media.pbrt'}), 1);
 
 
 % For the Copy case, we just copy the world and Include the lights and materials.
-if isequal(thisR.exporter, 'Copy')
+if isequal(lower(thisR.exporter), 'copy')
     for ii = 1:numel(thisR.world)
         fprintf(fileID,'%s \n',thisR.world{ii});
-        % if piContains(thisR.world{ii},'WorldBegin') && ...
-        %         isempty(lineMaterials) &&...
-        %         ~isempty(thisR.materials)
-        %     % Insert the materials file
-        %     fprintf(fileID,'%s \n',sprintf('Include "%s_materials.pbrt" \n', basename));
-        % end
         if piContains(thisR.world{ii}, 'WorldBegin') &&...
                 isempty(lineLights) &&...
                 ~isempty(thisR.lights)
@@ -774,17 +761,6 @@ for ii = 1:length(thisR.world)
 
     fprintf(fileID,'%s \n',currLine);
 
-    if piContains(currLine,'WorldBegin')
-        % Start with the Scale value from the recipe.  This scales the whole scene,
-        % but it might be a bad idea because it does not preserve the geometric
-        % relationships between the objects.  They all get bigger.
-        %         theScale = thisR.get('scale');
-        %         if(~isempty(theScale))
-        %             fprintf(fileID,'Scale %0.2f %0.2f %0.2f \n', [theScale(1) theScale(2) theScale(3)]);
-        %             fprintf(fileID,'\n');
-        %         end
-    end
-
     if piContains(currLine,'WorldBegin') && isempty(lineMaterials) && ~isempty(thisR.materials.list)
         % Insert the materials file
         fprintf(fileID,'%s \n',sprintf('Include "%s_materials.pbrt" \n', basename));
@@ -811,18 +787,14 @@ end
 
 %%
 function piWriteMaterials(thisR)
-% Write both materials and textures files into the output directory
+% Write _materials.pbrt file with material and texture information
 
-% We create the materials file.  Its name is the same as the output pbrt
-% file, but it has an _materials inserted.
+% The materials file is <basename>_materials.pbrt
 outputDir  = thisR.get('output dir');
 basename   = thisR.get('output basename');
-% [~,n] = fileparts(thisR.inputFile);
 fname_materials = sprintf('%s_materials.pbrt',basename);
 thisR.set('materials output file',fullfile(outputDir,fname_materials));
 piMaterialWrite(thisR);
-
-
 end
 
 %%

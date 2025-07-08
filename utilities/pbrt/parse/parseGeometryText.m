@@ -1,9 +1,9 @@
-function [trees, parsedUntil] = parseGeometryText(thisR, varargin)
+function [trees, parsedUntil, infotxt] = parseGeometryText(thisR, varargin)
 % function [trees, parsedUntil] = parseGeometryText(thisR, txt, name, beBlock)
 % Parse the text from a Geometry file, returning an asset subtree
 %
 % Synopsis
-%   [trees, parsedUntil] = parseGeometryText(thisR, txt, name, beBlock)
+%   [trees, parsedUntil, infotxt] = parseGeometryText(thisR, txt, name, beBlock)
 %
 % Brief:
 %   We parse the geometry text file to build up the asset tree in the
@@ -22,6 +22,7 @@ function [trees, parsedUntil] = parseGeometryText(thisR, varargin)
 % Outputs:
 %   trees       - A tree class that describes the assets and their geometry
 %   parsedUntil - line number where the parsing ends
+%   infotxt     - Information about the processing
 %
 % Description:
 %   The lines of text in 'txt' are a cell array that has been formatted so
@@ -116,11 +117,12 @@ txt = p.Results.txt;
 name= p.Results.name;
 beBlock = p.Results.beBlock;
 
-mat = p.Results.material;
+mat      = p.Results.material;
 translation = p.Results.translation;
 rotation = p.Results.rotation;
-scale = p.Results.scale;
-medium = p.Results.mediumInterface;
+scale   = p.Results.scale;
+medium  = p.Results.mediumInterface;
+infotxt = '';
 
 % This routine processes the text and returns a cell array of trees that
 % will be part of the whole asset tree. In many cases the returned tree
@@ -171,7 +173,6 @@ while cnt <= length(txt)
 
         % Update where we start from
         cnt =  cnt + retLine;
-
 
     elseif contains(currentLine,...
             {'#ObjectName','#object name','#CollectionName','#Instance','#MeshName', '# Name'}) && ...
@@ -453,7 +454,6 @@ while cnt <= length(txt)
 
     % We get here if we are starting the next Block. 
     cnt = cnt+1;
-
 end
 
 % We made it in through the whole file
@@ -462,7 +462,7 @@ parsedUntil = cnt;
 %% We build the tree that is returned from any of the defined subtrees
 
 % Finished with all the AttributeBegin/End blocks
-fprintf('[INFO]: Identified %d assets; parsed up to line %d\n',numel(subtrees),parsedUntil);
+infotxt = addText(infotxt,sprintf('Identified %d assets; parsed up to line %d\n',numel(subtrees),parsedUntil));
 
 % We create the root node here, placing it as the root of all of the
 % subtree branches.
@@ -483,8 +483,6 @@ else
     % warning('Empty tree.')
     trees=[];
 end
-
-% if ~exist('trees','var'), warning('trees not defined'); end
 
 end
 

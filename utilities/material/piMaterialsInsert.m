@@ -33,7 +33,7 @@ function thisR = piMaterialsInsert(thisR,varargin)
 %   marble.
 %
 % See also
-%    piMaterialPresets, t_piIntro_materialInsert
+%    piMaterialPresets
 
 % TODO
 %  Check to avoid over-write when the material exists already.

@@ -1,8 +1,7 @@
 %% Render MacBeth color checker
 %
 % Description:
-%   Render a MacBeth color checker along with its illumination
-%   and depth map.
+%   Render a MacBeth color checker and plot the illuminant SPD.
 % 
 % Index numbers for MacBeth color checker:
 %          ---- ---- ---- ---- ---- ----
@@ -16,19 +15,13 @@
 %          ---- ---- ---- ---- ---- ----
 %
 % Dependencies:
-%
-%    ISET3d, (ISETCam or ISETBio)
+%    ISET3d, ISETCam
 %
 % Author:
 %   ZLY, BW, 2020
 %
 % See also
 %   t_piIntro_*
-
-% History:
-%   10/28/20  dhb  Explicitly show how to compute and look at depth map and
-%                  illumination map. The header comments said it did the
-%                  latter two, and now it does.
 
 %% init
 ieInit;
@@ -48,12 +41,13 @@ thisR.set('lights','all','delete');
 % Add an equal energy distant light for uniform lighting
 spectrumScale = 1;
 lightSpectrum = 'equalEnergy';
-newDistant = piLightCreate('new distant',...
+distantLight = piLightCreate('new distant',...
                            'type', 'distant',...
                            'specscale float', spectrumScale,...
                            'spd spectrum', lightSpectrum,...
                            'cameracoordinate', true);
-thisR.set('light', newDistant, 'add');
+thisR.set('light', distantLight, 'add');
+
 %% Set an output file
 %
 % This is pretty high resolution given the nature of the target.
@@ -68,5 +62,8 @@ thisR.set('filmresolution', [640, 360]*2);
 % distance from camera to each point along the line of sight.  See
 % t_piIntro_macbeth_zmap for how to compute a zmap.
 scene = piWRS(thisR);
+
+%% Show illuminant
+scenePlot(scene,'illuminant energy');
 
 %% END

@@ -1528,15 +1528,16 @@ switch ieParamFormat(param)  % lower case, no spaces
     case 'objectsizes'
         % thisR.get('object sizes');
         %
-        % Sizes for all of the objects.  These cannot be determined in all
-        % cases - the ply files need to be present in the output directory.
+        % Sizes for all of the objects.  These cannot be determined in
+        % all cases - the ply files need to be available.  If the
+        % rendering is remote, we do not have the file and NaN is
+        % returned.
         idx  = thisR.get('objects');
         nObjects = numel(idx);
-        val = zeros(nObjects,3);
+        val = nan(nObjects,3);
         for ii=1:nObjects
             val(ii,:) = thisR.get('asset',idx(ii),'size');
         end
-
         % -------Instances and references
     case {'instance','instances'}
         % idx = thisR.get('instances'); % Return idx of all instances
@@ -1832,7 +1833,7 @@ switch ieParamFormat(param)  % lower case, no spaces
             error('Could not find asset %s\n',varargin{1});
         end
         if iscell(thisAsset), thisAsset = thisAsset{1}; end
-        if length(varargin) == 1
+        if isscalar(varargin)
             val = thisAsset;
             return;
         else
@@ -1954,23 +1955,23 @@ switch ieParamFormat(param)  % lower case, no spaces
                             theShape = thisAsset.shape;
                         end
 
-                        val = zeros(1,3);
+                        val = nan(1,3);
                         if isempty(theShape)
                             % Sometimes we have the points and
                             % sometimes only a pointer to a PLY file.
                             % Sometimes the shape is a string?  Like
                             % 'Sphere'?
                             warning('Object %d has no shape.',id);
-                        elseif ~isempty(theShape.point3p)
+                        elseif isfield(theShape,'point3p') && ~isempty(theShape.point3p)
                             pts = theShape.point3p;
                             val(1) = (max(pts(1:3:end))-min(pts(1:3:end)))*thisScale(1);
                             val(2) = (max(pts(2:3:end))-min(pts(2:3:end)))*thisScale(2);
                             val(3) = (max(pts(3:3:end))-min(pts(3:3:end)))*thisScale(3);
                         elseif ~isempty(theShape.filename)
-                            % Read a shape file. 
+                            % Read a ply formatted shape file. 
+                            fname = fullfile(thisR.get('inputdir'),theShape.filename);
                             [~,~,ext] = fileparts(theShape.filename);
-                            if isequal(ext,'.ply')
-                                fname = fullfile(thisR.get('inputdir'),theShape.filename);
+                            if isequal(ext,'.ply')  && exist(fname,'file')
                                 if ~exist(fname,'file') && ~thisR.useDB
                                     warning('Can not find the ply file %s\n',fname);
                                     return;
@@ -1988,8 +1989,9 @@ switch ieParamFormat(param)  % lower case, no spaces
                                 fprintf('%s - size from PBRT not yet implemented.\n',theShape.filename)
                                 % We have some cases, like for chess set.
                             end
-                        end
-                        % I suppose?
+                        else
+                            warning('Problem parsing theShape and determining the size.');
+                        end                        
                     else
                         warning('Only objects have a size');
                     end

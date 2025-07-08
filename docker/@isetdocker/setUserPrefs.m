@@ -17,8 +17,7 @@ function setUserPrefs(obj)
 %   and saves preferences using MATLAB's setpref function.
 %
 % Example:
-%   myObj = isetdocker();
-%   setUserPrefs(myObj);
+% isetdocker.setUserPrefs();
 %
 % Zhenyi, Stanford, 2024
 
@@ -26,17 +25,24 @@ prefGroupName = 'ISETDocker';
 
 % Check if preferences have already been set
 if ispref(prefGroupName)
-    updateChoice = input('User preferences already set. Do you want to update them? [y/n]: ', 's');
+    disp('Preferences already set:');
+    listPrefs(prefGroupName)
+    disp('');
+    updateChoice = input('Do you want to update these preferences? [Y/n]: ', 's');
     if strcmpi(updateChoice, 'n')
         disp('Preferences update canceled.');
-        updateChoice = input('Do you want to check your preferences? [y/n]: ', 's');
-        if strcmpi(updateChoice, 'y')
-            disp('-----Preferences Summary-----');
-            listPrefs(prefGroupName)
-        end
         return;
     end
 end
+%{ later maybe
+host = input('Docker Host? [local]: ','s')
+if strcmpi(host,'local')
+    render context
+else
+    %ping host
+    %look for docker on host
+end
+%}
 
 % Define presets for the render context and prompt user to choose or type their own
 disp('Available render contexts:');
@@ -53,11 +59,12 @@ switch renderContextChoice
     case 2
         renderContext = 'remote-mux';
     case 3
+        % Should become vistalab/pbrt-v4-gpu
         renderContext = 'default';
         dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-ti';
     case 4
         renderContext = 'default';
-        dockerImage = 'digitalprodev/pbrt-v4-gpu-volta-mux';
+        dockerImage = 'vistalab/pbrt-v4-gpu';
     otherwise
         renderContext = input('Enter your custom render context: ', 's');
 end
@@ -68,7 +75,7 @@ switch renderContext
         dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-ti';
     case 'remote-mux'
         remoteHost = 'mux.stanford.edu';
-        dockerImage = 'digitalprodev/pbrt-v4-gpu-volta-mux';
+        dockerImage = 'vistalab/pbrt-v4-gpu';
     case 'default'
         remoteHost = '';
     otherwise
@@ -90,7 +97,7 @@ device = input('Choose a device (GPU/CPU) [g/c]: ', 's');
 if strcmpi(device,'g')
     device = 'gpu';
     if ~isempty(remoteHost) && ~isempty(remoteUser)
-        [status, remoteGPUAttrs]=obj.getGpuAttrs(remoteUser, remoteHost);
+        [status, remoteGPUAttrs]=isetdocker.getGpuAttrs(remoteUser, remoteHost);
         if ~status
             fprintf('Avaliable GPU on %s:\n',renderContext);
             for ii  = 1:numel(remoteGPUAttrs)
@@ -101,10 +108,10 @@ if strcmpi(device,'g')
         end
     end
     % Prompt user for device ID
-    deviceID = input('Enter device ID: ');
+    deviceID = input('Enter device ID: ','s');
 elseif strcmpi(device,'c')
     device = 'cpu';
-    deviceID = -1;
+    deviceID = '';
     dockerImage = 'digitalprodev/pbrt-v4-cpu';
     customImageChoice = input('Use digitalprodev/pbrt-v4-cpu, do you want to set your own? [y/n]: ', 's');
     if strcmpi(customImageChoice, 'y')

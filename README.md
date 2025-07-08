@@ -1,8 +1,6 @@
-# Welcome to ISET3d-tiny!
+# Welcome to ISET3d (tiny)!
 
-**ISET3d-tiny will be renamed to replace ISET3d in the summer of 2025**
-
-The tools in ISET3d-tiny extend ISETcam to provide a physically-accurate simulation (ray traced) rendering of 3D scenes.  The code returns a scene spectral radiance, or if you specify a lens, an optical image spectral irradiance, for a 3D scene.  The ray tracing is based on PBRT (Physically Based Ray Tracing).
+The tools in ISET3d extend ISETcam to provide a physically-accurate simulation (ray traced) rendering of 3D scenes.  The code returns a scene spectral radiance, or if you specify a lens, an optical image spectral irradiance, for a 3D scene.  The ray tracing is based on PBRT (Physically Based Ray Tracing).
 
 The tools in this repository calculate the spectral irradiance of realistic three-dimensional scenes. The tools work with a special version of **PBRT (V4)**. The implementation is available in a set of Docker containers that run either on a CPU or one of a set of GPUs.
 
