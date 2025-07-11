@@ -216,6 +216,11 @@ switch param
         % camera, right?  Or is it always at the 'to' distance???  You can
         % force it to be the 'to' by using
         %
+        % There is a notion of where the object is, and there is a
+        % notion of the position of the lens that focuses on some
+        % distance.  I think we are using focaldistance to be the
+        % location where an object would be in focus.
+        %
         % thisR.set('focal distance',thisR.get('object distance'))
         %
         % See recipeSet 'todistance'
@@ -247,8 +252,12 @@ switch param
         thisR.set('to',from + fromto*val);
 
     case {'accommodation'}
-        % We allow specifying accommodation rather than focal distance.
-        % For typical lenses, accommodation is 1/focaldistance.
+        % We allow specifying accommodation rather than object distance.
+        % For typical lenses, accommodation is (1/objectdistance)
+        % where object distance is the distance to an in-focus object.
+        %
+        % We also have a distance to a real object, which we call
+        % object distance.  This causes some confusion on my part.
         %
         % For the human eye models, we need to change the whole lens model
         % using setNavarroAccommodation or setArizonaAccommodation.
@@ -286,7 +295,7 @@ switch param
                 % Nothing
         end
 
-        % Accommodation is the inverse of focal distance. Even for human.
+        % Accommodation is the inverse of object distance. Even for human.
         % For cameras, we do not usually set accommodation. Rather, we
         % adjust the distance from the lens to the film (sensor).  We
         % store the focal distance in the recipe (inside the camera
@@ -296,9 +305,17 @@ switch param
     case {'focusdistance','focaldistance'}
         % lens.set('focus distance',m)
         %
+        % NOTE:  We should be clear about the variables to object
+        % distance and image distance. Focus distance here means the
+        % distance at which an object is in focus.  Object distance
+        % means the distance to a real object in the scene, whether it
+        % is in focus or not.  This is not good terminology, but it is
+        % what we have. This is repeated below.  I seem to repeat it
+        % every time it comes up ;) (BW).
+        %
         % This is the distance (m) to the object in the scene that
         % will be in focus.  The film distance is derived by PBRT from
-        % this parameter.  It is possible that there is no film
+        % this parameter. It is possible that there is no film
         % distance for certain (say very near) focus distances.
         %
         % This variable is related to the lookat settings.  That
