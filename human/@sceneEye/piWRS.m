@@ -66,6 +66,7 @@ if SE.usePinhole
     thisR.set('fov',fov);
 end
 
+
 % We render but do not show at this point.   We need to apply the
 % oi settings before showing.  The varargin can include 'docker
 % wrapper' as a key/val pair.

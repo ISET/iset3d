@@ -33,8 +33,8 @@ thisSE.get('lookat')
 
 thisSE.set('use pinhole',true);
 
-humanDocker = dockerWrapper;
-scene = thisSE.piWRS('docker wrapper',humanDocker,'name','pinhole');
+% humanDocker = dockerWrapper;
+scene = thisSE.piWRS('name','pinhole');
 
 % piAssetGeometry(thisSE.recipe);
 
