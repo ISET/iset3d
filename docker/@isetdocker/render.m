@@ -55,8 +55,14 @@ end
 
 [~, sceneDir, ~] = fileparts(outputFolder);
 
-if isempty(getpref('ISETDocker','remoteHost'))
-    contextFlag = ' --context default ';
+% By the time we get here, I think we should know the context from the
+% saved prefs or from isetdocker.startPBRT.  Getting the context from the
+% remoteHost seems odd, anyway.  Shouldn't we be getting it from whatever
+% is the current context?
+% I made that change.
+if isempty(getpref('ISETDocker','renderContext'))
+     contextFlag = sprintf(' --context %s ',piDockerCurrentContext);
+%    contextFlag = ' --context default ';
 else
     contextFlag = [' --context ' getpref('ISETDocker','renderContext')];
 end
