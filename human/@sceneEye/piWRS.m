@@ -66,10 +66,12 @@ if SE.usePinhole
     thisR.set('fov',fov);
 end
 
+% We write and render but do not show at this point.   We need to apply the
+% oi settings before showing.
 
-% We render but do not show at this point.   We need to apply the
-% oi settings before showing.  The varargin can include 'docker
-% wrapper' as a key/val pair.
+% Write the local/pbrt directory being aware about whether the resources
+% are expected to be present remotely.
+piWrite(thisR);
 obj = piRender(thisR,varargin{:});
 
 % Deal with special ISETBio pinhole management
