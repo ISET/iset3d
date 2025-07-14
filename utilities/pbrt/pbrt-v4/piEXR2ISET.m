@@ -94,7 +94,7 @@ for ii = 1:numel(label)
                 nn = nn+1;
             end
             try
-                % New format
+                % New format: Perhaps they mean MATLAB's exrread()?
                 energy = exrread(inputFile,Channels = radianceChannels);
             catch
                 % keep the old format
@@ -109,13 +109,17 @@ for ii = 1:numel(label)
 
         case {'depth', 'zdepth'}
             info = exrinfo(inputFile);
-            channelNames = info.ChannelInfo.Properties.RowNames;
-            if contains('P.X',channelNames)
+            % disp(info);
+            % fieldnames(info)
+            channelNames = info.channels;
+            if any(strcmp('P.X', channelNames))
                 % Modern naming for X,Y,Z coordinates
-                coordinates = exrread(inputFile,Channels=["P.X","P.Y","P.Z"]);
-            elseif contains('Px',channelNames)
+                % coordinates = exrread(inputFile,Channels=["P.X","P.Y","P.Z"]);
+                coordinates = exrread(inputFile);
+            elseif any(strcmp('Px', channelNames))
                 % Historical naming
-                coordinates = exrread(inputFile,Channels=["Px","Py","Pz"]);
+                % coordinates = exrread(inputFile,Channels=["Px","Py","Pz"]);
+                coordinates = exrread(inputFile);
             else
                 warning('No X,Y,Z channels found.  Returning.');
                 return;

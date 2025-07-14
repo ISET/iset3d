@@ -18,8 +18,20 @@ function data = piEXR2Mat(inputFile, channelname)
 % dockerWrapper Support, D. Cardinal, 2022
 %
 
+% Below lines are added for Octave compatiblity
+% Should ideally support runs from both Octave and MATLAB
+
+% Determine if we're in Octave
+isOctave = exist('OCTAVE_VERSION', 'builtin') ~= 0;
+
+% Check if MATLAB exrread() is available
+hasBuiltinExrread = false;
+if ~isOctave && exist('isMATLABReleaseOlderThan', 'file') > 0
+    hasBuiltinExrread = ~isMATLABReleaseOlderThan('R2022b');
+end
+
 % tic
-if exist('isMATLABReleaseOlderThan','file') > 0 && ~isMATLABReleaseOlderThan('R2022b')
+if hasBuiltinExrread
     % Use Matlab builtin exrread from the image toolbox 
 
     % Matlab included exrread() in 2022b.  We included exread() in
@@ -48,8 +60,7 @@ if exist('isMATLABReleaseOlderThan','file') > 0 && ~isMATLABReleaseOlderThan('R2
     data = exrread(inputFile, Channels = channels);
     return;
 
-elseif isfile(fullfile(isetRootPath,'imgproc','openexr','exrread.m'))
-    
+elseif isfile(fullfile(isetRootPath,'imgproc','openexr','exrreadchannels.mex'))
     % Use the exrread() from ISETCam.
     
     if strcmpi(channelname,'radiance')
@@ -95,7 +106,7 @@ else
 
     if status
         disp(result);
-        error('EXR to Binary conversion failed.')
+        error('EXR to Binary conversion failed.');
     end
     allFiles = dir([indir,sprintf('/%s_*',fname)]);
     fileList = [];
