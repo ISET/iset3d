@@ -33,8 +33,8 @@ thisSE.get('lookat')
 
 thisSE.set('use pinhole',true);
 
-humanDocker = dockerWrapper;
-scene = thisSE.piWRS('docker wrapper',humanDocker,'name','pinhole');
+% humanDocker = dockerWrapper;
+scene = thisSE.piWRS('name','pinhole');
 
 % piAssetGeometry(thisSE.recipe);
 
@@ -48,16 +48,18 @@ thisSE.set('use optics',true);
 thisSE.set('fov',1);                % About 3 deg on a side
 thisSE.set('spatial samples',256);  % Number of OI sample points
 thisSE.set('rays per pixel',256);
-thisSE.set('accommodation',1/thisSE.get('object distance','m'));  
+% tmp = 1/thisSE.get('object distance','m');
+thisSE.set('accommodation',1);  
 thisSE.set('lens density',0);       % Yellow is harder to see.
 
 thisSE.set('diffraction',true);
 thisSE.set('pupil diameter',4);
 thisSE.set('film diagonal',10);
 
-humanDocker = dockerWrapper.humanEyeDocker;
-oi = thisSE.piWRS('docker wrapper',humanDocker,'name','navarro');
+% humanDocker = dockerWrapper.humanEyeDocker;
+oi = thisSE.piWRS('name','navarro');
 
+%%
 oi = oiSet(oi,'name','4mm-diffractionOn');
 oiWindow(oi);
 oiPlot(oi,'illuminance hline',[128 128]);

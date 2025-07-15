@@ -161,8 +161,8 @@ switch ieParamFormat(sceneDir)
         sceneFile = [sceneDir,'.pbrt'];
         exporter = 'PARSE';
     case 'slantededge'
-        sceneDir = 'slantedEdge';
-        sceneFile = 'slantedEdge.pbrt';
+        sceneDir = 'slantededge';
+        sceneFile = 'slantededge.pbrt';
         exporter = 'PARSE';
     case 'snellenatdepth'
         sceneDir = 'snellenatdepth';
