@@ -1,4 +1,4 @@
- classdef isetdocker < handle
+classdef isetdocker < handle
     % Creates a new docker environment for remote execution.
     %
     % Isetdocker relies on parameters stored in Matlab
@@ -11,16 +11,16 @@
     %   isetdocker.setUserPrefs;
     %
     % You will be asked a set of questions.  Answer them, and your
-    % info Matlab prefs will be updated.    
+    % info Matlab prefs will be updated.
     %
     % See also
-    %  
+    %
     properties (GetAccess=public, SetAccess = public)
         % common
         name = 'ISET Docker Controls'
         label = 'label';
 
-        % 
+        %
         device = '';
         deviceID = '';
         dockerImage = '';
@@ -64,7 +64,7 @@
             assert(isequal(result(1:6),'Docker'), 'Docker engine may not be running');
             if status
                 % status is not zero, so command failed. Maybe it is a
-                % path issue. 
+                % path issue.
                 disp('Configuring local docker path with piDockerConfig.');
                 piDockerConfig;
             end
@@ -288,7 +288,7 @@
             end
 
             % Set volumes for render resources and acorn resources
-            
+
             workDirPBRT = getpref('ISETDocker','workDir');
             volumeMap = sprintf("-v %s:%s", ...
                 workDirPBRT, workDirPBRT);
@@ -300,7 +300,8 @@
 
             % We use the default context for local docker containers
             if isempty(getpref('ISETDocker','remoteHost'))
-                contextFlag = ' --context default ';
+                contextFlag = sprintf(' --context %s ',piDockerCurrentContext);
+                % contextFlag = ' --context default ';
             else
                 contextFlag = [' --context ' getpref('ISETDocker','renderContext')];
             end
@@ -315,7 +316,7 @@
             end
 
             envString = "--env NVIDIA_DRIVER_CAPABILITIES=compute,graphics,utility";
-           
+
             dCommand = sprintf('docker %s run -d -it %s %s --name %s  %s', ...
                 contextFlag, envString, gpuString, ourContainer, volumeMap);
 
@@ -329,7 +330,7 @@
 
             [status, result] = system(cmd);
 
-            
+
             if status ~= 0
                 cprintf('red','[ERROR]: Runing Command: %s \n',cmd);
                 error("[ERROR]:Failed to start Docker container: %s", result);
@@ -340,6 +341,7 @@
             % save container name
             setpref('ISETDocker','PBRTContainer',ourContainer);
         end
+
         %% reset - Resets the running Docker containers
         function reset(obj)
             iDockerPrefs = getpref('ISETDocker');
@@ -432,8 +434,8 @@
 
 
             %% Build the query command
-          %  if ~exist('remoteUser','var'), remoteUser = obj.remoteUser;end
-          %  if ~exist('remoteHost','var'), remoteHost = obj.remoteHost;end
+            %  if ~exist('remoteUser','var'), remoteUser = obj.remoteUser;end
+            %  if ~exist('remoteHost','var'), remoteHost = obj.remoteHost;end
 
             rShell = 'ssh';
             remoteCommand = 'nvidia-smi --query-gpu="index","name","memory.total","driver_version" --format="csv","noheader"';

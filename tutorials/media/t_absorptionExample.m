@@ -1,14 +1,54 @@
-% This script demonstrates how to estimate medium absorption from simulated
-% measurements. The key idea is to calculate scene radiance with and
-% without the medium, and estimate the absorption from the ratio of the
-% signals
+%% t_absorptionExample
 %
-% Henryk Blasinski, 2023
+% Synopsis:
+%
+%  The script quantifies the effect of a medium (like water) on light
+%  absorption by rendering and analyzing a test chart scene in two
+%  different environments. This script demonstrates how to estimate medium
+%  absorption from simulated measurements. The key idea is to calculate
+%  scene radiance with and without the medium, and estimate the absorption
+%  from the ratio of the signals
+%
+% A summary of its ISETCam, ISET3d-tiny (PBRT) workflow:   
+% 
+% 1. **Initialization:**  
+%    The script initializes the environment and rendering configuration
+%    using ISET3d functions (`ieInit`, `piDockerConfig`).
+% 
+% 2. **Scene Setup:**  
+%    - A test chart scene is created and customized.
+%    - Rendering parameters such as pixel samples are set.
+% 
+% 3. **Reference Render (Air):**  
+%    - The test chart is rendered in the absence of any medium (i.e., in air).
+%    - The radiance (light signal) is extracted from a specific region of
+%    interest (ROI) in the rendered image. 
+% 
+% 4. **Underwater Render:**  
+%    - The same test chart scene is modified to simulate being underwater.
+%    - The scene is rendered again, and the radiance is extracted from the
+%    same ROI. 
+% 
+% 5. **Absorption Estimation:**  
+%    - By comparing the radiance values from the air and underwater
+%    renders, the script estimates the amount of light absorbed by the
+%    medium.  
+% 
+% **Recent changes in the diff:**  
+%    - The rendering is now performed using default parameters (removing
+%    explicit Docker/manual configuration). 
+%    - The script is updated to reflect the current year, and some
+%    comments/header formatting have been tweaked. 
+% 
+% Henryk Blasinski, 2025
+%
+% See also
+%   t_scatteringExample
 
+%%
 close all;
 clear all;
 clc;
-%%
 ieInit
 piDockerConfig();
 
@@ -25,18 +65,7 @@ testChart = piCreateUniformChart('cameraDistance', cameraDistance, ...
 testChart.set('pixel samples', 1024);
 
 
-% Define rendering parameters
-dw = isetdocker('device','cpu', ...
-    'deviceID', -1, ...
-    'dockerImage','vistalab/pbrt-v4-cpu-arm', ...
-    'remoteHost','', ...
-    'remoteUser','', ...
-    'WorkDir',[piRootPath '/local'], ...
-    'renderContext', 'default', ...
-    'verbosity', 1 ...
-    );
-
-referenceScene = piWRS(testChart, 'ourDocker', dw, 'meanluminance', -1);
+referenceScene = piWRS(testChart, 'meanluminance', -1);
 
 % Extract the 'in air' radiance for a particular patch.
 delta = 5;
@@ -53,7 +82,7 @@ underwaterTestChart = piSceneSubmerge(testChart, water, 'sizeX', 0.1, 'sizeY', 0
 underwaterTestChart.set('outputfile',fullfile(piRootPath,'local','UnderwaterUniform','UnderwaterUniform.pbrt'));
 underwaterTestChart = sceneSet(underwaterTestChart,'name', 'Underwater');
 
-underwaterScene = piWRS(underwaterTestChart, 'ourDocker', dw, 'meanluminance', -1);
+underwaterScene = piWRS(underwaterTestChart, 'meanluminance', -1);
 
 % Extract the 'in water radiance for a particular patch
 inWaterPhotons = sceneGet(underwaterScene,'roi mean energy', roi);
