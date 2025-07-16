@@ -70,14 +70,14 @@ thisSE.set('diffraction',false);
 thisSE.set('rays per pixel',512);
 thisSE.set('pupil diameter',1);
 
-oi = thisSE.piWRS('docker wrapper',humanDocker,'name','navarro');
+oi = thisSE.piWRS('name','navarro');
 oiPlot(oi,'illuminance hline',[128 128]);
 title('4 mm off')
 
 %% Diffraction should matter
 
 thisSE.set('diffraction',true);
-oi = thisSE.piWRS('docker wrapper',humanDocker,'name','navarro-diffraction');
+oi = thisSE.piWRS('name','navarro-diffraction');
 
 oiPlot(oi,'illuminance hline',[128 128]);
 title('1 mm on')
@@ -85,7 +85,6 @@ title('1 mm on')
 
 % Make a direct comparison
 thisSE.set('diffraction',false);
-oi = thisSE.render('render type','radiance');
 oi = oiSet(oi,'name','1mm-diffractionOff');
 oiWindow(oi);
 thisSE.summary;
@@ -99,7 +98,6 @@ thisSE.set('rays per pixel',4096);
 thisSE.set('pupil diameter',0.5);
 
 thisSE.set('diffraction',true);
-oi = thisSE.render('render type','radiance');
 oi = oiSet(oi,'name','Halfmm-diffractionOn');
 oiWindow(oi);
 
@@ -109,7 +107,6 @@ title('Half mm on')
 %%
 
 thisSE.set('diffraction',false);
-oi = thisSE.render('render type','radiance');
 oi = oiSet(oi,'name','Halfmm-diffractionOff');
 oiWindow(oi);
 

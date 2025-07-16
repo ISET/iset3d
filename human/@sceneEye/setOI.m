@@ -89,10 +89,14 @@ ieObject = oiSet(ieObject,'optics offaxis method','');
 
 %% Calculate and apply lens transmittance
 
-thisLens = Lens;
-thisLens.wave    = oiGet(ieObject,'wave');
-thisLens.density = SE.lensDensity;
-ieObject         = oiSet(ieObject,'optics lens',thisLens);
+try
+    thisLens = Lens;
+    thisLens.wave    = oiGet(ieObject,'wave');
+    thisLens.density = SE.lensDensity;
+    ieObject         = oiSet(ieObject,'optics lens',thisLens);
+catch
+    disp('isetlens not on path. Unable to set the lens.')
+end
 
 %% Apply lens transmittance
 
