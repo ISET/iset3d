@@ -61,7 +61,10 @@ if hasBuiltinExrread
     return;
 
 elseif isfile(fullfile(isetRootPath,'imgproc','openexr','exrreadchannels.mex'))
-    % Use the exrread() from ISETCam.
+    % If Matlab's exrread() isn't available, the user must be using 
+    % openexr's exrread() (either from older Matlab or Octave)
+    % In this case, the mex file should exist
+    % Note that this file reader uses arguments different from Matlab's
     
     if strcmpi(channelname,'radiance')
         channels = cell(1,31);

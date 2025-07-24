@@ -22,7 +22,7 @@ Note: This repository was formerly ISET3d-v4, pbrt2iset, and before that we reli
 ISET3d was originally developed in Brian Wandell's [Vistalab group](https://vistalab.stanford.edu/) at [Stanford University](stanford.edu), along with co-contributors from other research institutions and industry.
 
 ## Octave Support
-- July 14, 2025: Ayush Jamdar at Omnivision Technologies Inc.
+- July 14, 2025: Ayush Jamdar.
 - The EXR readers come from OpenEXR and accept only the filename as input.
 - We still rely on `.mex` exr io functions but those are built using `mkoctfile`. See `isetcam/imgproc/openexr`
-- We have tested `isethdrsensor/scripts/fullSimulation.m` on examples from the ISET HDR dataset.
+- We have tested `isethdrsensor/scripts/fullSimulation.m` on examples from the ISET HDR dataset using Octave 6.4.0.
