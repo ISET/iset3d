@@ -26,3 +26,4 @@ ISET3d was originally developed in Brian Wandell's [Vistalab group](https://vist
 - The EXR readers come from OpenEXR and accept only the filename as input.
 - We still rely on `.mex` exr io functions but those are built using `mkoctfile`. See `isetcam/imgproc/openexr`
 - We have tested `isethdrsensor/scripts/fullSimulation.m` on examples from the ISET HDR dataset using Octave 6.4.0.
+- Refer to `isetcam/README.md` for Octave and Conda environment packages.
