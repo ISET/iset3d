@@ -18,15 +18,10 @@ function data = piEXR2Mat(inputFile, channelname)
 % dockerWrapper Support, D. Cardinal, 2022
 %
 
-% Below lines are added for Octave compatiblity
-% Should ideally support runs from both Octave and MATLAB
-
-% Determine if we're in Octave
-isOctave = exist('OCTAVE_VERSION', 'builtin') ~= 0;
-
 % Check if MATLAB exrread() is available
+% This function is available only in Matlab >= R2022b
 hasBuiltinExrread = false;
-if ~isOctave && exist('isMATLABReleaseOlderThan', 'file') > 0
+if ~isOctave() && exist('isMATLABReleaseOlderThan', 'file') > 0
     hasBuiltinExrread = ~isMATLABReleaseOlderThan('R2022b');
 end
 
