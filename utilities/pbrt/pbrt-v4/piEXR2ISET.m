@@ -94,7 +94,7 @@ for ii = 1:numel(label)
                 nn = nn+1;
             end
             try
-                % New format
+                % New format: exrread() either from Matlab or Openexr    
                 energy = exrread(inputFile,Channels = radianceChannels);
             catch
                 % keep the old format
@@ -109,16 +109,31 @@ for ii = 1:numel(label)
 
         case {'depth', 'zdepth'}
             info = exrinfo(inputFile);
-            channelNames = info.ChannelInfo.Properties.RowNames;
-            if contains('P.X',channelNames)
-                % Modern naming for X,Y,Z coordinates
-                coordinates = exrread(inputFile,Channels=["P.X","P.Y","P.Z"]);
-            elseif contains('Px',channelNames)
-                % Historical naming
-                coordinates = exrread(inputFile,Channels=["Px","Py","Pz"]);
-            else
-                warning('No X,Y,Z channels found.  Returning.');
-                return;
+
+            if isOctave()
+                channelNames = info.channels;
+                if any(strcmp('P.X', channelNames))
+                    % Modern naming for X,Y,Z coordinates
+                    coordinates = exrread(inputFile);
+                elseif any(strcmp('Px', channelNames))
+                    % Historical naming
+                    coordinates = exrread(inputFile);
+                else
+                    warning('No X,Y,Z channels found.  Returning.');
+                    return;
+                end
+            else % Matlab
+                channelNames = info.ChannelInfo.Properties.RowNames;
+                if contains('P.X',channelNames)
+                    % Modern naming for X,Y,Z coordinates
+                    coordinates = exrread(inputFile,Channels=["P.X","P.Y","P.Z"]);
+                elseif contains('Px',channelNames)
+                    % Historical naming
+                    coordinates = exrread(inputFile,Channels=["Px","Py","Pz"]);
+                else
+                    warning('No X,Y,Z channels found.  Returning.');
+                    return;
+                end
             end
 
             if isequal(label{ii},'depth')
