@@ -133,9 +133,13 @@ if p.Results.mainfileonly
     overwritegeometry  = false;
 end
 
+% Older files may not have the media slot (Ford project). (2025.08.09, BW)
+if ~isfield(thisR.media,'list'), thisR.media.list = []; end
+
 verbosity           = p.Results.verbose;
 
 exporter = thisR.get('exporter');
+
 
 %% Check the input and output directories
 
@@ -222,6 +226,7 @@ end
 piWriteHeader(thisR,fileID)
 
 %% Write media
+
 % Media can interact with the camera
 % and can be defined before WorldBegin
 if ~isempty(thisR.media.list)
