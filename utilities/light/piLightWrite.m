@@ -40,6 +40,17 @@ for ii = 1:numel(thisR.lights)
 
     thisLight = thisR.lights{ii};
 
+    if isfield(thisLight,'mapname')
+        % In the past, we changed mapname to filename.  But there
+        % are some old recipes that still have mapname.  So, I am
+        % going to try to make things work this way.  Maybe more
+        % needs to be done to convert them.
+
+        % We changed mapname to filename.
+        thisLight.filename = thisLight.mapname;
+        thisLight = rmfield(thisLight,'mapname');
+    end
+
     %% Write out lightspectrum if the data is from file
     specVal = piLightGet(thisLight, 'spd val');
     if ~isempty(specVal)
@@ -208,6 +219,7 @@ for ii = 1:numel(thisR.lights)
 
             % Construct the light definition line
             [~, lghtDef] = piLightGet(thisLight, 'type', 'pbrt text', true);
+
 
             if isempty(thisLight.filename.value)
                 % No skymap.  So assign a uniform spectrum
