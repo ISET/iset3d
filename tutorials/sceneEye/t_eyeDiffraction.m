@@ -38,9 +38,7 @@ scene = thisSE.piWRS('name','pinhole');
 
 % piAssetGeometry(thisSE.recipe);
 
-%% Not working yet.  Sigh.  
-% 
-% Runs, but units are not set right.  Too blurry.
+%% Runs, but units are not set right.  Too blurry.
 % Maybe accommodation.
 
 thisSE.set('use optics',true);
