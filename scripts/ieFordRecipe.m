@@ -7,11 +7,12 @@
 % the web folder.
 %
 
-%% Initialize
+%% Initialize location
 
 fname = '1112153442.pbrt';
 chdir(fullfile(piRootPath,'data','scenes','web','1112153442'));
 
+%%
 load('1112153442.mat','thisR');
 
 % There is no thisR.media slot.  I check for this in piWrite, but we could
