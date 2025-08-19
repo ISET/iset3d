@@ -4,7 +4,9 @@ function thisR = piMaterialTextureAdd(renderRecipe,material, texture,varargin)
 %         RenderRecipe;
 %         Material: Name of a material;
 %         Texture
-
+%
+% This function might be deprecated.  In any event, it does the wrong
+% thing with uscale and vscale, so it needs to be fixed.
 %
 % thisR = piMaterialTextureAdd(thisR,'frontplane','checkerboard','uscale',1024,'vscale',1024);
 

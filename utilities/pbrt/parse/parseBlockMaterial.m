@@ -86,8 +86,18 @@ for ss = 1:2:numel(thisLine)-1
 
     switch keyType
         case {'string', 'texture'}
-              % handling mix materials   
-             thisVal = thisLine{ss+1};
+            % Handling 'mix' materials. 
+            % 
+            % This hack says use the first material. Delete the second
+            % material from the cell array.  There is some kind of ___
+            % in front of the first material that we ignore.
+            if iscell(thisLine{ss+1}) 
+                thisVal = thisLine{ss+1}{2};
+                thisLine(ss+2) = [];
+                thisLine{ss+1} = thisVal;
+            else
+                thisVal = thisLine{ss+1};
+            end
 
         case {'float', 'rgb', 'color', 'photolumi'}
             % Parse a float number from string

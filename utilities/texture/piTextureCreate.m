@@ -24,6 +24,31 @@ function texture = piTextureCreate(name, varargin)
 %   piTextureProperties, piMaterialPresets, t_piIntro_texture,
 %      t_targetsOverview 
 %
+% NOTE:  uscale and vscale were deprecated in V4.  We have commented
+% them out in creating these textures.  I am concerned about dots and
+% such, which relied on them in the past.  We need to update, using
+% 'scale'.
+%
+% ChatGPT says
+%{
+
+Instead of
+Texture "mytex" "spectrum" "imagemap"
+    "string filename" "foo.png"
+    "float uscale" [2]
+    "float vscale" [3]
+
+Do this
+Texture "mytex" "spectrum" "imagemap"
+    "string filename" "foo.png"
+    "scale" [2 3]
+
+Or equivalently
+Texture "mytex" "spectrum" "imagemap"
+    "string filename" "foo.png"
+    "transform" [ 2 0 0   0 3 0   0 0 1 ]
+
+%}
 
 % Examples
 %{
@@ -147,11 +172,13 @@ switch tp
         texture.mapping.type = 'string';
         texture.mapping.value = '';
 
-        texture.uscale.type = 'float';
-        texture.uscale.value = [];
+        % Deprecated in V4
 
-        texture.vscale.type = 'float';
-        texture.vscale.value = [];
+        % texture.uscale.type = 'float';
+        % texture.uscale.value = [];
+
+        % texture.vscale.type = 'float';
+        % texture.vscale.value = [];
 
         texture.udelta.type = 'float';
         texture.udelta.value = [];
@@ -211,11 +238,11 @@ switch tp
         texture.mapping.type = 'string';
         texture.mapping.value = '';
 
-        texture.uscale.type = 'float';
-        texture.uscale.value = [];
+        % texture.uscale.type = 'float';
+        % texture.uscale.value = [];
 
-        texture.vscale.type = 'float';
-        texture.vscale.value = [];
+        % texture.vscale.type = 'float';
+        % texture.vscale.value = [];
 
         texture.udelta.type = 'float';
         texture.udelta.value = [];
@@ -263,11 +290,11 @@ switch tp
         texture.mapping.type = 'string';
         texture.mapping.value = '';
 
-        texture.uscale.type = 'float';
-        texture.uscale.value = [];
+        % texture.uscale.type = 'float';
+        % texture.uscale.value = [];
 
-        texture.vscale.type = 'float';
-        texture.vscale.value = [];
+        % texture.vscale.type = 'float';
+        % texture.vscale.value = [];
 
         texture.udelta.type = 'float';
         texture.udelta.value = [];
@@ -294,11 +321,11 @@ switch tp
         texture.mapping.type = 'string';
         texture.mapping.value = '';
 
-        texture.uscale.type = 'float';
-        texture.uscale.value = [];
+        % texture.uscale.type = 'float';
+        % texture.uscale.value = [];
 
-        texture.vscale.type = 'float';
-        texture.vscale.value = [];
+        % texture.vscale.type = 'float';
+        % texture.vscale.value = [];
 
         texture.udelta.type = 'float';
         texture.udelta.value = [];

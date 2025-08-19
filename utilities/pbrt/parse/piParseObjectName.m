@@ -47,16 +47,25 @@ else
     posA = strfind(txt,'[');
     posB = strfind(txt,']');
     res = sscanf(txt(posA(1)+1:posB(1)-1),'%f');
-    % Position minimima and maxima for lower left (X,Y), upper right.
-    sz.pmin = [-res(1)/2 -res(3)/2];
-    sz.pmax = [res(1)/2 res(3)/2];
+    
+    % In some cases there are no numbers in the scan. So we return sz
+    % as empty.
+    if ~isempty(res)
+        % Position minimima and maxima for lower left (X,Y), upper right.
+        sz.pmin = [-res(1)/2 -res(3)/2];
+        sz.pmax = [res(1)/2 res(3)/2];
 
-    % We are not really sure what these coordinates represent with respect to
-    % the scene or the camera direction.  For one case we analyzed (a plane)
-    % this is what the values meant.
-    sz.l = res(1);   % length (X)
-    sz.w = res(2);   % depth  (Z)
-    sz.h = res(3);   % height (Y)
+        % We are not really sure what these coordinates represent with respect to
+        % the scene or the camera direction.  For one case we analyzed (a plane)
+        % this is what the values meant.
+        sz.l = res(1);   % length (X)
+        sz.w = res(2);   % depth  (Z)
+        sz.h = res(3);   % height (Y)
+    else
+        sz = [];
+    end
+
+
 end
 
 % Remove quotes and spaces.  

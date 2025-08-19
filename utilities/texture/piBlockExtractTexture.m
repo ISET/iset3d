@@ -10,6 +10,11 @@ function texturelist = piBlockExtractTexture(thisR, textureLines)
 %
 % See also
 %   piTextureRead, piTextureCreate
+%
+% NOTES:
+%   uscale and vscale have been deprecated.  Why are they here?
+%   Only trouble.  V4 uses 'scale', not uscale and vscale
+%
 
 nLines   = numel(textureLines);
 %% Parse the string on the material line
