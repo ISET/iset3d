@@ -311,13 +311,19 @@ if ~isempty(inputDir) && ~strcmpi(inputDir,outputDir)
                 [~, ~, extension] = fileparts(sources(i).name);
                 % ChessSet needs input geometry because we can not parse it
                 % yet. --zhenyi
+                thisSrc = fullfile(sources(i).folder, sources(i).name);
+                thisDst = fullfile(outputDir, sources(i).name);
                 if ~(piContains(extension,'zip') || piContains(extension,'json'))
-                    thisFile = fullfile(sources(i).folder, sources(i).name);
-                    if verbosity > 1
-                        fprintf('Copying %s\n',thisFile)
+                    if verbosity > 1, fprintf('Copying %s\n', thisSrc); end
+                    if isSymlink(thisSrc)
+                        % Recreate symlink in destination
+                        [~, tgt] = system(sprintf('readlink %s', escapeShellArg(thisSrc)));
+                        tgt = strtrim(tgt);
+                        status = status && (system(sprintf('ln -s %s %s', ...
+                            escapeShellArg(tgt), escapeShellArg(thisDst))) == 0);
+                    else
+                        status = status && copyfile(thisSrc, thisDst);
                     end
-                    status = status && copyfile(thisFile, fullfile(outputDir,sources(i).name));
-                    %status = status && system(sprintf('cp -r %s %s \n',thisFile, fullfile(outputDir,sources(i).name)));
                 end
             end
         end
