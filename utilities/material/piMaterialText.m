@@ -10,7 +10,7 @@ varargin = ieParamFormat(varargin);
 
 p.addRequired('material', @isstruct);
 p.addRequired('thisR', @(x)(isa(x,'recipe')));
-p.addParameter('remoterender', false);
+p.addParameter('remoterender', true);  % AJ: fixes "normal map not found"
 
 p.parse(material, thisR, varargin{:});
 
