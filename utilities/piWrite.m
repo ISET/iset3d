@@ -152,9 +152,11 @@ workingDir = thisR.get('output dir');
 if ~exist(workingDir,'dir')
     mkdir(workingDir);
 end
-% Make a geometry directory
-geometryDir = thisR.get('geometry dir');
-if ~exist(geometryDir, 'dir'), mkdir(geometryDir); end
+
+% AJ: geometry symlink is created in the write loop
+% % Make a geometry directory
+% geometryDir = thisR.get('geometry dir');
+% if ~exist(geometryDir, 'dir'), mkdir(geometryDir); end
 
 renderDir = thisR.get('rendered dir');
 if ~exist(renderDir,'dir'), mkdir(renderDir); end
