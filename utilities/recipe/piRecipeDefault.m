@@ -501,7 +501,8 @@ if ~exist(fname,'file')
     fname = fullfile(sceneDir,sceneFile);
 elseif ~strcmpi(fname, which(fname))
     % Ignoring case.  Might be a bad idea (BW).
-    error('File exists on your path, but not where expected.')
+    % AJ: throws error when pre-downloaded; commented out
+    % error('File exists on your path, but not where expected.')
 end
 
 %% If we are here, we found the file.  So create the recipe.
