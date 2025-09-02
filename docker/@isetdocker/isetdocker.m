@@ -172,7 +172,10 @@ classdef isetdocker < handle
         function connect(obj)
             % Establish an SFTP connection
             try
-                obj.sftpSession = sftp(obj.remoteHost, obj.remoteUser);
+                obj.sftpSession = sftp(obj.remoteHost, obj.remoteUser, ...
+                    'PublicKeyFile',  '/Users/ayushjam/.ssh/id_ed25519.pub', ...
+                    'PrivateKeyFile', '/Users/ayushjam/.ssh/id_ed25519');
+                    % AJ: use 25519 keys instead
             catch ME
                 disp(ME.message)
                 if strcmp(version('-release'),'2024b')
