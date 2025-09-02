@@ -229,8 +229,10 @@ switch tp
         texture.v2.type = 'vector3';
         texture.v2.value = [];
 
+        % AJ: don't hardcode invert to false
         texture.invert.type = 'bool';
-        texture.invert.value = 'false';
+        texture.invert.value = [];
+        % texture.invert.value = 'false';
     case 'checkerboard'
         texture.type = 'checkerboard';
 
