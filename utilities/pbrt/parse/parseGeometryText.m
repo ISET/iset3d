@@ -468,7 +468,13 @@ infotxt = addText(infotxt,sprintf('Identified %d assets; parsed up to line %d\n'
 % subtree branches.
 if ~isempty(subtrees)
     rootAsset = piAssetCreate('type', 'branch');
-    rootAsset.name = 'root_B';
+    rootAsset.name = 'root_B';  % will be later renamed according to object
+    
+    % AJ: Higher level transforms should be saved in the object node
+    rootAsset.scale = scale;
+    rootAsset.rotation = rotation;
+    rootAsset.translation = translation;
+ 
     trees = tree(rootAsset);
 
     % Graft each of the subtrees to the root node
