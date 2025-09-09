@@ -321,7 +321,7 @@ if ~isempty(inputDir) && ~strcmpi(inputDir,outputDir)
                         % Recreate symlink in destination
                         [~, tgt] = system(sprintf('readlink %s', escapeShellArg(thisSrc)));
                         tgt = strtrim(tgt);
-                        status = status && (system(sprintf('ln -s %s %s', ...
+                        status = status && (system(sprintf('ln -sfn %s %s', ...
                             escapeShellArg(tgt), escapeShellArg(thisDst))) == 0);
                     else
                         status = status && copyfile(thisSrc, thisDst);
