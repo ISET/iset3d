@@ -77,11 +77,17 @@ for ii = 1:numel(textureList)
     if contains(textureList{ii}.name,{'tex_'}) && ...
             exist(fullfile(inputDir, texSlotName),'file') && ...
             contains(textureList{ii}.name,{'.alphamap.'})
-
-        outputFile = fullfile(path,[name,'_alphamap.png']);
-        outputPath = fullfile(inputDir, outputFile);
-        [img, ~, alphaImage] = imread(thisImgPath);
-
+        
+        % AJ: don't need to append _alphamap? 
+        % for instance, a name was 'tlusfbvia_4K_Opacity_alphamap'
+        % outputFile = fullfile(path,[name,'_alphamap.png']);
+        outputFile = fullfile(path,[name, '.png']);
+        % AJ: the below hardcoding is due to local vs remote render setups
+        % Replace with your own texture directory as needed
+        texturesDir = '/acorn/data/iset/Resources/';
+        outputPath = fullfile(texturesDir, outputFile);
+        [img, ~, alphaImage] = imread(outputPath);
+        
         if size(img,3)~=1 && isempty(alphaImage) && ~isempty(find(img(:,:,1) ~= img(:,:,2), 1))
             disp('No alpha texture map is available.');
             return;
