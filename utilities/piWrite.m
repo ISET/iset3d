@@ -305,10 +305,11 @@ if ~isempty(inputDir) && ~strcmpi(inputDir,outputDir)
             % Copy the spds and textures directory files.
             status = status && copyfile(fullfile(sources(i).folder, sources(i).name), fullfile(outputDir,sources(i).name));
         elseif overwriteresources
-            if sources(i).isdir && (strcmpi(sources(i).name,'spds') || strcmpi(sources(i).name,'textures') || strcmpi(sources(i).name,'instanced'))
-                % Copy the spds and textures directory files.
-                status = status && copyfile(fullfile(sources(i).folder, sources(i).name), fullfile(outputDir,sources(i).name));
-            else
+            % AJ: Lets use symlinks only. No copying
+            % if sources(i).isdir && (strcmpi(sources(i).name,'spds') || strcmpi(sources(i).name,'textures') || strcmpi(sources(i).name,'instanced'))
+            %     % Copy the spds and textures directory files.
+            %     status = status && copyfile(fullfile(sources(i).folder, sources(i).name), fullfile(outputDir,sources(i).name));
+            % else
                 % Selectively copy the files in the scene root folder
                 [~, ~, extension] = fileparts(sources(i).name);
                 % ChessSet needs input geometry because we can not parse it
@@ -327,7 +328,7 @@ if ~isempty(inputDir) && ~strcmpi(inputDir,outputDir)
                         status = status && copyfile(thisSrc, thisDst);
                     end
                 end
-            end
+            % end
         end
     end
     if(~status)
