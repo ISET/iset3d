@@ -2,7 +2,7 @@
 
 # CPU only -- much smaller docker image
 # Used for assimp and exr2bin even when running with remote GPU
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 MAINTAINER Zhenyi Liu <zhenyiliu@stanford.edu>
 MAINTAINER David Cardinal <david.cardinal@stanford.edu>
@@ -17,12 +17,17 @@ add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
 apt-get update
 
 # add debugging tools
-RUN apt-get install -y bash
-
 RUN apt-get update -yq && apt-get install -yq --no-install-recommends \
+	bash \
+	cmake \
+	libgl1-mesa-dev \
+	libxrandr-dev \
+	libxinerama-dev \
+	libxcursor-dev \
+	libxi-dev \
 	build-essential \
-	gcc-7 \
-	g++-7 \
+	gcc-9 \
+	g++-9 \
 	make \
 	bison \
 	flex \
@@ -38,17 +43,6 @@ RUN apt-get update -yq && apt-get install -yq --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 
-# Update cmake
-RUN apt-get purge cmake -y && apt autoremove -y \
-&& wget https://cmake.org/files/v3.18/cmake-3.18.1.tar.gz \
-&& tar -xzvf cmake-3.18.1.tar.gz \
-&& cd cmake-3.18.1 \
-&& ./bootstrap \
-&& make -j8 \
-&& make install
-
-
-
 # Setup folder structure
 RUN mkdir /pbrt
 WORKDIR /pbrt/
@@ -56,7 +50,7 @@ WORKDIR /pbrt/
 # Pull the git repos and make them
 # added ldconfig as otherwise assimp can't always find its .so
 RUN apt-get update -yq && apt-get install -y git \
-&& git clone -b omni --recursive https://github.com/scienstanford/pbrt-v4.git \
+&& git clone -b master --recursive https://github.com/scienstanford/pbrt-v4.git \
 && git clone https://github.com/Zhenyi-Liu/assimp.git \
 && cd assimp \
 && mkdir build \
@@ -66,12 +60,9 @@ RUN apt-get update -yq && apt-get install -y git \
 && make install
 
 # try to build-in libs -- but they may need to be symlinked for this to work
-COPY libnvoptix.so.1 /usr/lib/x86_64-linux-gnu/libnvoptix.so.1
-COPY libnvidia-rtcore.so.1 /usr/lib/x86_64-linux-gnu/libnnvidia-rtcore.so.1
-
 WORKDIR /pbrt/pbrt-v4/build
-RUN cmake -DCMAKE_BUILD_TYPE=MINSIZEREL -DPBRT_OPTIX7_PATH=/pbrt/NVIDIA-OptiX-SDK-7.2.0-linux64-x86_64/ .. \
+RUN cmake -DCMAKE_BUILD_TYPE=MINSIZEREL .. \
 && make -j12
 
-ENV PATH $PATH:/pbrt/pbrt-v4/build
+ENV PATH=$PATH:/pbrt/pbrt-v4/build
 
