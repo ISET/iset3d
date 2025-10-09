@@ -20,7 +20,7 @@ pointLight = piLightCreate('point','type','point','cameracoordinate', true);
 thisR.set('light',pointLight, 'add');
 
 %% Attach a desired texture to part of the scene
-ourAsset = '001_large_box_O';
+ourAsset = 'large_box_O';
 piMaterialsInsert(thisR,'names','slantededge');
 piAssetTranslate(thisR,ourAsset,[.15 .11 0]);
 thisR.set('asset',ourAsset,'material name','slantededge');
