@@ -27,8 +27,10 @@ function obj = piWRS(SE,varargin)
 %                       the pupil area. Default true. 
 %    write - Call piWrite first. Default: true 
 %            For debugging we sometimes suppress piWrite. 
-%    docker wrapper - Specify a docker wrapper.  If not specified, we use
-%                         dockerWrapper.humanEyeDocker
+%    docker - Specify an iset docker. If not specified, we use should
+%       find an isetdocker that works for human.  We aren't there yet.
+%       The dockerWrapper system had a call dockerWrapper.humanEye.  We
+%       need that for isetdocker
 %   'name'  - Set the Scene or OI name
 %   'gamma' - Set the display gamma for the window
 %   'show'  - Default: true
@@ -47,7 +49,7 @@ p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('SE', @(x)(isa(x, 'sceneEye')));
 p.addParameter('scaleilluminance', true, @islogical);
-p.addParameter('dockerwrapper',[],@(x)(isa(x,'dockerWrapper') || isempty(x)));
+p.addParameter('docker',[],@(x)(isa(x,'isetdocker') || isempty(x)));
 
 p.parse(SE, varargin{:});
 scaleIlluminance  = p.Results.scaleilluminance;

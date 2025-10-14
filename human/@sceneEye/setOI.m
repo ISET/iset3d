@@ -95,7 +95,7 @@ try
     thisLens.density = SE.lensDensity;
     ieObject         = oiSet(ieObject,'optics lens',thisLens);
 catch
-    disp('isetlens not on path. Unable to set the lens.')
+    disp('**isetbio** not on path. Unable to apply human lens pigments.')
 end
 
 %% Apply lens transmittance
