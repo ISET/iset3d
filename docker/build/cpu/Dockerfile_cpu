@@ -4,8 +4,9 @@
 # Used for assimp and exr2bin even when running with remote GPU
 FROM ubuntu:22.04
 
-MAINTAINER Zhenyi Liu <zhenyiliu@stanford.edu>
-MAINTAINER David Cardinal <david.cardinal@stanford.edu>
+LABEL authors="Zhenyi Liu <zhenyiliu@stanford.edu>, \
+               David Cardinal <david.cardinal@stanford.edu>, \
+               Henryk Blasinski <hblasins@stanford.edu>"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -20,11 +21,6 @@ apt-get update
 RUN apt-get update -yq && apt-get install -yq --no-install-recommends \
 	bash \
 	cmake \
-	libgl1-mesa-dev \
-	libxrandr-dev \
-	libxinerama-dev \
-	libxcursor-dev \
-	libxi-dev \
 	build-essential \
 	gcc-9 \
 	g++-9 \
@@ -35,12 +31,17 @@ RUN apt-get update -yq && apt-get install -yq --no-install-recommends \
 	zlib1g-dev \
 	libgsl-dev \
 	libssl-dev \
+	libgl1-mesa-dev \
+	libxrandr-dev \
+	libxinerama-dev \
+	libxcursor-dev \
+	libxi-dev \
 	doxygen \
 	wget \
-       apt-utils \
-       ca-certificates \
-       curl && \
-    rm -rf /var/lib/apt/lists/*
+	apt-utils \
+	ca-certificates \
+	curl && \
+	rm -rf /var/lib/apt/lists/*
 
 
 # Setup folder structure
@@ -50,7 +51,7 @@ WORKDIR /pbrt/
 # Pull the git repos and make them
 # added ldconfig as otherwise assimp can't always find its .so
 RUN apt-get update -yq && apt-get install -y git \
-&& git clone -b master --recursive https://github.com/scienstanford/pbrt-v4.git \
+&& git clone --recursive https://github.com/ISET/pbrt-v4.git \
 && git clone https://github.com/Zhenyi-Liu/assimp.git \
 && cd assimp \
 && mkdir build \
@@ -59,8 +60,8 @@ RUN apt-get update -yq && apt-get install -y git \
 && make -j8 \
 && make install
 
-# try to build-in libs -- but they may need to be symlinked for this to work
 WORKDIR /pbrt/pbrt-v4/build
+
 RUN cmake -DCMAKE_BUILD_TYPE=MINSIZEREL .. \
 && make -j12
 
