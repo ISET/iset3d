@@ -1,3 +1,4 @@
+
 # Dockerize Vistalab’s pbrt-v4 for CPU only.
 
 # CPU only -- much smaller docker image
@@ -10,7 +11,7 @@ LABEL authors="Zhenyi Liu <zhenyiliu@stanford.edu>, \
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install a higher version of cmake
+# Set up repositories
 RUN apt-get update -yq && \
 apt-get install -yq software-properties-common && \
 add-apt-repository ppa:graphics-drivers && \
@@ -51,14 +52,7 @@ WORKDIR /pbrt/
 # Pull the git repos and make them
 # added ldconfig as otherwise assimp can't always find its .so
 RUN apt-get update -yq && apt-get install -y git \
-&& git clone --recursive https://github.com/ISET/pbrt-v4.git \
-&& git clone https://github.com/Zhenyi-Liu/assimp.git \
-&& cd assimp \
-&& mkdir build \
-&& cd build \
-&& cmake .. \
-&& make -j8 \
-&& make install
+&& git clone --recursive https://github.com/ISET/pbrt-v4.git
 
 WORKDIR /pbrt/pbrt-v4/build
 
