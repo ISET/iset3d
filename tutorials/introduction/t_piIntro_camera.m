@@ -73,10 +73,9 @@ sceneSet(scene,'render flag','hdr');
 
 % Notice how well we can reduce the noise.  Though it does blur a bit,
 % also. 
-tic; scene = piAIdenoise(scene,'batch',true); toc
+tic; scene = piAIdenoise(scene); toc
 
-replace = true;
-sceneWindow(scene,[],replace);
+sceneWindow(scene);
 
 %% Pinhole cameras aren't everything
 % Here is how we add a lens to our camera
@@ -100,8 +99,8 @@ oi = piWRS(thisR);
 
 %% Now clean up the noise
 
-oi = piAIdenoise(oi,'batch',true);
-oiWindow(oi,[],replace);
+oi = piAIdenoise(oi);
+oiWindow(oi);
 oiSet(oi,'render flag','hdr');
 
 %% END
