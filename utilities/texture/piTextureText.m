@@ -126,10 +126,11 @@ for ii=1:numel(textureParams)
             % in the base or in textures/*.  If it does, we do not
             % need to copy it.
            
-            if ~isempty(getpref('ISETDocker','remoteHost')) && thisR.useDB
-                remoteSceneDir = getpref('ISETDocker','remoteSceneDir');
-                texturePath = fullfile(remoteSceneDir,texturePath);
-            end
+            % AJ: we are using symlinks, no absolute path needed
+            % if ~isempty(getpref('ISETDocker','remoteHost')) && thisR.useDB
+            %     remoteSceneDir = getpref('ISETDocker','remoteSceneDir');
+            %     texturePath = fullfile(remoteSceneDir,texturePath);
+            % end
 
             if exist(fullfile(oDir,thisVal),'file')
                 % If the file is in the root of the scene, move it
@@ -157,8 +158,9 @@ for ii=1:numel(textureParams)
                 if ~isempty(getpref('ISETDocker','remoteHost'))&& thisR.useDB ...
                         && ~strncmpi(thisVal,'/',1)
                     % We trust that the texture will be there on the server
-                    remoteFolder = fileparts(thisR.inputFile);
-                    imgFile = fullfile(remoteFolder,'textures',thisVal);
+                    % remoteFolder = fileparts(thisR.inputFile); % BUG
+                    % AJ: writes full remote path
+                    imgFile = fullfile('textures',thisVal);
                     thisText = sprintf(' "%s %s" "%s" ',...
                         thisType, textureParams{ii}, imgFile);
                 else

@@ -38,10 +38,11 @@ for ii = 1:numel(textureList)
     texSlotName = textureList{ii}.filename.value;
     thisImgPath = fullfile(inputDir, texSlotName);
 
-    if ~exist(thisImgPath,'file')
-        % It could be the material presets
-        thisImgPath = which(texSlotName);
-    end
+    % % AJ: textures are symlinked, can't find on local path
+    % if ~exist(thisImgPath,'file')
+    %     % It could be the material presets
+    %     thisImgPath = which(texSlotName);
+    % end
 
     if isempty(find(strcmp(ext, {'.png','.PNG','.exr','.jpg'}),1))
         if exist(thisImgPath, 'file')
@@ -76,11 +77,17 @@ for ii = 1:numel(textureList)
     if contains(textureList{ii}.name,{'tex_'}) && ...
             exist(fullfile(inputDir, texSlotName),'file') && ...
             contains(textureList{ii}.name,{'.alphamap.'})
-
-        outputFile = fullfile(path,[name,'_alphamap.png']);
-        outputPath = fullfile(inputDir, outputFile);
-        [img, ~, alphaImage] = imread(thisImgPath);
-
+        
+        % AJ: don't need to append _alphamap? 
+        % for instance, a name was 'tlusfbvia_4K_Opacity_alphamap'
+        % outputFile = fullfile(path,[name,'_alphamap.png']);
+        outputFile = fullfile(path,[name, '.png']);
+        % AJ: the below hardcoding is due to local vs remote render setups
+        % Replace with your own texture directory as needed
+        texturesDir = '/acorn/data/iset/Resources/';
+        outputPath = fullfile(texturesDir, outputFile);
+        [img, ~, alphaImage] = imread(outputPath);
+        
         if size(img,3)~=1 && isempty(alphaImage) && ~isempty(find(img(:,:,1) ~= img(:,:,2), 1))
             disp('No alpha texture map is available.');
             return;
@@ -119,16 +126,19 @@ for ii = 1:numel(matKeys)
     normalImgPath = thisMat.normalmap.value;
     thisMat.normalmap.type = 'string';
     thisImgPath = fullfile(inputDir, normalImgPath);
-
-    if ~exist(thisImgPath,'file')
-        % It could be the material presets
-        thisImgPath = which(normalImgPath);
-    end
+    
+    % % AJ: textures are symlinked, can't find on local path
+    % if ~exist(thisImgPath,'file')
+    %     % It could be the material presets
+    %     thisImgPath = which(normalImgPath);
+    % end
     if isempty(normalImgPath)
         continue;
     end
 
-    if exist(thisImgPath, 'file') && ~isempty(normalImgPath)
+    % % AJ: assume file exists (it doesn't locally; symlinked)
+    % if exist(thisImgPath, 'file') && ~isempty(normalImgPath)
+    if ~isempty(normalImgPath)
 
         [path, name, ext] = fileparts(pathToLinux(normalImgPath));
         if strcmp(ext, '.exr') || strcmp(ext, '.png') || strcmp(ext, '.jpg')

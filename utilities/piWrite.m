@@ -152,9 +152,11 @@ workingDir = thisR.get('output dir');
 if ~exist(workingDir,'dir')
     mkdir(workingDir);
 end
-% Make a geometry directory
-geometryDir = thisR.get('geometry dir');
-if ~exist(geometryDir, 'dir'), mkdir(geometryDir); end
+
+% AJ: geometry symlink is created in the write loop
+% % Make a geometry directory
+% geometryDir = thisR.get('geometry dir');
+% if ~exist(geometryDir, 'dir'), mkdir(geometryDir); end
 
 renderDir = thisR.get('rendered dir');
 if ~exist(renderDir,'dir'), mkdir(renderDir); end
@@ -303,23 +305,30 @@ if ~isempty(inputDir) && ~strcmpi(inputDir,outputDir)
             % Copy the spds and textures directory files.
             status = status && copyfile(fullfile(sources(i).folder, sources(i).name), fullfile(outputDir,sources(i).name));
         elseif overwriteresources
-            if sources(i).isdir && (strcmpi(sources(i).name,'spds') || strcmpi(sources(i).name,'textures') || strcmpi(sources(i).name,'instanced'))
-                % Copy the spds and textures directory files.
-                status = status && copyfile(fullfile(sources(i).folder, sources(i).name), fullfile(outputDir,sources(i).name));
-            else
+            % AJ: Lets use symlinks only. No copying
+            % if sources(i).isdir && (strcmpi(sources(i).name,'spds') || strcmpi(sources(i).name,'textures') || strcmpi(sources(i).name,'instanced'))
+            %     % Copy the spds and textures directory files.
+            %     status = status && copyfile(fullfile(sources(i).folder, sources(i).name), fullfile(outputDir,sources(i).name));
+            % else
                 % Selectively copy the files in the scene root folder
                 [~, ~, extension] = fileparts(sources(i).name);
                 % ChessSet needs input geometry because we can not parse it
                 % yet. --zhenyi
+                thisSrc = fullfile(sources(i).folder, sources(i).name);
+                thisDst = fullfile(outputDir, sources(i).name);
                 if ~(piContains(extension,'zip') || piContains(extension,'json'))
-                    thisFile = fullfile(sources(i).folder, sources(i).name);
-                    if verbosity > 1
-                        fprintf('Copying %s\n',thisFile)
+                    if verbosity > 1, fprintf('Copying %s\n', thisSrc); end
+                    if isSymlink(thisSrc)
+                        % Recreate symlink in destination
+                        [~, tgt] = system(sprintf('readlink %s', escapeShellArg(thisSrc)));
+                        tgt = strtrim(tgt);
+                        status = status && (system(sprintf('ln -sfn %s %s', ...
+                            escapeShellArg(tgt), escapeShellArg(thisDst))) == 0);
+                    else
+                        status = status && copyfile(thisSrc, thisDst);
                     end
-                    status = status && copyfile(thisFile, fullfile(outputDir,sources(i).name));
-                    %status = status && system(sprintf('cp -r %s %s \n',thisFile, fullfile(outputDir,sources(i).name)));
                 end
-            end
+            % end
         end
     end
     if(~status)

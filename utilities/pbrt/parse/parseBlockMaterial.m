@@ -40,7 +40,9 @@ else
 end
 % Split the text line with ' "', '" ' and '"' to get key/val pair
 
-thisLine = thisLine(~cellfun('isempty',thisLine));
+% trim each token + remove empty/whitespace-only cells
+thisLine = cellfun(@strtrim, thisLine, 'uni', false);
+thisLine = thisLine(~cellfun(@(s) isempty(s) || all(isspace(s)), thisLine));
 
 % deal with mix material
 stringTypeIndex = find(contains(thisLine, 'string type'));
