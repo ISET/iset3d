@@ -586,8 +586,7 @@ for nMat = 1:numel(thisNode.material)
             end
             if ~isempty(getpref('ISETDocker','remoteHost')) && thisR.useDB && ...
                     ~strncmpi(thisShape.filename,'/',1)
-                % remoteFolder = fileparts(thisR.inputFile);
-                remoteFolder = ''; % AJ: we're using symlinks
+                remoteFolder = fileparts(thisR.inputFile);
                 if contains(thisShape.filename,'.ply')
                     % input file is the filepath on the server
                     thisShape.filename = fullfile(remoteFolder,thisShape.filename);

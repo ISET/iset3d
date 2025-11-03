@@ -10,7 +10,20 @@ varargin = ieParamFormat(varargin);
 
 p.addRequired('material', @isstruct);
 p.addRequired('thisR', @(x)(isa(x,'recipe')));
-p.addParameter('remoterender', true);  % AJ: fixes "normal map not found"
+p.addParameter('remoterender', true);  
+% AJ: set default to true. 
+% Reason: 
+% - If being rendered locally (remoterender = false),
+%   it assumes the texture map is in the recipe's output dir.
+%   If not present, block 82-97 handles copying the texture map to output dir. 
+% - However, if the db is in a centralised location (not output dir),
+%   in which case we use a symlink to point to the db (for complex scenes),
+%   the texture map is likely also in the db, so this check would fail.
+%   It throws a Normal Map not found warning.
+% - In remote rendering, we bypass this check, assuming the texture map exists remotely. 
+% - So, when remoterender = true, we skip the block 82-97, which works for symlinked db.  
+% - Ideally, we should do the file existence check in the db location
+%   through the symlink.
 
 p.parse(material, thisR, varargin{:});
 
