@@ -112,11 +112,12 @@ switch ieParamFormat(sceneDir)
         sceneFile = ['coordinate','.pbrt'];
         exporter = 'PARSE';
     case {'cornell_box','cornell-box-iset3d'}
+        % On SDR inside of iset3d
         sceneDir = 'cornell_box';
         sceneFile = ['cornell_box','.pbrt'];
         exporter = 'PARSE';
     case {'cornellboxreference'}
-        % Main Cornell Box
+        % Main Cornell Box. On SDR inside of iset3d
         sceneDir = 'CornellBoxReference';
         sceneFile = ['CornellBoxReference','.pbrt'];
         exporter = 'PARSE';
@@ -208,8 +209,8 @@ switch ieParamFormat(sceneDir)
         sceneDir = 'classroom';
         sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
-    case 'cornell-box-sdr'
-        % On SDR.  No assets parsed.
+    case {'cornell-box-sdr','cornell-box'}
+        % On SDR in the bitterli collection. No assets parsed.
         sceneDir = 'cornell-box';
         sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
@@ -220,43 +221,43 @@ switch ieParamFormat(sceneDir)
         exporter = 'Copy';
     case 'lamp'
         sceneDir = 'lamp';
-        sceneFile = 'lamp.pbrt';
+        sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
-    case {'living-room-1'}
+    case {'living-room'}
         sceneDir = 'living-room';
-        sceneFile = 'living-room.pbrt';
+        sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
     case 'living-room-2'
         sceneDir = 'living-room-2';
-        sceneFile = 'living-room-2.pbrt';
+        sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
     case 'living-room-3'
         sceneDir = 'living-room-3';
-        sceneFile = 'living-room-3.pbrt';
+        sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
     case 'staircase'
         sceneDir = 'staircase';
-        sceneFile = 'staircase.pbrt';
+        sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
     case 'staircase2'
         sceneDir = 'staircase2';
-        sceneFile = 'staircase2.pbrt';
+        sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
     case 'teapot-full'
         sceneDir = 'teapot-full';
-        sceneFile = 'teapot-full.pbrt';
+        sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
     case 'veach-ajar'
         sceneDir = 'veach-ajar';
-        sceneFile = 'veach-ajar.pbrt';
+        sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
     case 'veach-bidir'
         sceneDir = 'veach-bidir';
-        sceneFile = 'veach-bidir.pbrt';
+        sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
     case 'veach-mis'
         sceneDir = 'veach-mis';
-        sceneFile = 'veach-mis.pbrt';
+        sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
 
         % --------- PBRT (pharr) scenes
