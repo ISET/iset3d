@@ -11,9 +11,11 @@ if ~piDockerExists, piDockerConfig; end
 % Setting these parameters isn't working corretly.  Not sure why.
 resolution = [320 320];
 
-%% Get a list of the PBRT scenes up on SDR
+% Get a list of the PBRT scenes up on SDR
 
 sdrNames = piSDRSceneNames;
+
+%%
 for ii=1:numel(sdrNames.bitterli.names)
     sceneName = sdrNames.bitterli.names{ii};
     thisR = piRecipeDefault('scene name',sceneName);

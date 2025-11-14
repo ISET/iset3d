@@ -261,8 +261,8 @@ switch ieParamFormat(sceneDir)
         exporter = 'Copy';
 
         % --------- PBRT (pharr) scenes
-    case 'barcelona-pavilion-day'
-        sceneDir = 'barcelona-pavilion';
+    case {'barcelona-pavilion','barcelona-pavilion-day'}
+        sceneDir = 'barcelona-pavilion';   
         sceneFile = 'pavilion-day.pbrt';
         exporter = 'Copy';
     case 'barcelona-pavilion-night'
@@ -501,8 +501,9 @@ if ~exist(fname,'file')
     sceneDir = piSceneWebTest(sceneDir,sceneFile);
     fname = fullfile(sceneDir,sceneFile);
 elseif ~strcmpi(fname, which(fname))
-    % Ignoring case.  Might be a bad idea (BW).
-    error('File exists on your path, but not where expected.')
+    fprintf('This file exists: %s\n',which(fname));
+    fprintf('But you asked for this file: %s\n',fname);
+    error('So the file exists on your path, but not where expected.')
 end
 
 %% If we are here, we found the file.  So create the recipe.

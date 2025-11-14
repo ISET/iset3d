@@ -96,7 +96,7 @@ function [ieObject, result, thisD, outFile] = piRender(thisR, varargin)
 
 %% Init ISET prefs.
 
-%  If ISET3d prefs are not already set, this will initialize.
+% If ISET3d prefs are not already set, this will initialize.
 piPrefsInit
 
 %%  Name of the pbrt scene file and whether we use a pinhole or lens model
