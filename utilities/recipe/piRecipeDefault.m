@@ -261,12 +261,12 @@ switch ieParamFormat(sceneDir)
         exporter = 'Copy';
 
         % --------- PBRT (pharr) scenes
-    case 'barcelona-pavillion-day'
-        sceneDir = 'barcelona-pavillion';
+    case 'barcelona-pavilion-day'
+        sceneDir = 'barcelona-pavilion';
         sceneFile = 'pavilion-day.pbrt';
         exporter = 'Copy';
-    case 'barcelona-pavillion-night'
-        sceneDir = 'barcelona-pavillion';
+    case 'barcelona-pavilion-night'
+        sceneDir = 'barcelona-pavilion';
         sceneFile = 'pavilion-night.pbrt';
         exporter = 'Copy';
     case {'bistro-boulangerie'}

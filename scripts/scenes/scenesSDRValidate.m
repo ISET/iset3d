@@ -7,8 +7,8 @@ if ~piDockerExists, piDockerConfig; end
 
 %% Read the recipe
 
-% These aren't good.  Maybe get the correct ones from the SDR.  Clean
-% this up.
+% These aren't good.  Use piSDRSceneNames
+% see s_renderSRDscenes.  Maybe that is all we need.
 
 sdrFiles = {'arealight','bunny','car','characters','checkerboard',...
     'chessset','coordinate','cornell_box',...
