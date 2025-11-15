@@ -9,7 +9,8 @@ ieInit;
 if ~piDockerExists, piDockerConfig; end
 
 % Setting these parameters isn't working corretly.  Not sure why.
-resolution = [320 320];
+% resolution = [320 320];
+resolution = [1920,1080];
 
 % Get a list of the PBRT scenes up on SDR
 
@@ -26,9 +27,8 @@ for ii=1:numel(sdrNames.bitterli.names)
     thisR.set('render type',{'radiance','depth'});
     
     % Write the modified parameters.
-    % piWrite(thisR,'overwrite resources',false);
-    % scene = piRender(thisR,'denoise',true);
-    scene = piWRS(thisR);
+    piWrite(thisR,'overwrite resources',false);
+    scene = piRender(thisR);   
     scene = piAIdenoise(scene);
 
     % Save it in ISET3d-tiny local
@@ -41,27 +41,141 @@ end
 
 %% Now the Pharr pbrtv4 files
 
+% Some of the more complex scenes have multiple possible scene files.
+% There is a default that is rendered here.  If you would like to
+% render another version you can change the name of the scene file in
+% this recipe to match one of the other views. 
+%
+% For example
+% the default: bistro_boulangerie.pbrt
+% the others:  bistro_cafe.pbrt, bistro_vespa.pbrt
+%
+% Several of the others have additional options, including hair and
+% zero_day and dambreak and who knows ...
+%
+%{
+sceneName = 'bistro_vespa';
+thisR = piRecipeDefault('scene name','bistro');
+inputDir = thisR.get('inputdir');
+thisR.set('input file',fullfile(inputDir,'bistro_vespa.pbrt'));
+outputDir = thisR.get('output dir');
+thisR.set('output file',fullfile(outputDir,'bistra_vespa.pbrt'));
+
+thisR.set('n bounces',5);
+thisR.set('rays per pixel',2048);
+thisR.set('film resolution',resolution);
+thisR.set('render type',{'radiance','depth'});
+
+piWrite(thisR,'overwrite resources',false);
+
+scene = piRender(thisR);
+scene = piAIdenoise(scene);
+
+% Save it in ISET3d-tiny local
+fname = fullfile(piRootPath,'local','prerender',sceneName);
+save(fname,'scene');
+
+%}
+
+% 
 for ii=1:numel(sdrNames.pbrtv4.names)
-    sceneName = sdrNames.pbrtv4.names{ii};
-    thisR = piRecipeDefault('scene name',sceneName);
+    try
+        sceneName = sdrNames.pbrtv4.names{ii};
+        thisR = piRecipeDefault('scene name',sceneName);
+        fprintf('Downloaded %s.\n',sceneName);
 
-    thisR.set('n bounces',5);
-    thisR.set('rays per pixel',2048);
-    thisR.set('film resolution',resolution);
-    thisR.set('render type',{'radiance','depth'});
+        thisR.set('n bounces',5);
+        thisR.set('rays per pixel',2048);
+        thisR.set('film resolution',resolution);
+        thisR.set('render type',{'radiance','depth'});
+
+        % Write the modified parameters.
+        piWrite(thisR,'overwrite resources',false);
+
+        scene = piRender(thisR);
+        scene = piAIdenoise(scene);
+        
+        % Save it in ISET3d-tiny local
+        fname = fullfile(piRootPath,'local','prerender',sceneName);
+        save(fname,'scene');
+        % if ii==1
+        %     sceneWindow(scene);
+        %     drawnow;
+        % else
+        %     ieReplaceObject(scene);
+        %     sceneWindow; drawnow;
+        % end
+
+    catch
+        fprintf('** %d - Failed on %s **\n',ii,sceneName);
+    end  
     
-    % Write the modified parameters.
-    piWrite(thisR,'overwrite resources',true);
-
-    scene = piRender(thisR);    
-    scene = piAIdenoise(scene);
-
-    scene = piWRS(thisR);
-
-
-    % Save it in ISET3d-tiny local
-    fname = fullfile(piRootPath,'local','prerender',sceneName);
-    save(fname,'scene');
-    % sceneWindow(scene);
-    % ieReplaceObject(scene); sceneWindow;
 end
+
+%% Now the ISET3d scenes
+
+% resolution = [320 320];
+
+for ii=1:numel(sdrNames.iset3d.names)
+    try
+        sceneName = sdrNames.iset3d.names{ii};
+        thisR = piRecipeDefault('scene name',sceneName);
+        fprintf('Downloaded %s.\n',sceneName);
+
+        if isempty(thisR.get('lights'))
+            % fileName = fullfile(piDirGet('skymaps'),'room.exr');
+            % thisR.set('skymap',fileName);
+
+            distLight = piLightCreate('default_D65_light',...
+                'type', 'distant', ...
+                'spd spectrum', 'D65',...
+                'specscale float', 1);
+            distLight.from.value = thisR.get('from');
+            distLight.to.value   = thisR.get('to');
+
+            thisR.set('light',distLight,'add');
+
+            fprintf('Added light\n')
+            thisR.get('lights print');
+        end
+
+        thisR.set('n bounces',5);
+        thisR.set('rays per pixel',2048);
+        thisR.set('film resolution',resolution);
+        thisR.set('render type',{'radiance','depth'});
+
+        % Write the modified parameters.
+        piWrite(thisR,'overwrite resources',false);
+
+        scene = piRender(thisR);
+        scene = piAIdenoise(scene);
+        
+        % Save it in ISET3d-tiny local
+        fname = fullfile(piRootPath,'local','prerender',sceneName);
+        save(fname,'scene');
+        % {
+        if ii==1
+            sceneWindow(scene);
+            drawnow;
+        else
+            ieReplaceObject(scene);
+            sceneWindow; drawnow;
+        end
+        %}
+    catch
+        fprintf('** %d - Failed on %s **\n',ii,sceneName);
+    end  
+    
+end
+
+%{
+** 4 - Failed on characters **
+** 6 - Failed on chessset **  I made it work, but there is a bug because the
+lightmap_v4.exr is in the chesset directory but we don't find it with
+piGeometryWrite ... It looks for it in data/skymaps/...  I put it
+there to make this run, but we should fix the bug.
+** 14 - Failed on head **  This one is already in the repository.
+Needs help.
+** 26 - Failed on teapot-set **  Deeply broken.  Not sure why.
+
+%}
