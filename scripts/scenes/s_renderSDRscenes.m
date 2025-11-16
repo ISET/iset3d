@@ -48,36 +48,52 @@ end
 %
 % For example
 % the default: bistro_boulangerie.pbrt
-% the others:  bistro_cafe.pbrt, bistro_vespa.pbrt
-%
-% Several of the others have additional options, including hair and
-% zero_day and dambreak and who knows ...
-%
 %{
-sceneName = 'bistro_vespa';
-thisR = piRecipeDefault('scene name','bistro');
-inputDir = thisR.get('inputdir');
-thisR.set('input file',fullfile(inputDir,'bistro_vespa.pbrt'));
-outputDir = thisR.get('output dir');
-thisR.set('output file',fullfile(outputDir,'bistra_vespa.pbrt'));
+ sceneNames = {bistro_cafe.pbrt; bistro_vespa.pbrt}
+%}
+%{
+sceneNames = {...
+    'sanmiguel-entry.pbrt';'sanmiguel-balcony-plants.pbrt';
+    'sanmiguel-courtyard-second.pbrt'; 'sanmiguel-in-tree.pbrt';
+    'sanmiguel-upstairs.pbrt';'sanmiguel-upstairs-across.pbrt';
+    'sanmiguel-upstairs-corner.pbrt';};
+%}
+%{
+thisR = piRecipeDefault('scene name','sanmiguel');
+for ss=1:numel(sceneNames)
+    sceneName = sceneNames{ss};
+    disp(sceneName);
 
-thisR.set('n bounces',5);
-thisR.set('rays per pixel',2048);
-thisR.set('film resolution',resolution);
-thisR.set('render type',{'radiance','depth'});
+    inputDir = thisR.get('inputdir');
+    thisR.set('input file',fullfile(inputDir,sceneName));
+    outputDir = thisR.get('output dir');
+    thisR.set('output file',fullfile(outputDir,sceneName));
 
-piWrite(thisR,'overwrite resources',false);
+    thisR.set('n bounces',5);
+    thisR.set('rays per pixel',2048);
+    thisR.set('film resolution',resolution);
+    thisR.set('render type',{'radiance','depth'});
 
-scene = piRender(thisR);
-scene = piAIdenoise(scene);
+    piWrite(thisR,'overwrite resources',false);
 
-% Save it in ISET3d-tiny local
-fname = fullfile(piRootPath,'local','prerender',sceneName);
-save(fname,'scene');
+    scene = piRender(thisR);
+    scene = piAIdenoise(scene);
 
+    [~,n,e]=fileparts(sceneName);
+
+    % Save it in ISET3d-tiny local
+    fname = fullfile(piRootPath,'local','prerender',n);
+    save(fname,'scene');
+    disp(['saved ',fname]);
+
+end
 %}
 
-% 
+% Several of the others have additional options, including hair and
+% zero_day and dambreak and who knows ...
+
+
+%% 
 for ii=1:numel(sdrNames.pbrtv4.names)
     try
         sceneName = sdrNames.pbrtv4.names{ii};
