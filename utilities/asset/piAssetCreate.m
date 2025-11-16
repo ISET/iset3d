@@ -43,7 +43,7 @@ n = piAssetCreate('type','marker')
 
 %%
 p = inputParser;
-p.addParameter('type', 'branch', @(x)(ismember(x,{'branch','object','light','marker','trianglemesh'})));
+p.addParameter('type', 'branch', @(x)(ismember(x,{'branch','object','light','marker','trianglemesh','disk'})));
 p.parse(varargin{:});
 
 type = p.Results.type;
@@ -112,6 +112,15 @@ switch ieParamFormat(type)
         obj.p2 = '';
         obj.phimax = '';
         obj.alpha = '';
+
+    case 'disk'
+        obj.meshshape = 'disk';
+        obj.filename = '';
+        obj.height = 0;
+        obj.radius = 1;
+        obj.innerradius = 0;
+        obj.phimax = 360;
+
     otherwise
         error('Unknown asset type %s\n',type);
 end
