@@ -59,6 +59,7 @@ sceneNames = {...
     'sanmiguel-upstairs-corner.pbrt';};
 %}
 %{
+resolution = [160 160];
 thisR = piRecipeDefault('scene name','sanmiguel');
 for ss=1:numel(sceneNames)
     sceneName = sceneNames{ss};
@@ -70,14 +71,15 @@ for ss=1:numel(sceneNames)
     thisR.set('output file',fullfile(outputDir,sceneName));
 
     thisR.set('n bounces',5);
-    thisR.set('rays per pixel',2048);
+    thisR.set('rays per pixel',512);
     thisR.set('film resolution',resolution);
     thisR.set('render type',{'radiance','depth'});
 
-    piWrite(thisR,'overwrite resources',false);
+    piWrite(thisR,'overwrite resources',true);
 
     scene = piRender(thisR);
     scene = piAIdenoise(scene);
+    sceneWindow(scene);
 
     [~,n,e]=fileparts(sceneName);
 
