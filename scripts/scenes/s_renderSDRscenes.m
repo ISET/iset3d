@@ -10,10 +10,13 @@ if ~piDockerExists, piDockerConfig; end
 
 % Setting these parameters isn't working corretly.  Not sure why.
 % resolution = [320 320];
+% resolution = [160 160];
 resolution = [1920,1080];
 
-% Get a list of the PBRT scenes up on SDR
+% Rays per pixel
+rpp = 2048;
 
+% Get a list of the PBRT scenes up on SDR
 sdrNames = piSDRSceneNames;
 
 %%
@@ -22,7 +25,7 @@ for ii=1:numel(sdrNames.bitterli.names)
     thisR = piRecipeDefault('scene name',sceneName);
 
     thisR.set('n bounces',5);
-    thisR.set('rays per pixel',2048);
+    thisR.set('rays per pixel',rpp);
     thisR.set('film resolution',resolution);
     thisR.set('render type',{'radiance','depth'});
     
@@ -49,10 +52,10 @@ end
 % For example
 % the default: bistro_boulangerie.pbrt
 %{
- sceneNames = {'bistro_boulangerie.pbrt';'bistro_cafe.pbrt'; 'bistro_vespa.pbrt'}
+ sceneNames = {'bistro_cafe.pbrt'; 'bistro_vespa.pbrt'}
+ thisR = piRecipeDefault('scene name','bistro','scene filename',sceneName); 
 %}
 %{
-
 % This is the default:  'sanmiguel-entry.pbrt';
 sceneNames = {...
     'sanmiguel-balcony-plants.pbrt';
@@ -61,37 +64,30 @@ sceneNames = {...
     'sanmiguel-upstairs-corner.pbrt';};
 %}
 %{
-resolution = [160 160];
-thisR = piRecipeDefault('scene name','bistro');
-ss = 1;
-sceneName = sceneNames{ss};
-disp(sceneName);
+% resolution = [160 160];
+% rpp = 512;
+for ss = 1:numel(sceneNames)
+    sceneName = sceneNames{ss};
+    thisR = piRecipeDefault('scene name','sanmiguel','scene filename',sceneName); 
+    thisR.set('n bounces',5);
+    thisR.set('rays per pixel',rpp);
+    thisR.set('film resolution',resolution);
+    thisR.set('render type',{'radiance','depth'});
 
-inputDir = thisR.get('inputdir');
-thisR.set('input file',fullfile(inputDir,sceneName));
-outputDir = thisR.get('output dir');
-thisR.set('output file',fullfile(outputDir,sceneName));
+    piWrite(thisR,'overwrite resources',true);
+    scene = piRender(thisR);
+    scene = piAIdenoise(scene);
+    % sceneWindow(scene);
 
-thisR.set('n bounces',5);
-thisR.set('rays per pixel',512);
-thisR.set('film resolution',resolution);
-thisR.set('render type',{'radiance','depth'});
+    [~,n,e] = fileparts(sceneName);
 
-piWrite(thisR,'overwrite resources',true);
+    % Save it in ISET3d-tiny local/prerender
+    fname = fullfile(piRootPath,'local','prerender',n);
+    save(fname,'scene');
+    
+    disp(['saved ',fname]);
 
-scene = piRender(thisR);
-scene = piAIdenoise(scene);
-sceneWindow(scene);
-
-% 
-%     [~,n,e]=fileparts(sceneName);
-% 
-%     % Save it in ISET3d-tiny local
-%     fname = fullfile(piRootPath,'local','prerender',n);
-%     save(fname,'scene');
-%     disp(['saved ',fname]);
-% 
-% end
+end
 %}
 
 % Several of the others have additional options, including hair and

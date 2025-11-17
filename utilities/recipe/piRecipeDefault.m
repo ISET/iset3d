@@ -25,6 +25,8 @@ function [thisR, info] = piRecipeDefault(varargin)
 %
 % Optional key/val pairs
 %   scene name - Specify a PBRT scene name based on the directory.
+%   scene filename - Some scenes have multiple possible PBRT files.
+%                    Specify the one you want here, optionally
 %
 % Outputs
 %   thisR - the ISET3d recipe with information from the PBRT scene file.
@@ -69,12 +71,11 @@ varargin = ieParamFormat(varargin);
 
 p = inputParser;
 p.addParameter('scenename','MacBethChecker',@ischar);
+p.addParameter('scenefilename','',@ischar);
 
 p.parse(varargin{:});
 
 sceneDir   = p.Results.scenename;
-% sceneFile  = p.Results.file;  % Should include the pbrt extension.
-% loadrecipe = p.Results.loadrecipe;
 
 %%  To read the file,the upper/lower case must be right
 
@@ -270,17 +271,12 @@ switch ieParamFormat(sceneDir)
         sceneDir = 'barcelona-pavilion';
         sceneFile = 'pavilion-night.pbrt';
         exporter = 'Copy';
-    case {'bistro','bistro-boulangerie'}
+    case {'bistro'}
         sceneDir = 'bistro';
+        % Alternate legitimate files exist.
+        %   'bistro_vespa.pbrt', 'bistro_cafe.pbrt'
+        % piRecipeDefault('scene name','bistro','scene filename','bistro_vespa.pbrt')
         sceneFile = 'bistro_boulangerie.pbrt';
-        exporter = 'Copy';
-    case 'bistro-vespa'
-        sceneDir = 'bistro';
-        sceneFile = 'bistro_vespa.pbrt';
-        exporter = 'Copy';
-    case 'bistro-cafe'
-        sceneDir = 'bistro';
-        sceneFile = 'bistro_cafe.pbrt';
         exporter = 'Copy';
     case 'bmw-m6'
         sceneDir = 'bmw-m6';
@@ -387,37 +383,16 @@ switch ieParamFormat(sceneDir)
         sceneFile = 'book.pbrt';
         exporter = 'Copy';
     case {'sanmiguel','sanmiguel-entry'}
+        % Alternate sanmiguel scenes:
+        %  'sanmiguel-realistic-courtyard'
+        %  'sanmiguel-balcony-plants.pbrt'
+        %  'sanmiguel-courtyard-second.pbrt';
+        %  'sanmiguel-in-tree.pbrt'
+        %  'sanmiguel-upstairs.pbrt'
+        %  'sanmiguel-upstairs-across.pbrt';
+        %  'sanmiguel-upstairs-corner.pbrt'
         sceneDir = 'sanmiguel';
         sceneFile = 'sanmiguel-entry.pbrt';
-        exporter = 'Copy';
-    case {'sanmiguel-realistic-courtyard'}
-        sceneDir = 'sanmiguel';
-        sceneFile = 'sanmiguel-realistic-courtyard.pbrt';
-        exporter = 'Copy';
-    case 'sanmiguel-balcony-plants'
-        sceneDir = 'sanmiguel';
-        sceneFile = 'sanmiguel-balcony-plants.pbrt';
-        exporter = 'Copy';
-    case 'sanmiguel-courtyard-second'
-        sceneDir = 'sanmiguel';
-        sceneFile = 'sanmiguel-courtyard-second.pbrt';
-        exporter = 'Copy';
-    case 'sanmiguel-in-tree'
-        sceneDir = 'sanmiguel';
-        sceneFile = 'sanmiguel-in-tree.pbrt';
-        exporter = 'Copy';
-
-    case 'sanmiguel-upstairs'
-        sceneDir = 'sanmiguel';
-        sceneFile = 'sanmiguel-upstairs.pbrt';
-        exporter = 'Copy';
-    case 'sanmiguel-upstairs-across'
-        sceneDir = 'sanmiguel';
-        sceneFile = 'sanmiguel-upstairs-across.pbrt';
-        exporter = 'Copy';
-    case 'sanmiguel-upstairs-corner'
-        sceneDir = 'sanmiguel';
-        sceneFile = 'sanmiguel-upstairs-corner.pbrt';
         exporter = 'Copy';
     case 'smoke-plume'
         sceneDir = 'smoke-plume';
@@ -488,6 +463,12 @@ switch ieParamFormat(sceneDir)
 
     otherwise
         error('Can not identify the scene, %s\n',sceneDir);
+end
+
+%% The user wanted to override the scene file with another name
+
+if ~isempty(p.Results.scenefilename)
+    sceneFile  = p.Results.scenefilename;  % Should include the pbrt extension.
 end
 
 %% See if we can find the file in data/scenes/web
