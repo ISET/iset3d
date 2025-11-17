@@ -386,9 +386,13 @@ switch ieParamFormat(sceneDir)
         sceneDir = 'pbrt-book';
         sceneFile = 'book.pbrt';
         exporter = 'Copy';
-    case 'sanmiguel-entry'
+    case {'sanmiguel','sanmiguel-entry'}
         sceneDir = 'sanmiguel';
         sceneFile = 'sanmiguel-entry.pbrt';
+        exporter = 'Copy';
+    case {'sanmiguel-realistic-courtyard'}
+        sceneDir = 'sanmiguel';
+        sceneFile = 'sanmiguel-realistic-courtyard.pbrt';
         exporter = 'Copy';
     case 'sanmiguel-balcony-plants'
         sceneDir = 'sanmiguel';
@@ -402,10 +406,7 @@ switch ieParamFormat(sceneDir)
         sceneDir = 'sanmiguel';
         sceneFile = 'sanmiguel-in-tree.pbrt';
         exporter = 'Copy';
-    case {'sanmiguel','sanmiguel-realistic-courtyard'}
-        sceneDir = 'sanmiguel';
-        sceneFile = 'sanmiguel-realistic-courtyard.pbrt';
-        exporter = 'Copy';
+
     case 'sanmiguel-upstairs'
         sceneDir = 'sanmiguel';
         sceneFile = 'sanmiguel-upstairs.pbrt';

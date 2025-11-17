@@ -121,7 +121,7 @@ if ~isempty(getpref('ISETDocker','remoteHost'))
 
     outF = fullfile(remoteSceneDir,'renderings',[currName,'.exr']);
     
-    % check if there is renderings folder
+    % check if there is a remote renderings folder
     sceneFolder = dir(obj.sftpSession,fullfile(remoteSceneDir));
     renderingsDir = true;
     for ii = 1:numel(sceneFolder)

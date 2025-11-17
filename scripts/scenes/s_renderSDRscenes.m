@@ -52,8 +52,10 @@ end
  sceneNames = {bistro_cafe.pbrt; bistro_vespa.pbrt}
 %}
 %{
+
+% This is the default:  'sanmiguel-entry.pbrt';
 sceneNames = {...
-    'sanmiguel-entry.pbrt';'sanmiguel-balcony-plants.pbrt';
+    'sanmiguel-balcony-plants.pbrt';
     'sanmiguel-courtyard-second.pbrt'; 'sanmiguel-in-tree.pbrt';
     'sanmiguel-upstairs.pbrt';'sanmiguel-upstairs-across.pbrt';
     'sanmiguel-upstairs-corner.pbrt';};
