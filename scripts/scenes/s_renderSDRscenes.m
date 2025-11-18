@@ -14,7 +14,7 @@ if ~piDockerExists, piDockerConfig; end
 resolution = [1920,1080];
 
 % Rays per pixel
-rpp = 2048;
+rpp = 1024;
 
 % Get a list of the PBRT scenes up on SDR
 sdrNames = piSDRSceneNames;
