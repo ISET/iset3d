@@ -2,7 +2,12 @@
 %
 % We do this to save computation in the future
 %
+% The script has a lot of edge cases in the comments.
+% I did a lot of scenes, about 60 of them are pretty good.
+% Then I stopped.
 %
+% See also
+%   ieMontages, s_sdrMakePNG 
 
 %%
 ieInit;
@@ -64,11 +69,51 @@ sceneNames = {...
     'sanmiguel-upstairs-corner.pbrt';};
 %}
 %{
+% Do these
+thisR = piRecipeDefault('scene name','bistro');
+thisR.set('n bounces',5);
+thisR.set('rays per pixel',rpp);
+thisR.set('film resolution',resolution);
+thisR.set('render type',{'radiance','depth'});
+
+piWrite(thisR,'overwrite resources',true);
+scene = piRender(thisR);
+scene = piAIdenoise(scene);
+% sceneWindow(scene);
+
+[~,n,e] = fileparts(sceneName);
+
+% Save it in ISET3d-tiny local/prerender
+fname = fullfile(piRootPath,'local','prerender',n);
+save(fname,'scene');
+
+disp(['saved ',fname]);
+
+
+thisR = piRecipeDefault('scene name','sanmiguel');
+thisR.set('rays per pixel',rpp);
+thisR.set('film resolution',resolution);
+thisR.set('render type',{'radiance','depth'});
+
+piWrite(thisR,'overwrite resources',true);
+scene = piRender(thisR);
+scene = piAIdenoise(scene);
+% sceneWindow(scene);
+
+[~,n,e] = fileparts(sceneName);
+
+% Save it in ISET3d-tiny local/prerender
+fname = fullfile(piRootPath,'local','prerender',n);
+save(fname,'scene');
+
+disp(['saved ',fname]);
+%}
+%{
 % resolution = [160 160];
 % rpp = 512;
 for ss = 1:numel(sceneNames)
     sceneName = sceneNames{ss};
-    thisR = piRecipeDefault('scene name','sanmiguel','scene filename',sceneName); 
+    thisR = piRecipeDefault('scene name','bistro','scene filename',sceneName); 
     thisR.set('n bounces',5);
     thisR.set('rays per pixel',rpp);
     thisR.set('film resolution',resolution);
