@@ -90,7 +90,12 @@ oidn_Binary = 'oidnDenoise';
 % Someone should unzip the 2.0 mac & linux binaries I stuck in the repo and
 % test them
 if ismac
-    oidn_pth  = fullfile(piRootPath, 'external', 'oidn-1.4.3.x86_64.macos', 'bin');
+    switch computer('arch')
+        case 'maca64'
+            oidn_pth  = fullfile(piRootPath, 'external', 'oidn-2.3.3.arm64.macos', 'bin');
+        case 'maci64'
+            oidn_pth  = fullfile(piRootPath, 'external', 'oidn-2.3.3.arm64.macos', 'bin');
+    end
 elseif isunix
     oidn_pth = fullfile(piRootPath, 'external', 'oidn-2.1.0.x86_64.linux', 'bin');
 elseif ispc

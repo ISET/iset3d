@@ -25,6 +25,8 @@ function [thisR, info] = piRecipeDefault(varargin)
 %
 % Optional key/val pairs
 %   scene name - Specify a PBRT scene name based on the directory.
+%   scene filename - Some scenes have multiple possible PBRT files.
+%                    Specify the one you want here, optionally
 %
 % Outputs
 %   thisR - the ISET3d recipe with information from the PBRT scene file.
@@ -69,12 +71,11 @@ varargin = ieParamFormat(varargin);
 
 p = inputParser;
 p.addParameter('scenename','MacBethChecker',@ischar);
+p.addParameter('scenefilename','',@ischar);
 
 p.parse(varargin{:});
 
 sceneDir   = p.Results.scenename;
-% sceneFile  = p.Results.file;  % Should include the pbrt extension.
-% loadrecipe = p.Results.loadrecipe;
 
 %%  To read the file,the upper/lower case must be right
 
@@ -88,16 +89,17 @@ switch ieParamFormat(sceneDir)
         sceneFile = [sceneDir, '.pbrt'];
         exporter = 'PARSE';
     case 'bunny'
-        sceneDir = 'bunny';
-        sceneFile = ['bunny','.pbrt'];
-        exporter = 'PARSE';
+        sceneDir  = 'bunny';
+        sceneFile = 'bunny.pbrt';
+        exporter  = 'PARSE';
     case 'car'
         sceneDir = 'car';
         sceneFile = [sceneDir,'.pbrt'];
         exporter = 'PARSE';
     case 'characters'
+        % There are many different ones.
         sceneDir = 'characters';
-        sceneFile = [sceneDir,'.pbrt'];
+        sceneFile = 'c_uc-pbrt/c_uc-pbrt.pbrt';
         exporter = 'PARSE';
     case 'checkerboard'
         sceneDir = 'checkerboard';
@@ -112,11 +114,12 @@ switch ieParamFormat(sceneDir)
         sceneFile = ['coordinate','.pbrt'];
         exporter = 'PARSE';
     case {'cornell_box','cornell-box-iset3d'}
+        % On SDR inside of iset3d
         sceneDir = 'cornell_box';
         sceneFile = ['cornell_box','.pbrt'];
         exporter = 'PARSE';
     case {'cornellboxreference'}
-        % Main Cornell Box
+        % Main Cornell Box. On SDR inside of iset3d
         sceneDir = 'CornellBoxReference';
         sceneFile = ['CornellBoxReference','.pbrt'];
         exporter = 'PARSE';
@@ -132,12 +135,12 @@ switch ieParamFormat(sceneDir)
         sceneDir = 'flatsurfacewhitetexture';
         sceneFile = 'flatSurfaceWhiteTexture.pbrt';
         exporter = 'PARSE';
-    case {'head-iset3d'}
+    case {'head','head-iset3d'}
         sceneDir = 'head';
         sceneFile = ['head','.pbrt'];
         exporter = 'PARSE';
     case 'lettersatdepth'
-        sceneDir = 'lettersAtDepth';
+        sceneDir = 'lettersatdepth';
         sceneFile = [sceneDir,'.pbrt'];
         exporter = 'PARSE';
     case 'low-poly-taxi'
@@ -176,15 +179,15 @@ switch ieParamFormat(sceneDir)
         sceneDir = 'stepfunction';
         sceneFile = 'stepfunction.pbrt';
         exporter = 'PARSE';
-    case 'teapotset'
+    case {'teapotset','teapot-set'}
         sceneDir = 'teapot-set';
-        sceneFile = 'TeaTime-converted.pbrt';
+        sceneFile = 'teapot-set.pbrt';
         exporter = 'Copy';
     case {'testplane'}
         % This scene has a bug.  See also piRecipeCreate
         % It has to do with Textures.
         sceneDir  = 'testplane';
-        sceneFile = 'testplane-converted.pbrt';
+        sceneFile = 'testplane.pbrt';
         exporter = 'PARSE';
 
         % Bitterli scenes available on SDR
@@ -208,8 +211,8 @@ switch ieParamFormat(sceneDir)
         sceneDir = 'classroom';
         sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
-    case 'cornell-box-sdr'
-        % On SDR.  No assets parsed.
+    case {'cornell-box-sdr','cornell-box'}
+        % On SDR in the bitterli collection. No assets parsed.
         sceneDir = 'cornell-box';
         sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
@@ -220,65 +223,60 @@ switch ieParamFormat(sceneDir)
         exporter = 'Copy';
     case 'lamp'
         sceneDir = 'lamp';
-        sceneFile = 'lamp.pbrt';
+        sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
-    case {'living-room-1'}
+    case {'living-room'}
         sceneDir = 'living-room';
-        sceneFile = 'living-room.pbrt';
+        sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
     case 'living-room-2'
         sceneDir = 'living-room-2';
-        sceneFile = 'living-room-2.pbrt';
+        sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
     case 'living-room-3'
         sceneDir = 'living-room-3';
-        sceneFile = 'living-room-3.pbrt';
+        sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
     case 'staircase'
         sceneDir = 'staircase';
-        sceneFile = 'staircase.pbrt';
+        sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
     case 'staircase2'
         sceneDir = 'staircase2';
-        sceneFile = 'staircase2.pbrt';
+        sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
     case 'teapot-full'
         sceneDir = 'teapot-full';
-        sceneFile = 'teapot-full.pbrt';
+        sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
     case 'veach-ajar'
         sceneDir = 'veach-ajar';
-        sceneFile = 'veach-ajar.pbrt';
+        sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
     case 'veach-bidir'
         sceneDir = 'veach-bidir';
-        sceneFile = 'veach-bidir.pbrt';
+        sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
     case 'veach-mis'
         sceneDir = 'veach-mis';
-        sceneFile = 'veach-mis.pbrt';
+        sceneFile = 'scene-v4.pbrt';
         exporter = 'Copy';
 
         % --------- PBRT (pharr) scenes
-    case 'barcelona-pavillion-day'
-        sceneDir = 'barcelona-pavillion';
+    case {'barcelona-pavilion','barcelona-pavilion-day'}
+        sceneDir = 'barcelona-pavilion';   
         sceneFile = 'pavilion-day.pbrt';
         exporter = 'Copy';
-    case 'barcelona-pavillion-night'
-        sceneDir = 'barcelona-pavillion';
+    case 'barcelona-pavilion-night'
+        sceneDir = 'barcelona-pavilion';
         sceneFile = 'pavilion-night.pbrt';
         exporter = 'Copy';
-    case {'bistro-boulangerie'}
+    case {'bistro'}
         sceneDir = 'bistro';
+        % Alternate legitimate files exist.
+        %   'bistro_vespa.pbrt', 'bistro_cafe.pbrt'
+        % piRecipeDefault('scene name','bistro','scene filename','bistro_vespa.pbrt')
         sceneFile = 'bistro_boulangerie.pbrt';
-        exporter = 'Copy';
-    case 'bistro-vespa'
-        sceneDir = 'bistro';
-        sceneFile = 'bistro_vespa.pbrt';
-        exporter = 'Copy';
-    case 'bistro-cafe'
-        sceneDir = 'bistro';
-        sceneFile = 'bistro_cafe.pbrt';
         exporter = 'Copy';
     case 'bmw-m6'
         sceneDir = 'bmw-m6';
@@ -286,7 +284,7 @@ switch ieParamFormat(sceneDir)
         exporter = 'Copy';
     case 'bunny-cloud'
         sceneDir = 'bunny-cloud';
-        sceneFile = 'bunny_cloud.pbrt';
+        sceneFile = 'bunny-cloud.pbrt';
         exporter = 'Copy';
     case 'bunny-fur'
         sceneDir = 'bunny-fur';
@@ -295,6 +293,7 @@ switch ieParamFormat(sceneDir)
     case 'clouds'
         sceneDir = 'clouds';
         sceneFile = 'clouds.pbrt';
+        exporter = 'Copy';
     case 'contemporary-bathroom'
         sceneDir = 'contemporary-bathroom';
         sceneFile = 'contemporary-bathroom.pbrt';
@@ -303,7 +302,7 @@ switch ieParamFormat(sceneDir)
         sceneDir = 'crown';
         sceneFile = 'crown.pbrt';
         exporter = 'Copy';
-    case 'dambreak-0'
+    case {'dambreak','dambreak-0'}
         sceneDir = 'dambreak';
         sceneFile = 'dambreak0.pbrt';
         exporter = 'Copy';
@@ -324,8 +323,8 @@ switch ieParamFormat(sceneDir)
         sceneFile = 'ganesha.pbrt';
         exporter = 'Copy';
     case 'hair'
-        sceneDir = 'hair';
-        sceneFile = 'hair.pbrt';
+        sceneDir  = 'hair';
+        sceneFile = 'hair-blonde-3-bounces.pbrt';
         exporter = 'Copy';
     case 'head-pbrtv4'
         sceneDir = 'head';
@@ -339,7 +338,7 @@ switch ieParamFormat(sceneDir)
         sceneDir = 'killeroos';
         sceneFile = 'killeroo-coated-gold.pbrt';
         exporter = 'Copy';
-    case 'killeroos-simple'
+    case {'killeroos','killeroos-simple'}
         sceneDir = 'killeroos';
         sceneFile = 'killeroo-simple.pbrt';
         exporter = 'Copy';
@@ -383,47 +382,27 @@ switch ieParamFormat(sceneDir)
         sceneDir = 'pbrt-book';
         sceneFile = 'book.pbrt';
         exporter = 'Copy';
-    case 'sanmiguel-entry'
+    case {'sanmiguel','sanmiguel-entry'}
+        % Alternate sanmiguel scenes:
+        %  'sanmiguel-realistic-courtyard'
+        %  'sanmiguel-balcony-plants.pbrt'
+        %  'sanmiguel-courtyard-second.pbrt';
+        %  'sanmiguel-in-tree.pbrt'
+        %  'sanmiguel-upstairs.pbrt'
+        %  'sanmiguel-upstairs-across.pbrt';
+        %  'sanmiguel-upstairs-corner.pbrt'
         sceneDir = 'sanmiguel';
         sceneFile = 'sanmiguel-entry.pbrt';
-        exporter = 'Copy';
-    case 'sanmiguel-balcony-plants'
-        sceneDir = 'sanmiguel';
-        sceneFile = 'sanmiguel-balcony-plants.pbrt';
-        exporter = 'Copy';
-    case 'sanmiguel-courtyard-second'
-        sceneDir = 'sanmiguel';
-        sceneFile = 'sanmiguel-courtyard-second.pbrt';
-        exporter = 'Copy';
-    case 'sanmiguel-in-tree'
-        sceneDir = 'sanmiguel';
-        sceneFile = 'sanmiguel-in-tree.pbrt';
-        exporter = 'Copy';
-    case 'sanmiguel-realistic-courtyard'
-        sceneDir = 'sanmiguel';
-        sceneFile = 'sanmiguel-realistic-courtyard.pbrt';
-        exporter = 'Copy';
-    case 'sanmiguel-upstairs'
-        sceneDir = 'sanmiguel';
-        sceneFile = 'sanmiguel-upstairs.pbrt';
-        exporter = 'Copy';
-    case 'sanmiguel-upstairs-across'
-        sceneDir = 'sanmiguel';
-        sceneFile = 'sanmiguel-upstairs-across.pbrt';
-        exporter = 'Copy';
-    case 'sanmiguel-upstairs-corner'
-        sceneDir = 'sanmiguel';
-        sceneFile = 'sanmiguel-upstairs-corner.pbrt';
         exporter = 'Copy';
     case 'smoke-plume'
         sceneDir = 'smoke-plume';
         sceneFile = 'plume.pbrt';
         exporter = 'Copy';
-    case 'sportscar-sky'
+    case {'sportscar','sportscar-sky'}
         sceneDir = 'sportscar';
         sceneFile ='sportscar-sky.pbrt';
         exporter = 'Copy';
-    case 'sportscar-area-lights'
+    case {'sportscar-area-lights'}
         sceneDir = 'sportscar';
         sceneFile ='sportscar-area-lights.pbrt';
         exporter = 'Copy';
@@ -444,7 +423,7 @@ switch ieParamFormat(sceneDir)
         sceneFile = 'frame675.pbrt';
         exporter = 'Copy';
 
-    case 'zero-day-25'
+    case {'zero-day','zero-day-25'}
         sceneDir = 'zero-day';
         exporter = 'Copy';
         sceneFile = 'frame25.pbrt';
@@ -486,6 +465,12 @@ switch ieParamFormat(sceneDir)
         error('Can not identify the scene, %s\n',sceneDir);
 end
 
+%% The user wanted to override the scene file with another name
+
+if ~isempty(p.Results.scenefilename)
+    sceneFile  = p.Results.scenefilename;  % Should include the pbrt extension.
+end
+
 %% See if we can find the file in data/scenes/web
 
 % Local - just a couple of scenes
@@ -499,9 +484,12 @@ fname = fullfile(FilePath,sceneFile);
 if ~exist(fname,'file') 
     sceneDir = piSceneWebTest(sceneDir,sceneFile);
     fname = fullfile(sceneDir,sceneFile);
-elseif ~strcmpi(fname, which(fname))
-    % Ignoring case.  Might be a bad idea (BW).
-    error('File exists on your path, but not where expected.')
+    % elseif ~strcmpi(fname, which(fname))
+    % This isn't working well.  Figure it out some time.
+    %
+    %     fprintf('This file exists: %s\n',which(fname));
+    %     fprintf('But you asked for this file: %s\n',fname);
+    %     error('So the file exists on your path, but not where expected.')
 end
 
 %% If we are here, we found the file.  So create the recipe.
