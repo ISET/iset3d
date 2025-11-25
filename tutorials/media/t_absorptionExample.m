@@ -44,6 +44,7 @@
 %
 % See also
 %   t_scatteringExample
+% Henryk Blasinski, 2025
 
 %%
 close all;
@@ -54,15 +55,18 @@ piDockerConfig();
 
 cameraDistance = 5;
 targetThickness = 1;
-waterThickness = 4;
+waterThickness = 2;
 resolution = [320 240];
 
 
 testChart = piCreateUniformChart('cameraDistance', cameraDistance, ...
     'depth',targetThickness, ...
     'resolution', resolution,...
-    'width',0.1,'height',0.1);
+    'width', 1, 'height', 1);
+
 testChart.set('pixel samples', 1024);
+testChart.set('fov', 25);
+
 
 
 referenceScene = piWRS(testChart, 'meanluminance', -1);
@@ -76,42 +80,46 @@ inAirPhotons = sceneGet(referenceScene,'roi mean energy', roi);
 
 % Create a water medium with absorption properties only. Scattering is
 % disabled.
-[water, waterProp] = piWaterMediumCreate('seawater', 'cPlankton', 10,  'waterSct', false);
 
-underwaterTestChart = piSceneSubmerge(testChart, water, 'sizeX', 0.1, 'sizeY', 0.1, 'sizeZ', waterThickness);
-underwaterTestChart.set('outputfile',fullfile(piRootPath,'local','UnderwaterUniform','UnderwaterUniform.pbrt'));
-underwaterTestChart = sceneSet(underwaterTestChart,'name', 'Underwater');
+for cP = [1, 10, 100]
 
-underwaterScene = piWRS(underwaterTestChart, 'meanluminance', -1);
+    [water, waterProp] = piWaterMediumCreate('seawater', 'cPlankton', cP,  'waterSct', false);
 
-% Extract the 'in water radiance for a particular patch
-inWaterPhotons = sceneGet(underwaterScene,'roi mean energy', roi);
+    underwaterTestChart = piSceneSubmerge(testChart, water, 'sizeX', 2, 'sizeY', 2, 'sizeZ', waterThickness, 'surface', false);
+    underwaterTestChart.set('outputfile',fullfile(piRootPath,'local','UnderwaterUniform','UnderwaterUniform.pbrt'));
+    underwaterTestChart = sceneSet(underwaterTestChart,'name', 'Underwater');
 
+    underwaterScene = piWRS(underwaterTestChart, 'meanluminance', -1);
 
-% Plot the radiance
-figure;
-hold on; grid on; box on;
-plot(wave, inAirPhotons);
-plot(wave, inWaterPhotons);
-xlabel('Wavelength, nm');
-ylabel('Radiance, photons');
-legend('Air','Water');
-
-absorptionTrue = interp1(waterProp.wave, waterProp.absorption, wave);
-
-waterDistance = (min(cameraDistance, waterThickness/2) - targetThickness / 2) * 2;
-absorptionEst = log(inWaterPhotons ./ inAirPhotons) / -waterDistance;
+    % Extract the in water radiance for a particular patch
+    inWaterPhotons = sceneGet(underwaterScene, 'roi mean energy', roi);
 
 
-figure;
-hold on; grid on; box on;
-plot(wave, absorptionEst, 'x');
-plot(wave, absorptionTrue);
-xlabel('Wavelength, nm');
-ylabel('Absorption');
-legend('Estimated','True');
+    % Plot the radiance
+    figure;
+    hold on; grid on; box on;
+    plot(wave, inAirPhotons);
+    plot(wave, inWaterPhotons);
+    xlabel('Wavelength, nm');
+    ylabel('Radiance, photons');
+    legend('Air','Water');
+
+    absorptionTrue = interp1(waterProp.wave, waterProp.absorption, wave);
+
+    waterDistance = (min(cameraDistance, waterThickness/2) - targetThickness / 2) * 2;
+    absorptionEst = log(inWaterPhotons ./ inAirPhotons) / -waterDistance;
 
 
+    figure;
+    hold on; grid on; box on;
+    plot(wave, absorptionEst, 'x');
+    plot(wave, absorptionTrue);
+    xlabel('Wavelength, nm');
+    ylabel('Absorption');
+    legend('Estimated','True');
+    title(sprintf('Plankton concentration %.1f',cP));
+
+end
 
 function [targetRecipe] = piCreateUniformChart(varargin)
 
@@ -130,7 +138,6 @@ targetRecipe = recipe();
 
 camera = piCameraCreate('pinhole');
 targetRecipe.recipeSet('camera',camera);
-targetRecipe.set('fov',0.1);
 
 targetRecipe.film.type = 'Film';
 targetRecipe.film.subtype = 'gbuffer';
@@ -215,7 +222,7 @@ cube.mediumInterface = [];
 piAssetAdd(targetRecipe, cubeNodeID, cube);
 
 currentMaterial = piMaterialCreate('Cube_material',...
-    'type','diffuse','reflectance',piSPDCreate(wave, spd));
+    'type', 'diffuse', 'reflectance', piSPDCreate(wave, spd));
 
 targetRecipe.set('material','add',currentMaterial);
 

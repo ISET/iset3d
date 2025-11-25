@@ -16,17 +16,21 @@ function [ submerged]  = piSceneSubmerge(thisR, medium, varargin)
 % Optional key/val
 %   sizeX, sizeY, sizeZ
 %   offsetX, offsetY, offsetZ
+%   surface, can specify the shape of the top surface of the water volume,
+%   for example to model waves.
 %
 % Henryk Blasinski, 2023
 
 %%
 p = inputParser;
-p.addOptional('sizeX',1,@isnumeric);
-p.addOptional('sizeY',1,@isnumeric);
-p.addOptional('sizeZ',1,@isnumeric);
-p.addOptional('offsetX',0, @isnumeric);
-p.addOptional('offsetY',0, @isnumeric);
-p.addOptional('offsetZ',0, @isnumeric);
+p.addOptional('sizeX', 1, @isnumeric);
+p.addOptional('sizeY', 1, @isnumeric);
+p.addOptional('sizeZ', 1, @isnumeric);
+p.addOptional('offsetX', 0, @isnumeric);
+p.addOptional('offsetY', 0, @isnumeric);
+p.addOptional('offsetZ', 0, @isnumeric);
+p.addOptional('volume', true, @islogical);
+p.addOptional('surface', true, @islogical);
 
 p.parse(varargin{:});
 inputs = p.Results;
@@ -34,86 +38,83 @@ inputs = p.Results;
 %%
 
 submerged = copy(thisR);
+
+
+sceneObjects = thisR.assets.getchildren(1);
+for i=sceneObjects
+    submerged.recipeSet('node',i, 'translate',[inputs.offsetX inputs.offsetY inputs.offsetZ]);
+end
+submerged.recipeSet('to', submerged.recipeGet('to') + [inputs.offsetX inputs.offsetY inputs.offsetZ]);
+
+
 submerged.set('integrator','volpath');
 
 dx = inputs.sizeX/2;
 dy = inputs.sizeY/2;
 dz = inputs.sizeZ/2;
 
-
-% Vertices of the cube
-P = [ dx -dy  dz;
-    dx -dy -dz;
-    dx  dy -dz;
-    dx  dy  dz;
-    -dx -dy  dz;
-    -dx -dy -dz;
-    -dx  dy -dz;
-    -dx  dy  dz;]';
-
-indices = [4 0 3
-    4 3 7
-    0 1 2
-    0 2 3
-    1 5 6
-    1 6 2
-    5 4 7
-    5 7 6
-    7 3 2
-    7 2 6
-    0 5 1
-    0 4 5]';
-
-%{
-figure;
-hold on; grid on; box on;
-for i=1:size(indices,1)
-    face = P(indices(i,:) + 1,:);
-    face = cat(1,face,face(1,:));
-   
-    plot3(face(:,1),face(:,2),face(:,3),'lineWidth',2);
-end
-
-for p=1:size(P,1)
-    text(P(p,1),P(p,2),P(p,3),sprintf('%i',p-1), 'fontsize',20);
-end
-            xlabel('x');
-            ylabel('y');
-            zlabel('z');
-    %}
-    
-waterCubeMesh = piAssetCreate('type','trianglemesh');
-waterCubeMesh.integerindices = indices(:)';
-waterCubeMesh.point3p = P(:);
-
-
-water = piAssetCreate('type','branch');
-water.name = 'Water';
-water.size.l = inputs.sizeX;
-water.size.h = inputs.sizeY;
-water.size.w = inputs.sizeZ;
-water.size.pmin = [-dx; -dy; -dz];
-water.size.pmax = [dx; dy; dz];
-water.position = [inputs.offsetX; inputs.offsetY; inputs.offsetZ];
-
-waterID = piAssetAdd(submerged, 1, water);
-
-waterMaterial = piMaterialCreate('WaterInterface','type','interface');
-
-% This step loses the container maps
-submerged.set('material','add',waterMaterial);
-
-waterCube = piAssetCreate('type','object');
-waterCube.name = 'WaterMesh';
-waterCube.mediumInterface.inside = medium.name;
-waterCube.mediumInterface.outside = [];
-waterCube.material.namedmaterial = 'WaterInterface';
-waterCube.shape = waterCubeMesh;
-
-piAssetAdd(submerged, waterID, waterCube);
 submerged.set('medium', 'add', medium);
 
+
+surfaceShape = repmat(sin(linspace(0,10,100))',[1 100])*0.5;
+
+if inputs.volume
+    waterBodyMesh = generateCube(inputs.sizeX, inputs.sizeY, inputs.sizeZ, ...
+                                'topSurface', surfaceShape, 'wallsNS', true, 'wallsEW', true);
+
+    water = piAssetCreate('type','branch');
+    water.name = 'Water';
+    water.size.l = inputs.sizeX;
+    water.size.h = inputs.sizeY;
+    water.size.w = inputs.sizeZ;
+    water.size.pmin = [-dx; -dy; -dz];
+    water.size.pmax = [dx; dy; dz];
+    water.translation = {[inputs.offsetX; inputs.offsetY; inputs.offsetZ]};
+    waterID = piAssetAdd(submerged, 1, water);
+
+    waterMaterial = piMaterialCreate('WaterInterface','type','interface');
+
+    % This step loses the container maps
+    submerged.set('material','add',waterMaterial);
+
+    waterCube = piAssetCreate('type','object');
+    waterCube.name = 'WaterMesh';
+    waterCube.mediumInterface.inside = medium.name;
+    waterCube.mediumInterface.outside = [];
+    waterCube.material.namedmaterial = 'WaterInterface';
+    waterCube.shape = waterBodyMesh;
+
+    piAssetAdd(submerged, waterID, waterCube);
+end
     
+if inputs.surface
+    waterSurfaceMesh = generateCube(inputs.sizeX, inputs.sizeY, inputs.sizeZ, 'topSurface', surfaceShape + 0.0001, ...
+        'bottom', false, 'wallsNS',false, 'wallsEW',false);
+    waterSurfaceMaterial = piMaterialCreate('WaterSurface','type','dielectric','eta',1.33);
+
+    submerged.set('material','add', waterSurfaceMaterial);
+
+
+    waterSurface = piAssetCreate('type','branch');
+    waterSurface.name = 'WaterSurface';
+    waterSurface.size.l = inputs.sizeX;
+    waterSurface.size.h = inputs.sizeY;
+    waterSurface.size.w = inputs.sizeZ;
+    waterSurface.size.pmin = [-dx; -dy; -dz];
+    waterSurface.size.pmax = [dx; dy; dz];
+    waterSurface.translation = {[inputs.offsetX; inputs.offsetY; inputs.offsetZ]};
+    waterSurfaceID = piAssetAdd(submerged, 1, waterSurface);
+
+
+    waterSurfaceObj = piAssetCreate('type','object');
+    waterSurfaceObj.name = 'WaterSurfaceMesh';
+    waterSurfaceObj.material.namedmaterial = 'WaterSurface';
+    waterSurfaceObj.shape = waterSurfaceMesh;
+
+    piAssetAdd(submerged, waterSurfaceID, waterSurfaceObj);
+end
+
+
 % Submerge the camera if needed
 xstart = -dx + inputs.offsetX;
 xend = dx + inputs.offsetX;

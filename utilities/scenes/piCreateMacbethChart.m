@@ -34,6 +34,7 @@ p = inputParser;
 p.addOptional('width',1);
 p.addOptional('height',1);
 p.addOptional('depth',1);
+p.addOptional('plane','xy');
 p.addOptional('defaultLight',true);
 p.addOptional('lightIntensity',1,@isnumeric);
 p.parse(varargin{:});
@@ -50,7 +51,7 @@ macbethRecipe.film.type = 'Film';
 macbethRecipe.film.subtype = 'gbuffer';
 macbethRecipe.set('film resolution',[640 480]);
 
-cameraFrom = [0 0 10];
+cameraFrom = [0 0 -10];
 cameraTo = [0 0 0];
 
 macbethRecipe.set('from',cameraFrom);
@@ -116,8 +117,20 @@ for x=1:6
         
         cubeID = (x-1)*4 + y;
         
-        xOffset = -(x - 3 - 1)*inputs.width - inputs.width/2;
-        yOffset = -(y - 2 - 1)*inputs.height - inputs.height/2;
+        switch inputs.plane
+            case 'xy'
+                xOffset = -(x - 3 - 1)*inputs.width - inputs.width/2;
+                yOffset = -(y - 2 - 1)*inputs.height - inputs.height/2;
+                zOffset = 0;
+            case 'xz'
+                xOffset = -(x - 3 - 1)*inputs.width - inputs.width/2;
+                zOffset = -(y - 2 - 1)*inputs.height - inputs.height/2;
+                yOffset = 0;
+            case 'yz'
+                yOffset = -(x - 3 - 1)*inputs.width - inputs.width/2;
+                zOffset = -(y - 2 - 1)*inputs.height - inputs.height/2;
+                xOffset = 0;
+        end
 
         
         macbethCubeBranch = piAssetCreate('type','branch');
@@ -127,7 +140,7 @@ for x=1:6
         macbethCubeBranch.size.w = inputs.depth;
         macbethCubeBranch.size.pmin = [-dx; -dy; -dz];
         macbethCubeBranch.size.pmax = [dx; dy; dz];
-        macbethCubeBranch.translation = {[xOffset; yOffset; 0]};
+        macbethCubeBranch.translation = {[xOffset; yOffset; zOffset]};
         cubeNodeID = piAssetAdd(macbethRecipe, rootNodeID, macbethCubeBranch);
         
         macbethCube = piAssetCreate('type','object');

@@ -493,7 +493,7 @@ function ObjectWrite(fid, thisNode, rootPath, spacing, indentSpacing,thisR)
 
 %% The participating media PBRT line.  More comments needed
 if isfield(thisNode,'mediumInterface') && ~isempty(thisNode.mediumInterface)
-    fprintf(fid, strcat(spacing, indentSpacing, sprintf("MediumInterface ""%s"" ""%s""\n", thisNode.mediumInterface.inside, thisNode.mediumInterface.outside)));
+    fprintf(fid, sprintf("%s%s MediumInterface ""%s"" ""%s""\n", spacing, indentSpacing, thisNode.mediumInterface.inside, thisNode.mediumInterface.outside));
 end
 
 %% Write out material properties
