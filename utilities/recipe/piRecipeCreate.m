@@ -55,7 +55,7 @@ function thisR = piRecipeCreate(rName,varargin)
 %% Input parsing
 
 validRecipes = {'macbethchart','chessset','head',...
-    'cornell_box','cornellboxreference',...
+    'cornell-box','cornellboxreference',...
     'simplescene','arealight','bunny','car','checkerboard', ...
     'flatsurface', ...
     'lettersatdepth','materialball','materialball_cloth',...
@@ -85,20 +85,20 @@ end
 %% 
 %{
   rList = thisR.list;
-    {'ChessSet'               } - OK
-    {'CornellBoxReference'    } - Requires HDR because light is bright
+    {'chessset'               } - OK
+    {'cornellboxreference'    } - Requires HDR because light is bright
     {'head'                   } - Working on it
-    {'MacBethChecker'         } - Needs a light
-    {'SimpleScene'            } - Renders
+    {'macbethchecker'         } - Needs a light
+    {'simplescene'            } - Renders
     {'arealight'              } - Broken
     {'bunny'                  } - Needs a light
     {'car'                    } - Needs a light
     {'checkerboard'           } - OK
     {'coordinate'             } - Needs a light
     {'cornell_box'            } - Needs a light
-    {'flatSurface'            } - OK but boring.
-    {'flatSurfaceWhiteTexture'} - Not sure about the texture
-    {'lettersAtDepth'         } - OK
+    {'flatsurface'            } - OK but boring.
+    {'flatsurfacewhitetexture'} - Not sure about the texture
+    {'lettersatdepth'         } - OK
     {'materialball'           } - OK
     {'materialball_cloth'     } - OK
     {'slantedEdge'            } - Needs a light
@@ -115,6 +115,9 @@ piWRS(thisR);
 %%
 switch ieParamFormat(rName)
     case {'macbethchecker','macbethchart'}
+        % Necessary if wwe are getting it from the SDR
+        rName = 'macbethchecker';   % Should automate this.
+        
         thisR = piRecipeDefault('scene name',rName);
         thisR = thisR.set('lights','all','delete');
 

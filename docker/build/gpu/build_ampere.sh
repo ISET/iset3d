@@ -1,4 +1,4 @@
-# Template build script for creating a Docker imae with pbrt-v4-gpu
+# Template build script for creating a Docker image with pbrt-v4-gpu
 # Needs to be edited for specific Nvidia architecture
 #
 # make sure you have docker runtime set as nvidia-runtime
@@ -7,6 +7,6 @@ docker build -f Dockerfile_ampere --tag digitalprodev/pbrt-v4-gpu-ampere-mux-sha
 
 
 # if you have permission to push, and know what you are doing...
-docker push digitalprodev/pbrt-v4-gpu-ampere-mux-shared
-docker tag digitalprodev/pbrt-v4-gpu-ampere-mux-shared digitalprodev/pbrt-v4-gpu-ampere-mux
+docker push digitalprodev/pbrt-v4-gpu-ampere
+docker tag digitalprodev/pbrt-v4-gpu-ampere digitalprodev/pbrt-v4-gpu-ampere
 

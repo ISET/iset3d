@@ -2,12 +2,12 @@ function materialList = piBlockExtractMaterial(thisR, txtLines, varargin)
 % Extract parameters of a material from a block of text
 %
 % Syntax:
+%    materialList = piBlockExtractMaterial(thisR, txtLines, varargin)
 %
 % Description:
 %  The Cinema 4D exporter puts the materials and textures in a
 %  separate file.  This function reads that file and returns the
 %  collection of materials so we can edit their properties.
-%
 %
 % Inputs
 %  thisR, txtLines
@@ -19,20 +19,20 @@ function materialList = piBlockExtractMaterial(thisR, txtLines, varargin)
 %
 % ZL SCIEN Stanford, 2018;
 % Zheng Lyu, 2020
+%
 % Notes
 %  The format for PBRT V2 differs noticeably from V3.  In particular,
 %    MakeNamedMaterial is just Material.
 %  Cinema 4D exporter always puts the materials on a single line, but
 %    V2 scenes can be formatted much more loosely across lines.
 %
-%  
 
 % Programming todo
 %  We should be able to handle the 'mix' case and these others at some
 %  point.
 % MakeNamedMaterial "paint_mirror" "string type" "mirror" "rgb Kr" [.1 .1 .1]
-% MakeNamedMaterial "paint_base" "string type" "substrate" "color Kd" [.7 .125 .125] "color Ks" [.1 .1 .1] "float uroughness" .01 "float vroughness" .01 
-% MakeNamedMaterial "BODY"  "string type" "mix" "string namedmaterial1" [ "paint-mirror" ] "string namedmaterial2" [ "paint-base" ] 
+% MakeNamedMaterial "paint_base" "string type" "substrate" "color Kd" [.7 .125 .125] "color Ks" [.1 .1 .1] "float uroughness" .01 "float vroughness" .01
+% MakeNamedMaterial "BODY"  "string type" "mix" "string namedmaterial1" [ "paint-mirror" ] "string namedmaterial2" [ "paint-base" ]
 %
 % We aren't sure about the whole set of possibilities.  We have
 % covered the ones in our current Cinema 4D export.  But ...
@@ -57,27 +57,27 @@ for ii=1:numel(txtLines)
     % Split the text line with ' "', '" ' and '"' to get key/val pair
     thisLine = strsplit(thisLine, {' "', '" ', '"'});
     thisLine = thisLine(~cellfun('isempty',thisLine));
-    
-    % Create a new material 
+
+    % Create a new material
     matName = thisLine{2}; % Material name
     matType = thisLine{4}; % Material type
     newMat = piMaterialCreate(matName, 'type', matType);
-    
-    
+
+
     % For strings 3 to the end, parse
     for ss = 5:2:numel(thisLine)
         % Get parameter type and name
         keyTypeName = strsplit(thisLine{ss}, ' ');
         keyType = ieParamFormat(keyTypeName{1});
         keyName = ieParamFormat(keyTypeName{2});
-        
+
         % Some corner cases
         % "index" should be replaced with "eta"
         switch keyName
             case 'index'
                 keyName = 'eta';
         end
-        
+
         switch keyType
             case {'string', 'texture'}
                 thisVal = thisLine{ss + 1};
@@ -104,10 +104,20 @@ for ii=1:numel(txtLines)
                 warning('Could not resolve the parameter type: %s', keyType);
                 continue;
         end
-        
+
         newMat = piMaterialSet(newMat, sprintf('%s value', keyName),...
-                                thisVal);
-        %{
+            thisVal);
+    end
+    thisR.materials.list{ii} = newMat;
+end
+
+materialList = thisR.materials.list;
+fprintf('Read %d materials\n', numel(materialList));
+
+end
+
+% Maybe from V3?  Old, anyway.
+%{
         switch thisLine{ss}
             case 'string type'
                 thisR.materials.list{ii}.stringtype = thisLine{ss+1};
@@ -163,12 +173,4 @@ for ii=1:numel(txtLines)
             case 'photolumi fluorescence'
                 thisR.materials.list{ii}.photolumifluorescence = thisLine{ss+1};
         end
-        %}
-    end
-    thisR.materials.list{ii} = newMat;
-end
-
-materialList = thisR.materials.list;
-fprintf('Read %d materials\n', numel(materialList));
-
-end
+%}

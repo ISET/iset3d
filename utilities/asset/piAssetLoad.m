@@ -74,9 +74,11 @@ if isempty(filePath)
             fname = fullfile(piDirGet('assets'),[n e]);
             pbrtFile = fullfile(piDirGet('assets'),n,[n '.pbrt']);
         case 'character'
+            % The letters are stored as an iset3d-scene deposit
+            % The file with the characters (letters) is characters.zip
             downloadDir = piDirGet('assets');
             if ~exist(fullfile(downloadDir,'characters'),'dir')
-                ieWebGet('resourcename', 'characters', 'resourcetype', 'pbrtv4', ...
+                ieWebGet('deposit file', 'characters', 'deposit name', 'iset3d-scenes', ...
                     'download dir',downloadDir,'unzip', true);
             end
             fname = fullfile(piDirGet('character-assets'),[n e]);

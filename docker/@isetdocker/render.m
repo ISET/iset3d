@@ -1,19 +1,39 @@
 function [status, result, containerCommand] = render(obj, thisR, commandonly)
+% Render a recipe with the docker container
+%
+% Inputs
+%   obj    - The isetdocker
+%   thisR  - Render recipe
+%   commandonly - Just return the command
+%
+% Key/val
+%   N/A
+%
+% Returns
+%   status
+%   result
+%   containerCommand
+%
+% See also
+%
+
+%% Initialize
 p = inputParser();
 
 p.KeepUnmatched = true;
 
-verbose = 1; % 0, 1, 2
+verbose = obj.verbosity; % 0, 1, 2, 3
 if ~exist('commandonly','var')
     commandonly = false;
 end
+
 %% Build up the render command
-pbrtFile     = thisR.outputFile;
-outputFolder = fileparts(thisR.outputFile);
-[sceneFolder,currName,~] = fileparts(pbrtFile);
-strparts     = strsplit(sceneFolder,filesep);
-sceneFolder  = strparts{end};
-iDockerPrefs = getpref('ISETDocker');
+pbrtOutputFile = thisR.get('output file'); 
+outputFolder   = thisR.get('output folder'); 
+sceneFolder    = thisR.get('input basename');
+currName       = thisR.get('output basename');
+
+iDockerPrefs   = getpref('ISETDocker');
 
 % Check that the container is running remotely.  If not, start.
 if isfield(iDockerPrefs,'PBRTContainer')
@@ -35,8 +55,14 @@ end
 
 [~, sceneDir, ~] = fileparts(outputFolder);
 
-if isempty(getpref('ISETDocker','remoteHost'))
-    contextFlag = ' --context default ';
+% By the time we get here, I think we should know the context from the
+% saved prefs or from isetdocker.startPBRT.  Getting the context from the
+% remoteHost seems odd, anyway.  Shouldn't we be getting it from whatever
+% is the current context?
+% I made that change.
+if isempty(getpref('ISETDocker','renderContext'))
+     contextFlag = sprintf(' --context %s ',piDockerCurrentContext);
+%    contextFlag = ' --context default ';
 else
     contextFlag = [' --context ' getpref('ISETDocker','renderContext')];
 end
@@ -85,7 +111,7 @@ if ~isempty(getpref('ISETDocker','remoteHost'))
         renderStart = tic;
         if verbose > 1
             [status, result] = system(containerCommand, '-echo');
-            fprintf('[INFO]: Rendered remotely in: %4.2f sec\n', toc(renderStart))
+            fprintf('[INFO]: Rendered in: %4.2f sec\n', toc(renderStart))
             fprintf('[INFO]: Returned parameter result is\n***\n%s', result);
         elseif verbose == 1
 
@@ -119,7 +145,7 @@ else
     outF = fullfile(outputFolder,'renderings',[currName,'.exr']);
     
     % Add support for 'remoteResources' even in local case
-    renderCommand = sprintf('pbrt %s --outfile %s %s', device, outF, pbrtFile);
+    renderCommand = sprintf('pbrt %s --outfile %s %s', device, outF, pbrtOutputFile);
 
     containerCommand = sprintf('docker %s exec %s %s sh -c " %s "',...
         contextFlag, flags, ourContainer, renderCommand);

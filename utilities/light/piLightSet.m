@@ -37,11 +37,10 @@ function lght = piLightSet(lght, param, val, varargin)
 %                          called a skymap and based on an exr file
 %                          (mapname).
 %
-%  'spectrum' - The spectrum that the light will emit. Read
-%                          from ISETCam/ISETBio light data. See
-%                          "isetbio/isettools/data/lights" or
+%  'spectrum'          - The spectrum that the light will emit. Read
+%                          from ISETCam light data. See
 %                          "isetcam/data/lights."
-%  'spectrum scale'  - scale the spectrum. Important for setting
+%  'specscale'         - scale the spectrum. Important for setting
 %                          relative weights for multiple light sources.
 %  'camera coordinate' - true or false. automatically place the light
 %                            at the camera location.
@@ -148,7 +147,7 @@ if isfield(lght, pName)
             if numel(val) == 3 && ~ischar(val)
                 % User sent in 3 values, so this is an rgb type light
                 lght.(pName).type = 'rgb';
-            elseif numel(val) == 1 && ~ischar(val)
+            elseif isscalar(val) && ~ischar(val)
                 % User sent in 1 value so this is blackbody temperature
                 lght.(pName).type = 'blackbody';            
             elseif numel(val) > 3 || ischar(val)

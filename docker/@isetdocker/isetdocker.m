@@ -1,13 +1,33 @@
 classdef isetdocker < handle
+    % Creates a new docker environment for remote execution.
+    %
+    % Isetdocker relies on parameters stored in Matlab
+    %
+    % getpref('ISETDocker')
+    %
+    % The ISETDocker parameters can be initialized, or changed, by
+    % running
+    %
+    %   isetdocker.setUserPrefs;
+    %
+    % You will be asked a set of questions.  Answer them, and your
+    % info Matlab prefs will be updated.
+    %
+    % See also
+    %
     properties (GetAccess=public, SetAccess = public)
         % common
         name = 'ISET Docker Controls'
-        device = ''
-        deviceID = [];
+        label = 'label';
+
+        %
+        device = '';
+        deviceID = '';
         dockerImage = '';
+
         % remote
         remoteHost = '';
-        remoteUser = ''
+        remoteUser = '';
         workDir = '';
         renderContext = ''; % control remote docker from local
         sftpSession = [];
@@ -27,14 +47,13 @@ classdef isetdocker < handle
             p.addParameter('preset','',@ischar);
 
             p.addParameter('device','', @ischar);
-            p.addParameter('deviceid',[], @isnumeric);
+            p.addParameter('deviceid','', @ischar);
             p.addParameter('dockerimage', '', @ischar);
 
             p.addParameter('remotehost','',@ischar);
             p.addParameter('remoteuser','',@ischar);
             p.addParameter('workdir', '', @ischar);
             p.addParameter('rendercontext', '', @ischar);
-            p.addParameter('remotemachine','',@ischar);
             p.addParameter('verbosity',1,@isnumeric);
 
             % We only need the local docker command interface, not
@@ -45,7 +64,7 @@ classdef isetdocker < handle
             assert(isequal(result(1:6),'Docker'), 'Docker engine may not be running');
             if status
                 % status is not zero, so command failed. Maybe it is a
-                % path issue. 
+                % path issue.
                 disp('Configuring local docker path with piDockerConfig.');
                 piDockerConfig;
             end
@@ -61,7 +80,12 @@ classdef isetdocker < handle
             args = p.Results;
 
             if ~isempty(args.preset)
-                obj.preset(args.preset);
+                validPreset = obj.preset(args.preset);
+                if validPreset == false && isequal(args.preset, 'help')
+                    return; % user just wants info
+                elseif validPreset == false
+                    error("Invalid preset selected. Exiting.");
+                end
             end
 
             % Check and set 'device' preference
@@ -77,7 +101,17 @@ classdef isetdocker < handle
                 obj.deviceID = args.deviceid; % Set from input argument
                 setpref('ISETDocker', 'deviceID', args.deviceid); % Save to preferences
             else
-                obj.deviceID = getpref('ISETDocker', 'deviceID'); % Retrieve from preferences
+                deviceID = getpref('ISETDocker', 'deviceID'); % Retrieve from preferences
+                if ~ischar(deviceID) && ~isstring(deviceID)
+                    if  isnumeric(deviceID) && isscalar(deviceID)
+                        deviceID = num2str(deviceID);
+                        fprintf("ISETDocker.deviceID is a char type, not a number!\n");
+                        fprintf("please fix your ISETDocker pref\n");
+                    else
+                        error("ISETDocker.deviceID should be a char array or string")
+                    end
+                end
+                obj.deviceID = deviceID;
             end
 
             % Check and set 'dockerImage' preference
@@ -99,7 +133,7 @@ classdef isetdocker < handle
             % Check and set 'remoteUser' preference
             if ~isempty(args.remoteuser)
                 obj.remoteUser = args.remoteuser; % Set from input argument
-                setpref('ISETDocker', 'remoteUser', args.remotehser); % Save to preferences
+                setpref('ISETDocker', 'remoteUser', args.remoteuser); % Save to preferences
             else
                 obj.remoteUser = getpref('ISETDocker', 'remoteUser'); % Retrieve from preferences
             end
@@ -131,14 +165,21 @@ classdef isetdocker < handle
                     end
                 end
             else
-                disp('[INFO]:Remote Host is empty, use local.')
+                if obj.verbosity, disp('[INFO]:Remote Host is empty, using local.'); end
             end
         end
 
         function connect(obj)
             % Establish an SFTP connection
-            obj.sftpSession = sftp(obj.remoteHost, obj.remoteUser);
-
+            try
+                obj.sftpSession = sftp(obj.remoteHost, obj.remoteUser);
+            catch ME
+                disp(ME.message)
+                if strcmp(version('-release'),'2024b')
+                    disp('There is a known problem with sftp in 2024b. Try 2024a or earlier!');
+                end
+                error('sftp session did not succeed.')
+            end
         end
 
         function disconnect(obj)
@@ -169,7 +210,7 @@ classdef isetdocker < handle
 
             % Finalize the rsync command with source and destination paths
             rsyncCommand = rsyncCommand + " '" + localDir + "/' '" + remoteDir + "/'";
-            disp('[INFO]: Uploading data:');
+            if obj.verbosity, disp('[INFO]: Uploading data:'); end
             % Execute the rsync command
             [status, cmdout] = system(rsyncCommand);
 
@@ -177,7 +218,7 @@ classdef isetdocker < handle
                 error(['Rsync failed with the following message: ', cmdout]);
             else
                 obj.formatAndPrint(string(cmdout));
-                disp('[INFO]: Data uploaded successfully.');
+                if obj.verbosity, disp('[INFO]: Data uploaded successfully.'); end
             end
         end
 
@@ -207,7 +248,7 @@ classdef isetdocker < handle
 
             % Finalize the rsync command with source and destination paths
             rsyncCommand = rsyncCommand + " '" + remoteDir + "/' '" + localDir + "/'";
-            disp('[INFO]: Downloading data:');
+            if obj.verbosity, disp('[INFO]: Downloading data:'); end
             % Execute the rsync command
             [status, cmdout] = system(rsyncCommand);
 
@@ -215,7 +256,7 @@ classdef isetdocker < handle
                 error(['Rsync failed with the following message: ', cmdout]);
             else
                 obj.formatAndPrint(cmdout);
-                disp('[INFO]: Data downloaded successfully.');
+                if obj.verbosity, disp('[INFO]: Data downloaded successfully.'); end
             end
         end
 
@@ -229,7 +270,8 @@ classdef isetdocker < handle
             %
             % See also
             %
-            verbose = obj.verbosity;
+            % verbose = obj.verbosity;
+
             useImage = getpref('ISETDocker','dockerImage');
             rng('shuffle'); % make random numbers random
             uniqueid = randi(20000);
@@ -245,8 +287,8 @@ classdef isetdocker < handle
                 ourContainer = ['pbrt-cpu-' uName];
             end
 
-            % attach all
-            
+            % Set volumes for render resources and acorn resources
+
             workDirPBRT = getpref('ISETDocker','workDir');
             volumeMap = sprintf("-v %s:%s", ...
                 workDirPBRT, workDirPBRT);
@@ -258,18 +300,25 @@ classdef isetdocker < handle
 
             % We use the default context for local docker containers
             if isempty(getpref('ISETDocker','remoteHost'))
-                contextFlag = ' --context default ';
+                contextFlag = sprintf(' --context %s ',piDockerCurrentContext);
+                % contextFlag = ' --context default ';
             else
                 contextFlag = [' --context ' getpref('ISETDocker','renderContext')];
             end
 
             if strcmpi(obj.device, 'gpu')
                 % want: --gpus '"device=#"'
-                gpuString = sprintf(' --gpus device=%s ',num2str(obj.deviceID));
+                gpuString = sprintf(' --gpus device=%s ',obj.deviceID);
+            elseif strcmpi(obj.device, 'cpu')
+                gpuString = ' ';
             else
-                gpuString = sprintf(' --gpus device=%s ',num2str(0));
+                gpuString = sprintf(' --gpus device=%s ','0');
             end
-            dCommand = sprintf('docker %s run -d -it %s --name %s  %s', contextFlag, gpuString, ourContainer, volumeMap);
+
+            envString = "--env NVIDIA_DRIVER_CAPABILITIES=compute,graphics,utility";
+
+            dCommand = sprintf('docker %s run -d -it %s %s --name %s  %s', ...
+                contextFlag, envString, gpuString, ourContainer, volumeMap);
 
             cmd = sprintf('%s %s %s', dCommand, useImage, placeholderCommand);
 
@@ -281,18 +330,18 @@ classdef isetdocker < handle
 
             [status, result] = system(cmd);
 
+
             if status ~= 0
                 cprintf('red','[ERROR]: Runing Command: %s \n',cmd);
                 error("[ERROR]:Failed to start Docker container: %s", result);
             else
                 % obj.dockerContainerID = result; % hex name for it
-                if verbose > 0
-                    fprintf("[INFO]: STARTED Docker successfully\n");
-                end
+                if obj.verbosity, fprintf("[INFO]: STARTED Docker successfully\n"); end
             end
             % save container name
             setpref('ISETDocker','PBRTContainer',ourContainer);
         end
+
         %% reset - Resets the running Docker containers
         function reset(obj)
             iDockerPrefs = getpref('ISETDocker');
@@ -351,13 +400,15 @@ classdef isetdocker < handle
 
                 % Display only lines that indicate transferred files or important info
                 if contains(line, {'sent','bytes','bytes/sec'})
-                    disp(strcat('[INFO]:',' ',strrep(line,'sent',' Sent')));
+                    if obj.verbosity, disp(strcat('[INFO]:',' ',strrep(line,'sent',' Sent'))); end
                 end
             end
 
         end
+    end
 
-        function [rStatus, gpuAttrs] = getGpuAttrs(obj, remoteUser, remoteHost)
+    methods (Static = true)
+        function [rStatus, gpuAttrs] = getGpuAttrs(remoteUser, remoteHost)
             % getGpuAttrs
             % Get a vector of strings with descriptions of the GPU resources
             %
@@ -383,8 +434,8 @@ classdef isetdocker < handle
 
 
             %% Build the query command
-            if ~exist('remoteUser','var'), remoteUser = obj.remoteUser;end
-            if ~exist('remoteHost','var'), remoteHost = obj.remoteHost;end
+            %  if ~exist('remoteUser','var'), remoteUser = obj.remoteUser;end
+            %  if ~exist('remoteHost','var'), remoteHost = obj.remoteHost;end
 
             rShell = 'ssh';
             remoteCommand = 'nvidia-smi --query-gpu="index","name","memory.total","driver_version" --format="csv","noheader"';
@@ -399,14 +450,19 @@ classdef isetdocker < handle
             gpuString = gpuString(strlength(gpuString) > 0);
             gpuString = split(gpuString,', ');
 
+            % Should preallocate or ignore warning.
             for i=1:size(gpuString,1)
-                gpuAttrs(i).id = gpuString(i,1);
-                gpuAttrs(i).name = gpuString(i,2);
-                gpuAttrs(i).mem = gpuString(i,3);
+                gpuAttrs(i).id     = gpuString(i,1);
+                gpuAttrs(i).name   = gpuString(i,2);
+                gpuAttrs(i).mem    = gpuString(i,3);
                 gpuAttrs(i).driver = gpuString(i,4);
             end
 
         end
+    end
 
+    methods (Static=true)
+        % static methods in other files
+        setUserPrefs();
     end
 end

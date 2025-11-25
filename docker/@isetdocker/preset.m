@@ -1,19 +1,32 @@
-function preset(obj, presetName, varargin)
+function validPreset = preset(obj, presetName, varargin)
 % Store the default parameters for one of our presets
 %
+% Synopsis
+%   isetdocker.preset(presetName);
+%
+% humaneye
+% orange-cpu
+% localgpu
 %
 % See also
 %   isetdocker
 
 %%
+if notDefined('presetName')
+    presetName = 'help';
+end
+
 presetName = ieParamFormat(presetName);
 
 validNames = {'localgpu','localgpu-alt','remotemux','remotemux-0','remotemux-1','remoteorange','remoteorange-0', ...,
-    'remoteorange-1','humaneye', 'remotecnidl','orange-cpu'};
+    'remoteorange-1','humaneye', 'remotecnidl','remoteorange-cpu','orange-cpu'};
 if ~ismember(presetName,validNames)
-    disp('Valid Names (allowing for ieParamFormat): ')
+    disp('Valid Presets are: ')
     disp(validNames);
-    error('%s not in valid set %s\n',presetName);
+    validPreset = false;
+    return;
+else
+    validPreset = true;
 end
 
 switch presetName
@@ -39,27 +52,30 @@ switch presetName
         host = strtrim(host); % trim trailing spaces
         switch host
             case 'orange'
-                obj.dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-ti';
+                % Updated by DAW May 6, 2025
+                obj.dockerImage = 'vistalab/pbrt-v4-gpu';
                 switch presetName
                     case 'localgpu'
-                        obj.deviceID = 1;
+                        obj.deviceID = '1';
                     case 'localgpu-alt'
-                        obj.deviceID = 0;
+                        obj.deviceID = '0';
                 end
             case {'mux', 'muxreconrt'}
-                obj.dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-mux';
+                % Updated by DAW May 6, 2025
+                obj.dockerImage = 'vistalab/pbrt-v4-gpu';
                 switch presetName
                     case 'localgpu'
-                        obj.deviceID = 0;
+                        obj.deviceID = '0';
                     case 'localgpu-alt'
-                        obj.deviceID = 1;
+                        obj.deviceID = '1';
                 end
             otherwise
-                obj.deviceID=-1;
+                obj.deviceID = '';
         end
 
     case {'remotemux', 'remoteorange', 'remoteorange-0', 'remoteorange-1','remotemux-0','remotemux-1', 'remotecnidl'}
         % Render remotely on GPU
+        obj.label  = [getenv("USER"),'-',presetName];
         obj.device = 'gpu';
 
         % pick the correct context
@@ -78,30 +94,30 @@ switch presetName
         % also pick GPU and docker image
         switch presetName
             case {'remotemux','remotemux-0'}
-                obj.dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-mux';
-                obj.deviceID = 0;
+                obj.dockerImage = 'vistalab/pbrt-v4-gpu';
+                obj.deviceID = '0';
             case 'remotemux-1'
-                obj.dockerImage = 'digitalprodev/pbrt-v4-gpu-volta-mux';
-                obj.deviceID = 1;
+                obj.dockerImage = 'vistalab/pbrt-v4-gpu';
+                obj.deviceID = '1';
             case {'remoteorange','remoteorange-1'}
-                obj.dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-ti';
-                obj.deviceID = 1;
+                obj.dockerImage = 'vistalab/pbrt-v4-gpu';
+                obj.deviceID = '1';
             case 'remoteorange-0'
-                obj.dockerImage = 'digitalprodev/pbrt-v4-gpu-ampere-ti';
-                obj.deviceID = 0;
+                obj.dockerImage = 'vistalab/pbrt-v4-gpu';
+                obj.deviceID = '0';
             case 'remotecnidl'
+                % Needs to be updated.  See DAW.
                 obj.dockerImage = 'camerasimulation/pbrt-v4-gpu-ampere-cnidl';
-                obj.deviceID = 9; % pick the last one for now
+                obj.deviceID = '9'; % pick the last one for now
         end
 
     otherwise
         validNames_str = string(validNames);
         validNames_str{end+1} = ' ';
         warning('Preset Name is not valid. Consider using these valid names: %s',strjoin(flip(validNames_str),'\n'));
-
-
 end
 
+setpref('ISETDocker','label',  obj.label);
 setpref('ISETDocker','device',  obj.device);
 setpref('ISETDocker','deviceID',obj.deviceID);
 setpref('ISETDocker','dockerImage',  obj.dockerImage);
@@ -112,10 +128,3 @@ end
 setpref('ISETDocker','renderContext',  obj.renderContext);
 
 end
-
-
-
-
-
-
-

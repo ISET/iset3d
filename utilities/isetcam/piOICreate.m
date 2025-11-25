@@ -4,9 +4,9 @@ function oi = piOICreate(photons,varargin)
 %     oi = piOICreate(photons,varargin)
 %
 % Brief description
-%    In some cases we have multispectral photon data and we just want to
-%    initialize an optical image for some other purpose.  This is used by
-%    ISET3d when reading in PBRT rendered data and in piFlareApply. 
+%    This is used by ISET3d when reading in PBRT rendered data with a lens.
+%    The rendered exr file is read in and converted to an ISET optical
+%    image.
 %
 % Required
 %    photons - row x col x nwave data, computed by PBRT usually

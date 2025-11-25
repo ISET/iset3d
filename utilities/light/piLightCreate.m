@@ -15,7 +15,7 @@ function lght = piLightCreate(lightName, varargin)
 % Inputs:
 %   lightName   - name of the light
 %
-% Optional key/val pairs (Not the usual ieParamFormat.  Beware!)
+% Optional key/val pairs (No ieParamFormat.  Use the exact string.)
 %
 %   type   - light type. Default is point light.  There are light specific
 %            properties depend on the light type. 
@@ -47,12 +47,29 @@ function lght = piLightCreate(lightName, varargin)
 %   by key/val pairs. In adition, you can use key/val pairs in the
 %   calling function via piLightSet.
 %
-%   The 'spd spectrum' property reads a file from ISETCam/data/lights
-%   that defines a light spectrum.  In the lght struct this is stored
-%   in the spd slot.
+%   The 'spd' property defines how we will create the light spectrum.
+%   The options are 'rgb','blackbody', or 'spectrum'.
+%
+%   If  spd.type is 'spectrum', then the spd.value is a string that
+%   defines which mat file from ISETCam/data/lights should be read in.
+%   TODO:  There are lights in iset3d-tiny/data/lights.  I think they
+%   should be moved over to ISETCam (BW).
 %
 %    spd.type = 'spectrum';
 %    spd.value= 'Tungsten', or D50 or ...
+%
+%   Another possibility is
+%
+%    spd.type = 'blackbody'
+%    spd.value = 5000;  % 5000 degrees K, could be anything
+%
+%   In this case, the PBRT file just has the string blackbody and the
+%   number and PBRT figures out the spectrum for us.
+%
+%  Third possibility is
+%
+%    spd.type = 'rgb'
+%    spd.value = [ R G B];   % An RGB rendering
 %
 % Returns
 %   lght   - light struct

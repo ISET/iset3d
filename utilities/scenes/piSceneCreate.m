@@ -12,14 +12,7 @@ function scene = piSceneCreate(photons,varargin)
 % Return
 %  An ISET scene structure
 %
-% Example:
-%{
-   sceneFile = '/home/wandell/pbrt-v2-spectral/pbrt-scenes/bunny.dat';
-   photons = piReadDAT(outFile, 'maxPlanes', 31);
-   scene = piSceneCreate(photons);
-   ieAddObject(scene); sceneWindow;
-%}
-% BW, SCIENTSTANFORD, 2017
+% BW 2017
 
 %% When the PBRT uses a pinhole, we treat the radiance data as a scene
 
@@ -30,6 +23,7 @@ p.addParameter('fov',40,@isscalar)               % Horizontal fov, degrees
 p.addParameter('meanluminance',100,@isscalar);
 p.addParameter('wavelength', 400:10:700, @isvector);
 
+% Looks like DJC code.  Not sure why it is needed.
 if length(varargin) > 1
     for i = 1:length(varargin)
         if ~(isnumeric(varargin{i}) || ...
@@ -53,8 +47,17 @@ end
 
 %% Set the photons into the scene
 
+% Create a default scene.  This should probably be 
+%
+%  sceneCreate('empty')
+%
+% Tried on October 13, 2024.  The validations are passing, I will leave it.
+%
+%{
 patchSize = 8;
 scene = sceneCreate('macbeth', patchSize, p.Results.wavelength);
+%}
+scene = sceneCreate('empty');
 scene = sceneSet(scene, 'wavelength', p.Results.wavelength);
 scene = sceneSet(scene,'photons',photons);
 [r,c] = size(photons(:,:,1)); depthMap = ones(r,c);
@@ -63,7 +66,8 @@ scene = sceneSet(scene,'depth map',depthMap);
 scene = sceneSet(scene,'fov',p.Results.fov);
 % scene = sceneAdjustLuminance(scene,p.Results.meanluminance); % ISETBIO uses this...
 
-% Adjust other parameters
+% Adjust parameters other than mean luminance and fov.  Why not these?
+% Perhaps the comment above?
 if ~isempty(varargin)
     for ii=1:2:length(varargin) 
         param = varargin{ii}; 

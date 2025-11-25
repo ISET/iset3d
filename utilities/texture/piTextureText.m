@@ -50,13 +50,28 @@ for ii=1:numel(textureParams)
         thisVal = texture.(textureParams{ii}).value;
         
         if ischar(thisVal)
-            if contains(lower(thisVal),{'true','false'}) && strcmp(thisType,'bool')
-                thisText = sprintf(' "%s %s" [%s] ',...
-                    thisType, textureParams{ii}, thisVal);
-            else
+
+            if isequal(thisVal(1),'/')
+                % Remote case.  Maybe we should do a better check. The
+                % text is basically string filename fullPathToTexture
                 thisText = sprintf(' "%s %s" "%s" ',...
                     thisType, textureParams{ii}, thisVal);
+                
+                % Do not do all the checking and file movement below.
+                % Just add the text.
+                val = strcat(val, thisText);
+                continue; 
+            else
+
+                if contains(lower(thisVal),{'true','false'}) && strcmp(thisType,'bool')
+                    thisText = sprintf(' "%s %s" [%s] ',...
+                        thisType, textureParams{ii}, thisVal);
+                else
+                    thisText = sprintf(' "%s %s" "%s" ',...
+                        thisType, textureParams{ii}, thisVal);
+                end
             end
+
         elseif isnumeric(thisVal)
 
             if isinteger(thisType)
@@ -96,9 +111,9 @@ for ii=1:numel(textureParams)
             % that it's not in scene root path
             texturePathTmp = 'textures';
             if ~isempty(texturePath) && exist(thisVal,'file')
-                if ~exist(fullfile(oDir,'textures',[n,e]),'file')
-                    fullpathTex = dir(thisVal);
-                    copyfile(fullfile(fullpathTex.folder, fullpathTex.name), ...
+                if ~exist(fullfile(oDir,'textures',[n,e]),'file') && ~thisR.useDB
+                    fullpathTex = which(thisVal);
+                    copyfile(fullpathTex, ...
                         fullfile(oDir,'textures'));
                 end
                 texturePathTmp = texturePath;

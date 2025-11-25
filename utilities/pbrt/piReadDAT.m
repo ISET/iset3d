@@ -1,5 +1,7 @@
 function [imageData, imageSize, lens] = piReadDAT(filename, varargin)
-%% Read multispectral data from a .dat file (Stanford format)
+%% Deprecated: Read multispectral data from a .dat file (Stanford format)
+%
+% We now use piEXR2ISET
 %
 %   [imageData, imageSize, lens] = piReadDAT(filename)
 %
@@ -29,9 +31,8 @@ function [imageData, imageSize, lens] = piReadDAT(filename, varargin)
 % returns a struct of lens data with fields focalLength, fStop, and
 % fieldOfView.
 %
-%%% RenderToolbox4 Copyright (c) 2012-2016 The RenderToolbox Team.
-%%% About Us://github.com/RenderToolbox/RenderToolbox4/wiki/About-Us
-%%% RenderToolbox4 is released under the MIT License.  See LICENSE file.
+
+warning('Deprecated.  Use piEXR2ISET');
 
 %%
 parser = inputParser();
@@ -83,7 +84,7 @@ if count == 3
     lens.fieldOfView = lensData(3);
     fprintf('  Found lens data focalLength=%d, fStop=%d, fieldOfView=%d.\n', ...
         lens.focalLength, lens.fStop, lens.fieldOfView);
-elseif (~isempty(strfind(headerLine,'v3')))
+elseif (contains(headerLine,'v3'))
         % If in the header line we get a 'v3' flag, we know its a version 3
         % output file. 
         dataPosition = ftell(fid);

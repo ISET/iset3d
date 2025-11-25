@@ -117,6 +117,9 @@ if ~isdeployed
             return
         end
 
+if ~true
+% not sure why we would want to run docker machine;
+% all we really need is the docker command line.
         % Check that docker machine is installed
         [status, version] = system('docker-machine -v');
         if status == 0
@@ -190,7 +193,7 @@ if ~isdeployed
         else
             error('Docker could not be configured: %s', result);
         end
-
+end
         % LINUX
     elseif isunix
 
@@ -213,5 +216,9 @@ if ~isdeployed
             if (args.debug); fprintf('Docker status: %d\n',status); end
             error('Docker not configured: %s', result);
         end
+    else
+        % not mac, unix or pc
+        error('unknown system: not ismac or isunix or ispc!\n');
     end
+end
 end
