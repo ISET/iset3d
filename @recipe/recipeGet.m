@@ -223,7 +223,10 @@ switch ieParamFormat(param)  % lower case, no spaces
         val = thisR.inputFile;
     case 'inputdir'
         val = fileparts(thisR.get('input file'));
-    case {'inputbasename'}
+    case {'inputdirbasename','inputfolderbasename'}
+        val = fileparts(thisR.get('input file'));
+        [~,val] = fileparts(val);
+    case {'inputbasename','inputfilebasename'}
         name = thisR.inputFile;
         [~,val] = fileparts(name);
     case 'outputfile'

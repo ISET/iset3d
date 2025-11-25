@@ -33,14 +33,12 @@ thisSE.get('lookat')
 
 thisSE.set('use pinhole',true);
 
-humanDocker = dockerWrapper;
-scene = thisSE.piWRS('docker wrapper',humanDocker,'name','pinhole');
+% humanDocker = dockerWrapper;
+scene = thisSE.piWRS('name','pinhole');
 
 % piAssetGeometry(thisSE.recipe);
 
-%% Not working yet.  Sigh.  
-% 
-% Runs, but units are not set right.  Too blurry.
+%% Runs, but units are not set right.  Too blurry.
 % Maybe accommodation.
 
 thisSE.set('use optics',true);
@@ -48,16 +46,18 @@ thisSE.set('use optics',true);
 thisSE.set('fov',1);                % About 3 deg on a side
 thisSE.set('spatial samples',256);  % Number of OI sample points
 thisSE.set('rays per pixel',256);
-thisSE.set('accommodation',1/thisSE.get('object distance','m'));  
+% tmp = 1/thisSE.get('object distance','m');
+thisSE.set('accommodation',1);  
 thisSE.set('lens density',0);       % Yellow is harder to see.
 
 thisSE.set('diffraction',true);
 thisSE.set('pupil diameter',4);
 thisSE.set('film diagonal',10);
 
-humanDocker = dockerWrapper.humanEyeDocker;
-oi = thisSE.piWRS('docker wrapper',humanDocker,'name','navarro');
+% humanDocker = dockerWrapper.humanEyeDocker;
+oi = thisSE.piWRS('name','navarro');
 
+%%
 oi = oiSet(oi,'name','4mm-diffractionOn');
 oiWindow(oi);
 oiPlot(oi,'illuminance hline',[128 128]);
@@ -68,14 +68,14 @@ thisSE.set('diffraction',false);
 thisSE.set('rays per pixel',512);
 thisSE.set('pupil diameter',1);
 
-oi = thisSE.piWRS('docker wrapper',humanDocker,'name','navarro');
+oi = thisSE.piWRS('name','navarro');
 oiPlot(oi,'illuminance hline',[128 128]);
 title('4 mm off')
 
 %% Diffraction should matter
 
 thisSE.set('diffraction',true);
-oi = thisSE.piWRS('docker wrapper',humanDocker,'name','navarro-diffraction');
+oi = thisSE.piWRS('name','navarro-diffraction');
 
 oiPlot(oi,'illuminance hline',[128 128]);
 title('1 mm on')
@@ -83,7 +83,6 @@ title('1 mm on')
 
 % Make a direct comparison
 thisSE.set('diffraction',false);
-oi = thisSE.render('render type','radiance');
 oi = oiSet(oi,'name','1mm-diffractionOff');
 oiWindow(oi);
 thisSE.summary;
@@ -97,7 +96,6 @@ thisSE.set('rays per pixel',4096);
 thisSE.set('pupil diameter',0.5);
 
 thisSE.set('diffraction',true);
-oi = thisSE.render('render type','radiance');
 oi = oiSet(oi,'name','Halfmm-diffractionOn');
 oiWindow(oi);
 
@@ -107,7 +105,6 @@ title('Half mm on')
 %%
 
 thisSE.set('diffraction',false);
-oi = thisSE.render('render type','radiance');
 oi = oiSet(oi,'name','Halfmm-diffractionOff');
 oiWindow(oi);
 

@@ -1,3 +1,5 @@
+% PROBABLY TO DEPRECATE
+%
 % parser test
 
 % thisR = piRead('/Users/zhenyi/git_repo/dev/iset3d-tiny/data/scenes/web/cornell_box/cornell_box.pbrt');

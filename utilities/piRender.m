@@ -30,7 +30,7 @@ function [ieObject, result, thisD, outFile] = piRender(thisR, varargin)
 %  reuse      - Boolean. Indicate whether to use an existing file if one of
 %               the correct size exists (default is false)
 %
-%  ourdocker  - Specify the docker wrapper to use.  Default is build
+%  docker     - Specify the docker wrapper to use.  Default is build
 %               from scratch with defaults in the Matlab getprefs('docker')
 %
 %  verbosity  - How much to print to standard output:
@@ -55,7 +55,7 @@ function [ieObject, result, thisD, outFile] = piRender(thisR, varargin)
 %              including the distance from the back of the lens to
 %              film and the in-focus distance given the lens-film distance.
 %   renderDocker    - the isetdocker used for the rendering.  Useful if
-%                     you want to use it next as the ourdocker
+%                     you want to use it next as the docker
 %                     specification. 
 %
 % See also
@@ -96,7 +96,7 @@ function [ieObject, result, thisD, outFile] = piRender(thisR, varargin)
 
 %% Init ISET prefs.
 
-%  If ISET3d prefs are not already set, this will initialize.
+% If ISET3d prefs are not already set, this will initialize.
 piPrefsInit
 
 %%  Name of the pbrt scene file and whether we use a pinhole or lens model
@@ -153,7 +153,7 @@ if ~ispref('ISETDocker') && isempty(renderDocker)
 else
     if isempty(renderDocker)
         renderDocker = isetdocker();
-        if verbosity, disp('[INFO]: Render Locally.'); end
+        % if verbosity, disp('[INFO]: Render Locally.'); end
     else
         % renderDocker is fine
     end

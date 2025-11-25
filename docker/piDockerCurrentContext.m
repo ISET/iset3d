@@ -7,6 +7,8 @@ function currentContext = piDockerCurrentContext()
 % See also
 %   isetdocker.render, isetdocker.startPBRT
 %
+% Note:  I think the logic on setting the context may not yet be right.
+% This routine is useful for fixing that issue.
 
 % Execute the docker context ls command
 [status, cmdout] = system('docker context ls');

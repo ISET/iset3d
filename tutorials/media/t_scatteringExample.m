@@ -23,6 +23,7 @@
 % See also
 %   t_absorptionExample
 %
+% Henryk Blasinski, 2025
 
 close all;
 clear all;
@@ -93,11 +94,8 @@ hg = hg / max(hg);
 plot(angles, hg);
 
 for i=1:nWaves
-
-    % corrFactor = cosd(180 - angles);
     
     ph = allData(i,:);
-    % ph = ph / corrFactor;
     ph = ph / max(ph);
 
     plot(angles, ph, 'x');

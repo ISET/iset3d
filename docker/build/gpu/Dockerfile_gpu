@@ -1,0 +1,76 @@
+# Dockerize Stanford University's Vistalab's versio of pbrt-v4 for running on GPUs.
+#
+# We recommend using the recent releases of Ubuntu, CUDA, and OptiX when possible
+# 
+#
+# We start with the nvidia cuda docker container from https://hub.docker.com/r/nvidia/cuda/tags
+#
+# 12.4 is known to work. versions as early as 11.6 might also
+#
+FROM nvidia/cuda:12.4.1-devel-ubuntu22.04
+
+LABEL authors="Zhenyi Liu <zhenyiliu@stanford.edu>, \
+               David Cardinal <david.cardinal@stanford.edu>, \
+               Henryk Blasinski <hblasins@stanford.edu>"
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Set up repositories
+RUN apt-get update -yq && \
+apt-get install -yq software-properties-common && \
+add-apt-repository ppa:graphics-drivers && \
+add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
+apt-get update
+
+RUN apt-get update -yq && apt-get install -yq --no-install-recommends \
+	bash \
+	cmake \
+	build-essential \
+	vim \
+	iputils-ping \
+	gcc-9 \
+	g++-9 \
+	make \
+	bison \
+	flex \
+	libpthread-stubs0-dev \
+	zlib1g-dev \
+	libgsl-dev \
+	libssl-dev \
+	libgl1-mesa-dev \
+	libxrandr-dev \
+	libxinerama-dev \
+	libxcursor-dev \
+	libxi-dev \
+	doxygen \
+	wget \
+	ninja-build \
+	apt-utils \
+	ca-certificates \
+	curl && \
+	rm -rf /var/lib/apt/lists/*
+
+
+# Setup folder structure
+RUN mkdir /pbrt
+WORKDIR /pbrt/
+
+# Pull the git repo for the ISET version of pbrt-v4 and build
+RUN apt-get update -yq && apt-get install -y git \
+&& git clone --recursive https://github.com/ISET/pbrt-v4.git
+
+# get optiX
+COPY ./externals/NVIDIA-OptiX-SDK-8.0.0-linux64-x86_64 /pbrt/NVIDIA-OptiX-SDK-8.0.0-linux64-x86_64
+
+WORKDIR /pbrt/pbrt-v4/build
+RUN	cmake \
+		-DCMAKE_BUILD_TYPE=MINSIZEREL \
+		-DPBRT_GPU_SHADER_MODEL=sm_80 \
+		-DPBRT_OPTIX7_PATH=/pbrt/NVIDIA-OptiX-SDK-8.0.0-linux64-x86_64 \
+		-DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic" \
+		-DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic" \
+		.. && \
+	make -j$(nproc)
+
+ENV PATH=$PATH:/pbrt/pbrt-v4/build
+

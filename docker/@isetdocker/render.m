@@ -1,21 +1,59 @@
 function [status, result, containerCommand] = render(obj, thisR, commandonly)
-% Render a recipe with the docker container
+% RENDER Renders a PBRT scene recipe using a Docker container, supporting
+% local and remote execution.
 %
-% Inputs
-%   obj    - The isetdocker
-%   thisR  - Render recipe
-%   commandonly - Just return the command
+% (Gemini documentation)
 %
-% Key/val
-%   N/A
+% Synopsis:
+% [status, result, containerCommand] = obj.render(thisR, commandonly)
 %
-% Returns
-%   status
-%   result
-%   containerCommand
+% Description:
+%  This function constructs and executes the Docker command to run the
+%  PBRT renderer. It handles configuration checks, ensures the PBRT
+%  container is running, manages file synchronization for remote hosts
+%  (uploading scene files and downloading results), and builds the
+%  final `docker exec` command.
 %
-% See also
+% The function automatically checks if a remote host is configured in the
+% ISETDocker preferences and adjusts its behavior (local vs. remote
+% execution, file synchronization) accordingly.
 %
+% Inputs:
+%   obj:          The isetdocker object instance, containing configuration
+%                 and connection information (e.g., remote host details).
+%   thisR:        The RenderRecipe (piRecipe) object containing the scene
+%                 definition, output file path, and rendering parameters.
+%   commandonly:  (Optional) Boolean. If true, the function only builds and
+%                 returns the Docker command string without executing it.
+%                 Defaults to false.
+%
+% Outputs:
+%   status:             Integer status code returned by the `system()` call
+%                       (0 indicates success).
+%   result:             Text output returned by the execution of the Docker
+%                       command.
+%   containerCommand:   The full string of the `docker exec` command that was
+%                       either executed or constructed.
+%
+% Key/value Pairs:
+%   N/A (All options are managed through the properties of the `obj` and `thisR`
+%   inputs, and ISETDocker preferences.)
+%
+% Usage:
+% 1. Local Rendering (PBRT container must be running locally):
+%    [s, res, cmd] = obj.render(thisR);
+%
+% 2. Remote Rendering (Requires ISETDocker preferences to be set up
+%    with 'remoteHost', 'workDir', and PBRT container running remotely):
+%    [s, res, cmd] = obj.render(thisR);
+%
+% 3. Get Command String Only:
+%    [~, ~, cmd] = obj.render(thisR, true);
+%
+% See also:
+%   piDockerCurrentContext, isetdocker.startPBRT, isetdocker.upload,
+%   isetdocker.download, piRender
+
 
 %% Initialize
 p = inputParser();
@@ -30,7 +68,7 @@ end
 %% Build up the render command
 pbrtOutputFile = thisR.get('output file'); 
 outputFolder   = thisR.get('output folder'); 
-sceneFolder    = thisR.get('input basename');
+sceneFolder    = thisR.get('input folder basename');
 currName       = thisR.get('output basename');
 
 iDockerPrefs   = getpref('ISETDocker');
@@ -55,14 +93,11 @@ end
 
 [~, sceneDir, ~] = fileparts(outputFolder);
 
-% By the time we get here, I think we should know the context from the
-% saved prefs or from isetdocker.startPBRT.  Getting the context from the
-% remoteHost seems odd, anyway.  Shouldn't we be getting it from whatever
-% is the current context?
-% I made that change.
+% By the time we get here, we should know the context from the saved
+% matlab prefs. If it is there, use it.  Otherwise, get the context
+% from the current context (BW).
 if isempty(getpref('ISETDocker','renderContext'))
      contextFlag = sprintf(' --context %s ',piDockerCurrentContext);
-%    contextFlag = ' --context default ';
 else
     contextFlag = [' --context ' getpref('ISETDocker','renderContext')];
 end
@@ -86,7 +121,7 @@ if ~isempty(getpref('ISETDocker','remoteHost'))
 
     outF = fullfile(remoteSceneDir,'renderings',[currName,'.exr']);
     
-    % check if there is renderings folder
+    % check if there is a remote renderings folder
     sceneFolder = dir(obj.sftpSession,fullfile(remoteSceneDir));
     renderingsDir = true;
     for ii = 1:numel(sceneFolder)
@@ -163,8 +198,3 @@ else
 end
 
 end
-
-
-
-
-
