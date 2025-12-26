@@ -21,6 +21,6 @@ data/assets/*
 data.orig
 data-
 data+
-local/*
+local/*/
 utilities/remote/bar
 utilities/remote/foo.m
