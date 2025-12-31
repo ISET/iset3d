@@ -29,7 +29,7 @@ function ieObject = piDat2ISET(inputFile,varargin)
 %
 % Output
 %   ieObject: if label is radiance: optical image;
-%             else, a metadatMap
+%             else, a metadata map
 %
 % Zhenyi/BW SCIEN Stanford, 2018
 %
