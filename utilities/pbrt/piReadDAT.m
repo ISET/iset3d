@@ -1,7 +1,8 @@
 function [imageData, imageSize, lens] = piReadDAT(filename, varargin)
-%% Deprecated: Read multispectral data from a .dat file (Stanford format)
+%% Read multispectral data from a .dat file (Stanford format)
 %
-% We now use piEXR2ISET
+% We now use piEXR2ISET.  But we still keep this for some of the older
+% scenes that were rendered and converted
 %
 %   [imageData, imageSize, lens] = piReadDAT(filename)
 %
