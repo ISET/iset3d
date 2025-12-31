@@ -1,9 +1,13 @@
 function [imageData, imageSize, lens] = piReadDAT(filename, varargin)
-%% Deprecated: Read multispectral data from a .dat file (Stanford format)
+% Read multispectral data from a .dat file (Stanford format)
 %
-% We now use piEXR2ISET
-%
+% Synopsis
 %   [imageData, imageSize, lens] = piReadDAT(filename)
+%
+% We now use piEXR2ISET in the main section of the code.  We have
+% maintained this because we have older datasets (from Flywheel) that were
+% stored in this format.  We can use this function to recreate those
+% (relatively low resolution) scenes.
 %
 % Required Input
 %   filename - existing .dat file
@@ -16,9 +20,11 @@ function [imageData, imageSize, lens] = piReadDAT(filename, varargin)
 % Reads multi-spectral .dat image data from the fiven filename.  The .dat
 % format is described by Andy Lin on the Stanford Vision and Imaging
 % Science and Technology wiki:
+%
 %   http://white.stanford.edu/pdcwiki/index.php/PBRTFileFormat
 %
 % imageData = piReadDAT(filename, 'maxPlanes', maxPlanes)
+%
 % Reads image data from the given file, and limits the number of returned
 % spectral planse to maxPlanes.  Any additional planes are ignored.
 %
@@ -31,8 +37,13 @@ function [imageData, imageSize, lens] = piReadDAT(filename, varargin)
 % returns a struct of lens data with fields focalLength, fStop, and
 % fieldOfView.
 %
+% See also
+%   piDat2ISET
+%
 
+%{ 
 warning('Deprecated.  Use piEXR2ISET');
+%}
 
 %%
 parser = inputParser();
