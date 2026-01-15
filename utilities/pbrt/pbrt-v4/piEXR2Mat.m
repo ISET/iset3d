@@ -18,8 +18,15 @@ function data = piEXR2Mat(inputFile, channelname)
 % dockerWrapper Support, D. Cardinal, 2022
 %
 
+% Check if MATLAB exrread() is available
+% This function is available only in Matlab >= R2022b
+hasBuiltinExrread = false;
+if ~isOctave() && exist('isMATLABReleaseOlderThan', 'file') > 0
+    hasBuiltinExrread = ~isMATLABReleaseOlderThan('R2022b');
+end
+
 % tic
-if exist('isMATLABReleaseOlderThan','file') > 0 && ~isMATLABReleaseOlderThan('R2022b')
+if hasBuiltinExrread
     % Use Matlab builtin exrread from the image toolbox 
 
     % Matlab included exrread() in 2022b.  We included exread() in
@@ -48,9 +55,11 @@ if exist('isMATLABReleaseOlderThan','file') > 0 && ~isMATLABReleaseOlderThan('R2
     data = exrread(inputFile, Channels = channels);
     return;
 
-elseif isfile(fullfile(isetRootPath,'imgproc','openexr','exrread.m'))
-    
-    % Use the exrread() from ISETCam.
+elseif isfile(fullfile(isetRootPath,'imgproc','openexr','exrreadchannels.mex'))
+    % If Matlab's exrread() isn't available, the user must be using 
+    % openexr's exrread() (either from older Matlab or Octave)
+    % In this case, the mex file should exist
+    % Note that this file reader uses arguments different from Matlab's
     
     if strcmpi(channelname,'radiance')
         channels = cell(1,31);
@@ -95,7 +104,7 @@ else
 
     if status
         disp(result);
-        error('EXR to Binary conversion failed.')
+        error('EXR to Binary conversion failed.');
     end
     allFiles = dir([indir,sprintf('/%s_*',fname)]);
     fileList = [];
