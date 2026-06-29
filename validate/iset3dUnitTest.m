@@ -69,8 +69,8 @@ function suite = localSelectMode(suite, mode)
 switch mode
     case {'core', 'fast', 'quantitative'}
         names = {suite.Name};
-        % Exclude tests containing 'FullOnly'
-        suite = suite(~contains(names, 'FullOnly'));
+        % Exclude tests containing 'FullOnly' or '_remote'
+        suite = suite(~contains(names, 'FullOnly') & ~contains(names, '_remote'));
     case {'full', 'all'}
         % Keep the complete suite.
     otherwise

@@ -1,9 +1,9 @@
-function results = utilitiesUnitTest(mode)
-% UTILITIESUNITTEST - Run utilities tests in the _tests_ directory.
+function results = humanUnitTest(mode)
+% HUMANUNITTEST - Run human eye models tests in the _tests_ directory.
 %
 % Usage:
-%   results = utilitiesUnitTest;
-%   results = utilitiesUnitTest('full');
+%   results = humanUnitTest;
+%   results = humanUnitTest('full');
 %
 
 if nargin < 1 || isempty(mode), mode = 'core'; end
@@ -21,16 +21,17 @@ suite = TestSuite.fromFolder(testDir);
 switch mode
     case {'core','fast','quantitative'}
         % Exclude tests containing 'FullOnly' or '_remote'
+        names = {suite.Name};
         suite = suite(~contains(names, 'FullOnly') & ~contains(names, '_remote'));
     case {'full','all'}
         % Keep the full suite
     otherwise
-        error('Unknown utilitiesUnitTest mode %s. Use ''core'' or ''full''.', mode);
+        error('Unknown humanUnitTest mode %s. Use ''core'' or ''full''.', mode);
 end
 
 runner = TestRunner.withTextOutput;
 results = runner.run(suite);
-ieTestReport(results,'utilitiesUnitTest');
+ieTestReport(results,'humanUnitTest');
 
 end
 
