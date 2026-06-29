@@ -153,6 +153,8 @@ plotting.
 - Run the full ISET3D unit-test suite with `iset3dUnitTest` and render or
   summarize its output with ISETCam's `ieTestReport`. `iset3dUnitTest` is
   the ISET3D master runner; `ieUnitTest` is the ISETCam master runner.
+- For details on the shared script-testing engine and runner contract, see
+  [tutorial-example-test-architecture.md](file:///Users/wandell/Documents/MATLAB/isetcam/docs/tutorial-example-test-architecture.md).
 - When converting legacy `isetvalidate` scripts into built-in unit tests,
   place each test with the ISET3D subsystem or behavior it protects rather
   than copying the legacy validation directory layout. Do not duplicate a
