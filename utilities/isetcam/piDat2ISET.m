@@ -1,11 +1,11 @@
 function ieObject = piDat2ISET(inputFile,varargin)
-% Deprecated
-% 
 % Read a dat-file rendered by PBRT, and return an ieObject or a metadataMap
 %
-% We now use piEXR2ISET
+% This function is mainly obsolete, and we use piEXR2ISET. This methods is
+% still useful for reading in some of the older scenes that were stored on
+% Flywheel in .dat format.
 %
-%
+% Synopsis
 %    ieObject = piDat2ISET(inputFile,varargin)
 %
 % Brief description:
@@ -29,7 +29,7 @@ function ieObject = piDat2ISET(inputFile,varargin)
 %
 % Output
 %   ieObject: if label is radiance: optical image;
-%             else, a metadatMap
+%             else, a metadata map
 %
 % Zhenyi/BW SCIEN Stanford, 2018
 %
