@@ -168,6 +168,53 @@ plotting.
   status 1, retry unsandboxed or escalated because MATLAB may need to write
   preferences or cache files outside the repository.
 
+## Remote Rendering (Docker / PBRT)
+
+ISET3D renders scenes by calling PBRT inside Docker containers that run on
+remote GPU servers (currently `orange.stanford.edu`). Tests and scripts
+that invoke `piWRS`, `piRender`, or any rendering pipeline have several
+environmental prerequisites:
+
+- **Stanford VPN**: When working off-campus, an active Stanford VPN
+  connection is required to reach the remote rendering servers. Tests
+  labelled `_remote` in their filename assume this access.
+- **Docker context**: MATLAB must have a Docker context configured for the
+  remote host. Run `piDockerConfig` to set this up or verify it. The
+  configuration is stored in MATLAB preferences under the `docker` group
+  (`getpref('docker')`). These preferences include the render context name,
+  the Docker image, and the GPU assignment.
+- **MATLAB preferences**: Docker-related preferences (`ISETDocker`,
+  `docker`) are machine-specific and persist across sessions. When
+  switching between machines, campus vs. VPN, or GPU assignments, the
+  preferences may need to be reset. Use `rmpref('docker')` to clear stale
+  configuration and then re-run `piDockerConfig`.
+- **Test classification**: Any test file that calls Docker-dependent
+  rendering must include `_remote` in its filename (e.g.,
+  `test_macbethGolden_remote.m`). The `iset3dUnitTest('core')` runner
+  automatically excludes `_remote` tests so that the fast/local suite
+  runs without network or Docker dependencies. Use `iset3dUnitTest('full')`
+  to include them.
+
+## Golden Value Testing
+
+Golden value tests protect numerical outputs against regressions by
+comparing computed results to pre-established reference values.
+
+- **Tolerances**: Always use explicit named tolerances (`'RelTol'` or
+  `'AbsTol'`) with `verifyEqual`. Rendering-based goldens should use
+  relative tolerances of 1–5% to accommodate Monte Carlo noise. Purely
+  deterministic computations (geometry, optics) can use tighter tolerances
+  (e.g., `'AbsTol', 1e-6`).
+- **Storage**: Store scalar and small-vector golden values directly in the
+  test source code. For large reference arrays (images, spectra), save to a
+  MAT file in the same `_tests_` directory and load it in the test setup.
+- **Naming**: Golden value test files that require rendering should follow
+  the `test_<subject>Golden_remote.m` naming convention.
+- **Baseline updates**: When an intentional code change shifts golden
+  values, update the reference values in the test and document the reason
+  in the commit message.
+- See `.github/agents/GOLDEN.md` for the overall plan and target list.
+
 ## When Uncertain
 
 Choose the simplest implementation that matches existing `scene*`, `oi*`,
