@@ -45,7 +45,7 @@ else,        flags = '-it ';
 end
 
 % context
-dockerContext = sprintf('--context %s ',obj.renderContext);
+dockerContext = obj.dockerContextFlag();
 pbrtcontainer = getpref('ISETDocker','PBRTContainer');
 
 switch ieParamFormat(cmd)

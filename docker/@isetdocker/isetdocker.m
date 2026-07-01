@@ -221,9 +221,12 @@ classdef isetdocker < handle
             end
 
             % Ensure remote directory syntax is correct for rsync (e.g., user@host:/path)
-            remoteHostPath = sprintf('%s@%s:',obj.remoteUser, obj.remoteHost);
-            if ~startsWith(remoteDir, {strcat(obj.remoteUser,'@')})
-                remoteDir = strcat(remoteHostPath,remoteDir);
+            remoteUser = char(string(obj.remoteUser));
+            remoteHost = char(string(obj.remoteHost));
+            remoteDir = char(string(remoteDir));
+            remoteHostPath = sprintf('%s@%s:', remoteUser, remoteHost);
+            if ~startsWith(remoteDir, [remoteUser '@'])
+                remoteDir = [remoteHostPath, remoteDir];
             end
 
             % Finalize the rsync command with source and destination paths
@@ -259,9 +262,12 @@ classdef isetdocker < handle
             end
 
             % Ensure remote directory syntax is correct for rsync (e.g., user@host:/path)
-            remoteHostPath = sprintf('%s@%s:',obj.remoteUser, obj.remoteHost);
-            if ~startsWith(remoteDir, {strcat(obj.remoteUser,'@')})
-                remoteDir = strcat(remoteHostPath,remoteDir);
+            remoteUser = char(string(obj.remoteUser));
+            remoteHost = char(string(obj.remoteHost));
+            remoteDir = char(string(remoteDir));
+            remoteHostPath = sprintf('%s@%s:', remoteUser, remoteHost);
+            if ~startsWith(remoteDir, [remoteUser '@'])
+                remoteDir = [remoteHostPath, remoteDir];
             end
 
             % Finalize the rsync command with source and destination paths
@@ -321,13 +327,7 @@ classdef isetdocker < handle
             end
             placeholderCommand = 'bash';
 
-            % We use the default context for local docker containers
-            if isempty(getpref('ISETDocker','remoteHost'))
-                contextFlag = sprintf(' --context %s ',piDockerCurrentContext);
-                % contextFlag = ' --context default ';
-            else
-                contextFlag = [' --context ' getpref('ISETDocker','renderContext')];
-            end
+            contextFlag = obj.dockerContextFlag();
 
             if strcmpi(obj.device, 'gpu')
                 % want: --gpus '"device=#"'
@@ -345,10 +345,12 @@ classdef isetdocker < handle
 
             cmd = sprintf('%s %s %s', dCommand, useImage, placeholderCommand);
 
-            % Test Connection to the remote docker context
-            [status, result] = system(sprintf('docker %s version',contextFlag));
+            % Test connection to the selected docker context.
+            versionCommand = sprintf('docker%s version', contextFlag);
+            [status, result] = system(versionCommand);
             if status ~= 0
-                error("Failed to connect to Docker context: %s", result);
+                error("Failed to connect to Docker context using: %s\n%s", ...
+                    versionCommand, result);
             end
 
             [status, result] = system(cmd);
@@ -372,11 +374,7 @@ classdef isetdocker < handle
                 containerName = getpref('ISETDocker','PBRTContainer');
                 if ~isempty(containerName)
 
-                    if isempty(getpref('ISETDocker','remoteHost'))
-                        contextFlag = ' --context default ';
-                    else
-                        contextFlag = [' --context ' getpref('ISETDocker','renderContext')];
-                    end
+                    contextFlag = obj.dockerContextFlag();
 
                     % Removes the Docker container in renderContext
                     cleanupCmd = sprintf('docker %s rm -f %s', ...

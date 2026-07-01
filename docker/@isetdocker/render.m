@@ -101,14 +101,7 @@ end
 
 [~, sceneDir, ~] = fileparts(outputFolder);
 
-% By the time we get here, we should know the context from the saved
-% matlab prefs. If it is there, use it.  Otherwise, get the context
-% from the current context (BW).
-if isempty(getpref('ISETDocker','renderContext'))
-     contextFlag = sprintf(' --context %s ',piDockerCurrentContext);
-else
-    contextFlag = [' --context ' getpref('ISETDocker','renderContext')];
-end
+contextFlag = obj.dockerContextFlag();
 
 if strcmpi(obj.device,'gpu')
     device = ' --gpu ';
