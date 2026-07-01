@@ -57,8 +57,7 @@ thisR.set('render type', {'radiance', 'depth'});
 try
     scene = piWRS(thisR, 'show', false, 'mean luminance', 100);
 catch ME
-    testCase.assumeFail(...
-        sprintf('Rendering failed (VPN/Docker issue?): %s', ME.message));
+    testCase.verifyFail(sprintf('piWRS failed: %s', ME.message));
     return;
 end
 

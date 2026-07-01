@@ -18,8 +18,9 @@ ieInit;
 if ~piDockerExists
     try
         piDockerConfig;
-    catch
-        testCase.verifyFail('Docker configuration failed.');
+    catch ME
+        testCase.assumeFail( ...
+            sprintf('Docker not available, skipping: %s', ME.message));
         return;
     end
 end
@@ -38,8 +39,8 @@ thisR.set('asset', bunnyIDX, 'material name', 'glossy-red');
 
 try
     scene = piWRS(thisR, 'show', false, 'speed', 4);
-catch exception
-    testCase.verifyFail(sprintf('piWRS glossy-red failed: %s', exception.message));
+catch ME
+    testCase.verifyFail(sprintf('piWRS glossy-red failed: %s', ME.message));
     return;
 end
 
@@ -54,24 +55,24 @@ thisR = piMaterialsInsert(thisR, 'names', {'glossy-black', 'mirror', 'glass'});
 thisR.set('asset', bunnyIDX, 'material name', 'glossy-black');
 try
     piWRS(thisR, 'show', false, 'speed', 4);
-catch exception
-    testCase.verifyFail(sprintf('piWRS glossy-black failed: %s', exception.message));
+catch ME
+    testCase.verifyFail(sprintf('piWRS glossy-black failed: %s', ME.message));
 end
 
 % Mirror
 thisR.set('asset', bunnyIDX, 'material name', 'mirror');
 try
     piWRS(thisR, 'show', false, 'speed', 4);
-catch exception
-    testCase.verifyFail(sprintf('piWRS mirror failed: %s', exception.message));
+catch ME
+    testCase.verifyFail(sprintf('piWRS mirror failed: %s', ME.message));
 end
 
 % Glass
 thisR.set('asset', bunnyIDX, 'material name', 'glass');
 try
     piWRS(thisR, 'show', false, 'speed', 4);
-catch exception
-    testCase.verifyFail(sprintf('piWRS glass failed: %s', exception.message));
+catch ME
+    testCase.verifyFail(sprintf('piWRS glass failed: %s', ME.message));
 end
 
 end

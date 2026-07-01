@@ -31,6 +31,47 @@ testCase.verifyTrue(any(contains(report.errors, ...
 end
 
 %% ------------------------------------------------------------------------
+function testValidLocalPrefsDoNotRequireRemoteResources(testCase)
+prefs = localBasePrefs();
+prefs.remoteHost = "";
+prefs.remoteUser = "";
+prefs.renderContext = "";
+prefs = rmfield(prefs, 'PBRTResources');
+
+report = isetdocker.validatePrefStruct(prefs);
+
+testCase.verifyTrue(report.ok);
+testCase.verifyEmpty(report.errors);
+testCase.verifyTrue(any(contains(report.warnings, ...
+    'local Docker will use the active Docker context')));
+end
+
+%% ------------------------------------------------------------------------
+function testGpuPrefsRequireDeviceId(testCase)
+prefs = localBasePrefs();
+prefs.device = "gpu";
+prefs.deviceID = "";
+
+report = isetdocker.validatePrefStruct(prefs);
+
+testCase.verifyFalse(report.ok);
+testCase.verifyTrue(any(contains(report.errors, ...
+    'ISETDocker.deviceID is required.')));
+end
+
+%% ------------------------------------------------------------------------
+function testCpuPrefsDoNotRequireDeviceId(testCase)
+prefs = localBasePrefs();
+prefs.device = "cpu";
+prefs.deviceID = "";
+
+report = isetdocker.validatePrefStruct(prefs);
+
+testCase.verifyTrue(report.ok);
+testCase.verifyEmpty(report.errors);
+end
+
+%% ------------------------------------------------------------------------
 function testNumericDeviceIdIsNormalized(testCase)
 prefs = localBasePrefs();
 prefs.deviceID = 1;
@@ -91,6 +132,18 @@ report = isetdocker.validatePrefStruct(prefs);
 testCase.verifyFalse(report.ok);
 testCase.verifyTrue(any(contains(report.errors, ...
     'must use shell-safe characters')));
+end
+
+%% ------------------------------------------------------------------------
+function testUnknownFieldsWarnButDoNotFail(testCase)
+prefs = localBasePrefs();
+prefs.unexpectedField = "ignored";
+
+report = isetdocker.validatePrefStruct(prefs);
+
+testCase.verifyTrue(report.ok);
+testCase.verifyTrue(any(contains(report.warnings, ...
+    'Ignoring unknown ISETDocker field "unexpectedField"')));
 end
 
 %% ------------------------------------------------------------------------

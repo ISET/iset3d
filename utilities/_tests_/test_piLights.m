@@ -74,3 +74,14 @@ testCase.verifyFalse(ismember('DistantLight_L', names));
 testCase.verifyTrue(ismember('PointLight_L', names));
 
 end
+
+function testRecipeDefaultCanAddDefaultLight(testCase)
+%% Test opt-in default lighting for parsed scenes with no lights.
+
+thisR = piRecipeDefault('scene name', 'bunny', 'add default light', true);
+
+testCase.verifyGreaterThan(thisR.get('n lights'), 0);
+names = thisR.get('light', 'names');
+testCase.verifyTrue(ismember('default_distant_L', names));
+
+end

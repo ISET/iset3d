@@ -49,11 +49,18 @@ p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('SE', @(x)(isa(x, 'sceneEye')));
 p.addParameter('scaleilluminance', true, @islogical);
-p.addParameter('docker',[],@(x)(isa(x,'isetdocker') || isempty(x)));
+p.addParameter('docker',[],@localIsDockerLike);
+p.addParameter('dockerwrapper',[],@localIsDockerLike);
+p.addParameter('show',true,@islogical);
 
 p.parse(SE, varargin{:});
 scaleIlluminance  = p.Results.scaleilluminance;
-% thisDockerWrapper = p.Results.dockerwrapper;
+show = p.Results.show;
+
+renderArgs = varargin;
+if isempty(p.Results.docker) && ~isempty(p.Results.dockerwrapper)
+    renderArgs = [renderArgs, {'docker', p.Results.dockerwrapper}];
+end
 
 thisR = SE.recipe;
 
@@ -66,6 +73,7 @@ if SE.usePinhole
     
     thisR.set('camera',piCameraCreate('pinhole'));
     thisR.set('fov',fov);
+    restoreCamera = onCleanup(@() thisR.set('camera', cameraSave)); %#ok<NASGU>
 end
 
 % We write and render but do not show at this point.   We need to apply the
@@ -74,7 +82,7 @@ end
 % Write the local/pbrt directory being aware about whether the resources
 % are expected to be present remotely.
 piWrite(thisR);
-obj = piRender(thisR,varargin{:});
+obj = piRender(thisR,renderArgs{:});
 
 % Deal with special ISETBio pinhole management
 if(~SE.usePinhole)
@@ -88,12 +96,20 @@ else
 end
 
 % Ready to show.
-switch obj.type
-    case 'opticalimage'
-        oiWindow(obj);
-    case 'scene'
-        sceneWindow(obj);
+if show
+    switch obj.type
+        case 'opticalimage'
+            oiWindow(obj);
+        case 'scene'
+            sceneWindow(obj);
+    end
 end
 
 end
 
+function tf = localIsDockerLike(value)
+%% Accept current isetdocker objects and legacy docker-like values.
+
+tf = isempty(value) || isa(value,'isetdocker') || isa(value,'dockerWrapper') || isstruct(value);
+
+end

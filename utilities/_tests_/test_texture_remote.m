@@ -18,8 +18,9 @@ ieInit;
 if ~piDockerExists
     try
         piDockerConfig;
-    catch
-        testCase.verifyFail('Docker configuration failed.');
+    catch ME
+        testCase.assumeFail( ...
+            sprintf('Docker not available, skipping: %s', ME.message));
         return;
     end
 end
@@ -31,8 +32,8 @@ testCase.assertNotEmpty(cubeIDX);
 % 1. Render default texture
 try
     piWRS(thisR, 'show', false, 'name', 'random color');
-catch exception
-    testCase.verifyFail(sprintf('piWRS default flatsurfacewhitetexture failed: %s', exception.message));
+catch ME
+    testCase.verifyFail(sprintf('piWRS default flatsurfacewhitetexture failed: %s', ME.message));
 end
 
 % 2. Insert and set checkerboard texture
@@ -41,8 +42,8 @@ thisR.set('asset', cubeIDX, 'material name', 'checkerboard');
 
 try
     piWRS(thisR, 'show', false, 'name', 'checks');
-catch exception
-    testCase.verifyFail(sprintf('piWRS checks failed: %s', exception.message));
+catch ME
+    testCase.verifyFail(sprintf('piWRS checks failed: %s', ME.message));
 end
 
 % 3. Insert and set dots texture
@@ -51,8 +52,8 @@ thisR.set('asset', cubeIDX, 'material name', 'dots');
 
 try
     piWRS(thisR, 'show', false, 'name', 'dots-orig');
-catch exception
-    testCase.verifyFail(sprintf('piWRS dots-orig failed: %s', exception.message));
+catch ME
+    testCase.verifyFail(sprintf('piWRS dots-orig failed: %s', ME.message));
 end
 
 % 4. Set dot scaling factors and re-render
@@ -61,8 +62,8 @@ thisR.set('texture', 'dots', 'uscale', 16);
 
 try
     piWRS(thisR, 'show', false, 'name', 'dots-scale');
-catch exception
-    testCase.verifyFail(sprintf('piWRS dots-scale failed: %s', exception.message));
+catch ME
+    testCase.verifyFail(sprintf('piWRS dots-scale failed: %s', ME.message));
 end
 
 end

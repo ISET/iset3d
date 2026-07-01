@@ -18,8 +18,9 @@ ieInit;
 if ~piDockerExists
     try
         piDockerConfig;
-    catch
-        testCase.verifyFail('Docker configuration failed.');
+    catch ME
+        testCase.assumeFail( ...
+            sprintf('Docker not available, skipping: %s', ME.message));
         return;
     end
 end
@@ -29,8 +30,8 @@ thisR = piRecipeDefault('scene name', 'sphere');
 thisR.set('skymap', 'room.exr');
 try
     piWRS(thisR, 'show', false);
-catch exception
-    testCase.verifyFail(sprintf('piWRS room.exr failed: %s', exception.message));
+catch ME
+    testCase.verifyFail(sprintf('piWRS room.exr failed: %s', ME.message));
 end
 
 % 2. Test cathedral_interior.exr
@@ -38,8 +39,8 @@ thisR = piRecipeDefault('scene name', 'sphere');
 thisR.set('skymap', 'cathedral_interior.exr');
 try
     piWRS(thisR, 'show', false);
-catch exception
-    testCase.verifyFail(sprintf('piWRS cathedral_interior.exr failed: %s', exception.message));
+catch ME
+    testCase.verifyFail(sprintf('piWRS cathedral_interior.exr failed: %s', ME.message));
 end
 
 % 3. Test equiarea-rainbow.exr
@@ -47,8 +48,8 @@ thisR = piRecipeDefault('scene name', 'sphere');
 thisR.set('skymap', 'equiarea-rainbow.exr');
 try
     piWRS(thisR, 'show', false);
-catch exception
-    testCase.verifyFail(sprintf('piWRS equiarea-rainbow.exr failed: %s', exception.message));
+catch ME
+    testCase.verifyFail(sprintf('piWRS equiarea-rainbow.exr failed: %s', ME.message));
 end
 
 end

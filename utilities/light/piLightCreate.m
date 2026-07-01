@@ -387,8 +387,10 @@ end
 % set the struct entries properly.
 %
 
-% These are the key/val arguments to skip
-skip = {'type','shape','radius'};
+% These are constructor-only key/value arguments to skip here.  They are
+% either already consumed above or used while constructing type-specific
+% light fields.
+skip = {'type','shape','radius','cameracoordinate'};
 
 for ii=1:2:numel(varargin)
     thisKey = varargin{ii};

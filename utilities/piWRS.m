@@ -111,28 +111,34 @@ thisD.verbosity = p.Results.verbosity;
 name = p.Results.name;
 show = p.Results.show;
 speed = p.Results.speed;
+
+oldRenderType = thisR.get('render type');
+oldResolution = [];
+oldBounces = [];
+oldRays = [];
+
 if ~(speed == 1)
     fprintf('\n***\nRender speedup %d X. Reducing resolution, bounces, and nrays.\n***\n',speed)
     % Set the resolution and bounces very low
-    ss = thisR.get('film resolution');
-    thisR.set('film resolution',round(ss/speed));
-    nb = thisR.get('nbounces');
+    oldResolution = thisR.get('film resolution');
+    thisR.set('film resolution',round(oldResolution/speed));
+    oldBounces = thisR.get('nbounces');
     thisR.set('nbounces',5);
-    nrays = thisR.get('rays per pixel');
+    oldRays = thisR.get('rays per pixel');
     thisR.set('rays per pixel',128);
 end
 
-%% In version 4 we set the render type this way
+restoreRecipe = onCleanup(@() localRestoreRecipeState(thisR, oldRenderType, ...
+    oldResolution, oldBounces, oldRays)); %#ok<NASGU>
 
-% We preserve the render type in the recipe.
-oldRenderType = thisR.get('render type');
+%% In version 4 we set the render type this way
 
 % But the user may have given us a new render type
 thisR.set('render type',renderType);
 
 % Write the local/pbrt directory being aware about whether the resources
 % are expected to be present remotely.
-piWrite(thisR);
+piWrite(thisR, 'main file only', p.Results.mainfileonly);
 
 [obj, results, thisD] = piRender(thisR, 'docker', thisD, varargin{:});
 
@@ -176,12 +182,16 @@ if p.Results.denoise
     obj = piAIdenoise(obj);
 end
 
-%% Put parameters back.
-thisR.set('render type',oldRenderType);
-if ~(speed == 1)
-    thisR.set('film resolution',ss);
-    thisR.set('nbounces',nb);
-    thisR.set('rays per pixel',nrays);
+end
+
+function localRestoreRecipeState(thisR, oldRenderType, oldResolution, oldBounces, oldRays)
+%% Restore temporary recipe changes made by piWRS.
+
+thisR.set('render type', oldRenderType);
+if ~isempty(oldResolution)
+    thisR.set('film resolution', oldResolution);
+    thisR.set('nbounces', oldBounces);
+    thisR.set('rays per pixel', oldRays);
 end
 
 end
