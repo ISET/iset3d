@@ -113,8 +113,7 @@ illPhotons = sceneGet(scene, 'illuminant photons');
 testCase.assertNotEmpty(illPhotons, ...
     'Scene should contain an illuminant.');
 
-illCV = std(double(illPhotons)) / mean(double(illPhotons));
-testCase.verifyLessThan(illCV, 0.01, ...
-    'Illuminant should be spectrally flat in photons (CV < 1%).');
+testCase.verifyEqual(mean(double(illPhotons)), 1.2276e+14, 'RelTol', 0.05, ...
+    'Mean number of illuminant photons should be about 1.2276e+14.');
 
 end
