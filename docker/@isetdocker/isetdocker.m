@@ -55,13 +55,15 @@ classdef isetdocker < handle
             p.addParameter('workdir', '', @ischar);
             p.addParameter('rendercontext', '', @ischar);
             p.addParameter('verbosity',1,@isnumeric);
+            p.addParameter('validate',true,@islogical);
 
             % We only need the local docker command interface, not
             % the whole docker engine.  This tests for the local
             % docker command, which is normally installed on Apple.  A
             % 0 means we are good.
             [status, result] = system('docker -v');
-            assert(isequal(result(1:6),'Docker'), 'Docker engine may not be running');
+            assert(numel(result) >= 6 && isequal(result(1:6),'Docker'), ...
+                'Docker command is not available or Docker engine may not be running');
             if status
                 % status is not zero, so command failed. Maybe it is a
                 % path issue.
@@ -93,7 +95,7 @@ classdef isetdocker < handle
                 obj.device = args.device; % Set from input argument
                 setpref('ISETDocker', 'device', args.device); % Save to preferences
             else
-                obj.device = getpref('ISETDocker', 'device'); % Retrieve from preferences
+                obj.device = getpref('ISETDocker', 'device', ''); % Retrieve from preferences
             end
 
             % Check and set 'deviceID' preference
@@ -101,7 +103,7 @@ classdef isetdocker < handle
                 obj.deviceID = args.deviceid; % Set from input argument
                 setpref('ISETDocker', 'deviceID', args.deviceid); % Save to preferences
             else
-                deviceID = getpref('ISETDocker', 'deviceID'); % Retrieve from preferences
+                deviceID = getpref('ISETDocker', 'deviceID', ''); % Retrieve from preferences
                 if ~ischar(deviceID) && ~isstring(deviceID)
                     if  isnumeric(deviceID) && isscalar(deviceID)
                         deviceID = num2str(deviceID);
@@ -119,7 +121,7 @@ classdef isetdocker < handle
                 obj.dockerImage = args.dockerimage; % Set from input argument
                 setpref('ISETDocker', 'dockerImage', args.dockerimage); % Save to preferences
             else
-                obj.dockerImage = getpref('ISETDocker', 'dockerImage'); % Retrieve from preferences
+                obj.dockerImage = getpref('ISETDocker', 'dockerImage', ''); % Retrieve from preferences
             end
 
             % Check and set 'remoteHost' preference
@@ -127,7 +129,7 @@ classdef isetdocker < handle
                 obj.remoteHost = args.remotehost; % Set from input argument
                 setpref('ISETDocker', 'remoteHost', args.remotehost); % Save to preferences
             else
-                obj.remoteHost = getpref('ISETDocker', 'remoteHost'); % Retrieve from preferences
+                obj.remoteHost = getpref('ISETDocker', 'remoteHost', ''); % Retrieve from preferences
             end
 
             % Check and set 'remoteUser' preference
@@ -135,7 +137,7 @@ classdef isetdocker < handle
                 obj.remoteUser = args.remoteuser; % Set from input argument
                 setpref('ISETDocker', 'remoteUser', args.remoteuser); % Save to preferences
             else
-                obj.remoteUser = getpref('ISETDocker', 'remoteUser'); % Retrieve from preferences
+                obj.remoteUser = getpref('ISETDocker', 'remoteUser', ''); % Retrieve from preferences
             end
 
             % Check and set 'workDir' preference
@@ -143,7 +145,7 @@ classdef isetdocker < handle
                 obj.workDir = args.workdir; % Set from input argument
                 setpref('ISETDocker', 'workDir', args.workdir); % Save to preferences
             else
-                obj.workDir = getpref('ISETDocker', 'workDir'); % Retrieve from preferences
+                obj.workDir = getpref('ISETDocker', 'workDir', ''); % Retrieve from preferences
             end
 
             % Check and set 'renderContext' preference
@@ -151,8 +153,21 @@ classdef isetdocker < handle
                 obj.renderContext = args.rendercontext; % Set from input argument
                 setpref('ISETDocker', 'renderContext', args.rendercontext); % Save to preferences
             else
-                obj.renderContext = getpref('ISETDocker', 'renderContext'); % Retrieve from preferences
+                obj.renderContext = getpref('ISETDocker', 'renderContext', ''); % Retrieve from preferences
             end
+
+            if args.validate
+                prefReport = obj.validatePrefs();
+                if ~prefReport.ok
+                    error('ISETDocker:InvalidPrefs', '%s', isetdocker.validationMessage(prefReport));
+                end
+
+                contextReport = obj.validateDockerContext('checkversion', false);
+                if ~contextReport.ok
+                    error('ISETDocker:InvalidDockerContext', '%s', isetdocker.validationMessage(contextReport));
+                end
+            end
+
             if ~isempty(obj.remoteHost)
                 % connect the server
                 obj.connect();
@@ -184,7 +199,10 @@ classdef isetdocker < handle
 
         function disconnect(obj)
             % Disconnect the SFTP session
-            close(obj.sftpSession);
+            if ~isempty(obj.sftpSession)
+                close(obj.sftpSession);
+                obj.sftpSession = [];
+            end
         end
 
 
@@ -271,6 +289,11 @@ classdef isetdocker < handle
             % See also
             %
             % verbose = obj.verbosity;
+
+            report = obj.validateDockerContext('checkversion', true);
+            if ~report.ok
+                error('ISETDocker:InvalidDockerContext', '%s', isetdocker.validationMessage(report));
+            end
 
             useImage = getpref('ISETDocker','dockerImage');
             rng('shuffle'); % make random numbers random
@@ -464,5 +487,7 @@ classdef isetdocker < handle
     methods (Static=true)
         % static methods in other files
         setUserPrefs();
+        report = validatePrefStruct(prefStruct, varargin);
+        msg = validationMessage(report);
     end
 end

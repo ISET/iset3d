@@ -73,13 +73,21 @@ currName       = thisR.get('output basename');
 
 iDockerPrefs   = getpref('ISETDocker');
 
+contextReport = obj.validateDockerContext('checkversion', false);
+if ~contextReport.ok
+    error('ISETDocker:InvalidDockerContext', '%s', isetdocker.validationMessage(contextReport));
+end
+
 % Check that the container is running remotely.  If not, start.
 if isfield(iDockerPrefs,'PBRTContainer')
     % Test that the container is running remotely
-    result = obj.dockercmd('psfind','string',iDockerPrefs.PBRTContainer);
+    [result, ~, cmdStatus] = obj.dockercmd('psfind','string',iDockerPrefs.PBRTContainer);
 
     % Couldn't find it.  Restart.
-    if isempty(result), obj.startPBRT; end
+    if cmdStatus ~= 0 || isempty(result)
+        rmpref('ISETDocker','PBRTContainer');
+        obj.startPBRT;
+    end
 else
     % No PBRTContainer specified, so restart.
     obj.startPBRT();
