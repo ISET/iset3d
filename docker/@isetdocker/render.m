@@ -80,13 +80,23 @@ end
 
 % Check that the container is running remotely.  If not, start.
 if isfield(iDockerPrefs,'PBRTContainer')
+    containerName = iDockerPrefs.PBRTContainer;
     % Test that the container is running remotely
-    [result, ~, cmdStatus] = obj.dockercmd('psfind','string',iDockerPrefs.PBRTContainer);
+    [result, ~, cmdStatus] = obj.dockercmd('psfind','string',containerName);
 
     % Couldn't find it.  Restart.
     if cmdStatus ~= 0 || isempty(result)
         rmpref('ISETDocker','PBRTContainer');
         obj.startPBRT;
+    elseif strcmpi(obj.device,'gpu') && ~localContainerGPUReady(obj,containerName)
+        warning('ISETDocker:StaleGPUContainer', ...
+            'PBRT container "%s" is running but cannot see the GPU. Restarting it.', ...
+            containerName);
+        obj.reset();
+        if ~isempty(obj.remoteHost)
+            obj.connect();
+        end
+        obj.startPBRT();
     end
 else
     % No PBRTContainer specified, so restart.
@@ -197,5 +207,32 @@ else
         end
     end
 end
+
+end
+
+function ready = localContainerGPUReady(obj,containerName)
+%% Verify that a running GPU PBRT container still sees CUDA.
+
+ready = false;
+containerName = char(string(containerName));
+if isempty(regexp(containerName,'^[A-Za-z0-9_.-]+$','once'))
+    return;
+end
+
+contextFlag = obj.dockerContextFlag();
+cmd = sprintf('docker %s exec %s sh -c "nvidia-smi" 2>&1 || true', ...
+    contextFlag,containerName);
+[~,result] = system(cmd);
+
+result = char(result);
+if isempty(strtrim(result)), return; end
+if contains(result,'Failed to initialize NVML') || ...
+        contains(result,'No devices were found') || ...
+        contains(result,'no CUDA-capable device') || ...
+        contains(result,'Error response from daemon')
+    return;
+end
+
+ready = contains(result,'NVIDIA-SMI');
 
 end

@@ -24,6 +24,7 @@ config.selector = selector;
 config.start = start;
 config.skipPathPatterns = { ...
     [filesep 'data' filesep]};
+config.conditionalSkipFcn = @iset3dRenderSkipReason;
 
 run = ieRunTutorialExampleTests(config);
 
