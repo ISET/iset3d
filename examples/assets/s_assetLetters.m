@@ -3,9 +3,8 @@
 %   thisAsset = piAssetLoad('latterA.mat');
 %
 % There are also letters from Krithin stored in the characters directory,
-% made using Blender. They are now usable via the characters scripts
-% and tutorials, such as s_eyeChart, charactersRender, and
-% s_varyBackgrounds
+% made using Blender. They are now usable via textRender, as shown in
+% s_textRenderBasic and s_eyeChart.
 %
 % See also
 %   s_assetsRecipe, v_Assets, piAssetLoad, piRecipeMerge
@@ -107,5 +106,4 @@ chessR.set('asset',idx,'world position',to + [0 0.1 0]);
 piWRS(chessR,'render type','radiance');
 
 %}
-
 

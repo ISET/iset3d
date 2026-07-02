@@ -27,11 +27,6 @@ charSizes = charMultiples * charBaseline;
 characterDistance = 6; % default for 20 foot eye chart
 
 % and lower the character position by half its size
-%{
-% for testing
-charactersRender(thisR,testChars,'letterSize',[charSize .02 charSize], ...
-    letterPosition=[0 -1*(charSize/2) 6]); % 6 Meters out
-%}
 % Now generate a full set of flash cards with fixed background
 % for now. Can add background rotation later.
 
@@ -199,6 +194,5 @@ lgt = piLightCreate('scene light',...
 thisR.set('light', lgt, 'add');
 
 end
-
 
 

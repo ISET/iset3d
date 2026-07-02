@@ -1,4 +1,4 @@
-% Demonstrate rendering a string from our Character assets
+% Demonstrate rendering a string from character assets
 
 % D. Cardinal, Stanford University, December, 2022
 % for ISET3d, ISETauto, and ISETonline
@@ -11,8 +11,6 @@ thisR = piRecipeCreate('macbeth checker');
 
 thisR.set('object distance', 2);
 
-% do we need to insert the material or can charactersRender
-% try to do that for us?
 piMaterialsInsert(thisR,'names',{'brickwall001'});
 
 % mcc already has these

@@ -45,25 +45,6 @@ thisR.set('skymap','sky-sunlight.exr');
 thisR.set('nbounces',4);
 piWRS(thisR);
 %}
-%{
- thisR = piRecipeCreate('Cornell_Box');
- piMaterialsInsert(thisR,'name','marble-beige');
- piMaterialsInsert(thisR,'name','wood-light-large-grain');
-
- thisR.set('film resolution',[384 256]*2);
- to = thisR.get('to') - [0.32 -0.1 -0.8];
- delta = [0.09 0 0];
- str = 'marble';
- idx = piAssetSearch(thisR,'object name','003_cornell_box');
- thisR.set('asset',idx,'material name','marble-beige');
- for ii=1:numel(str), pos(ii,:) = to + ii*delta; end
- thisR = charactersRender(thisR, str,'letterSize',[0.1,0.03,0.1]*0.7,...
-    'letterRotation',[0,0,-10],'letterPosition',pos,'letterMaterial','wood-light-large-grain');
- thisR.set('skymap','sky-sunlight.exr');
- thisR.set('nbounces',4);
- piWRS(thisR);
-%}
-
 %%
 arguments
     aRecipe; % recipe where we'll add the characters
@@ -205,4 +186,3 @@ for ii = 1:strlength(aString)
 
     
 end
-
