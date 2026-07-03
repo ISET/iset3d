@@ -21,7 +21,7 @@ Gemini, and other AI coding assistants working in this repository.
 
 ## Tutorials and Examples
 
-ISET3D keeps `tutorials/` and `scripts/` as separate teaching surfaces for
+ISET3D keeps `tutorials/` and `examples/` as separate teaching surfaces for
 different goals and audiences.
 
 - **Tutorials (`tutorials/`)**
@@ -35,7 +35,7 @@ different goals and audiences.
     - basic visualization (`*Window`, `*Plot`)
     - one simple quantitative computation/checkpoint
   - Expected behavior: runs relatively quickly and is easy to read linearly.
-- **Scripts (`scripts/`)**
+- **Examples (`examples/`)**
 
   - Audience: users looking for realistic analysis patterns to adapt.
   - Purpose: applied workflows and more advanced computations using ISET3D.
@@ -56,7 +56,7 @@ serve as tutorials or examples. Name these scripts `data_*.m`. This naming
 distinguishes them from automated tutorial (`t_*.m`) and example (`s_*.m`)
 smoke-test sources and makes their side-effecting purpose explicit.
 
-You can convert these tutorials and scripts into HTML documentation by running
+You can convert these tutorials and examples into HTML documentation by running
 the `s_publishTutorials` and `s_publishScripts` utilities (provided by ISETCam)
 from the MATLAB command window. To publish a single file, use the underlying
 utility `iePublish('filename.m')` which applies the correct HTML
@@ -68,7 +68,7 @@ pages, tests, and nearby tutorials/examples.
 
 ### Skipping Automated Tutorial and Example Runs
 
-The `iset3dTutorialTest` and `iset3dScriptTest` runners execute `t_*` and
+The `iset3dTutorialTest` and `iset3dExampleTest` runners execute `t_*` and
 `s_*` files by default. To exclude a source file from these automated smoke
 runs, add this exact comment anywhere in the file:
 
@@ -171,23 +171,35 @@ plotting.
 ## Remote Rendering (Docker / PBRT)
 
 ISET3D renders scenes by calling PBRT inside Docker containers that run on
-remote GPU servers (currently `orange.stanford.edu`). Tests and scripts
-that invoke `piWRS`, `piRender`, or any rendering pipeline have several
-environmental prerequisites:
+remote GPU servers (currently `orange.stanford.edu`). Tests, tutorials, and
+examples that invoke `piWRS`, `piRender`, or any rendering pipeline have
+several environmental prerequisites:
 
 - **Stanford VPN**: When working off-campus, an active Stanford VPN
   connection is required to reach the remote rendering servers. Tests
   labelled `_remote` in their filename assume this access.
 - **Docker context**: MATLAB must have a Docker context configured for the
-  remote host. Run `piDockerConfig` to set this up or verify it. The
-  configuration is stored in MATLAB preferences under the `docker` group
-  (`getpref('docker')`). These preferences include the render context name,
-  the Docker image, and the GPU assignment.
-- **MATLAB preferences**: Docker-related preferences (`ISETDocker`,
-  `docker`) are machine-specific and persist across sessions. When
-  switching between machines, campus vs. VPN, or GPU assignments, the
-  preferences may need to be reset. Use `rmpref('docker')` to clear stale
-  configuration and then re-run `piDockerConfig`.
+  remote host. Run `piDockerConfig` to set this up. Use
+  `piDockerDiagnose('render',false)` as the first diagnostic check for
+  configured context, SSH/SFTP reachability, rsync, GPU visibility, and stale
+  PBRT container state. Use `piDockerDiagnose('render',true)` only when a tiny
+  acceptance render is needed.
+- **Stale containers**: A running `PBRTContainer` preference can point at a
+  container that no longer sees a GPU, producing PBRT failures such as
+  `no CUDA-capable device is detected`. Prefer `piDockerDiagnose` for
+  diagnosis and repair hints before manually removing containers. If needed,
+  run `piDockerDiagnose('resetStaleContainer',true)`.
+- **Cleanup**: MATLAB shutdown runs `docker/finish.m`, which removes the
+  current PBRT container when `ISETDocker.PBRTContainer` is set. If this cleanup
+  reports failure, inspect the message rather than ignoring it; stale cleanup is
+  a common cause of later rendering confusion.
+- **MATLAB preferences**: Docker-related configuration is stored in MATLAB
+  preferences, mainly under `ISETDocker`. These preferences include the render
+  context name, Docker image, remote host, work directory, and GPU assignment.
+  They are machine-specific and persist across sessions. When switching between
+  machines, campus vs. VPN, or GPU assignments, prefer `piDockerDiagnose`
+  first; when a full reset is needed, clear stale `ISETDocker` preferences and
+  re-run `piDockerConfig`.
 - **Test classification**: Any test file that calls Docker-dependent
   rendering must include `_remote` in its filename (e.g.,
   `test_macbethGolden_remote.m`). The `iset3dUnitTest('core')` runner
