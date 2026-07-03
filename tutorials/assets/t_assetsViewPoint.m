@@ -1,91 +1,41 @@
 %% Change the viewing direction and position
 %
-%   Put the camera at the position of different objects in the scene, and
-%   we look at other objects.  In the first case, from the blue guy to the
-%   yellow guy and then from the yellow guy to the blue guy (Simple Scene).
+% This tutorial moves one asset, points the camera at it, and renders once.
 %
-%   Also shows how to position the camera along the direction between two
-%   objects (red sphere and blue guy).
-%
-%   Note that you cannot put the 'from' at exactly the same position as an
-%   object.  If you do, the camera will be in the middle of it and cannot
-%   see through it. You can put the camera adjacent to the object.
-%
-%   See also
-%    t_assets*
+% See also
+%   t_assets*
 
-%% Initialize 
+%% Initialize
 
 ieInit;
 if ~piDockerExists, piDockerConfig; end
 
-%% Show the base scene
+%% Set up the base scene
 
-thisR = piRecipeDefault('scene name', 'Simple Scene');
-
-thisR.set('film resolution',[200 150]);
+thisR = piRecipeDefault('scene name','Simple Scene');
+thisR.set('film resolution',[160 120]);
 thisR.set('rays per pixel',32);
 thisR.set('fov',45);
-thisR.set('nbounces',5); 
+thisR.set('nbounces',2);
 
-piWrite(thisR)
-scene = piRender(thisR, 'render type', 'radiance');
-sceneWindow(scene);
-sceneSet(scene, 'render flag', 'hdr');
-drawnow;
+%% Move the blue asset and aim the camera
 
-%%  Move the blue asset to the left and look at it
+blueAssetName = 'figure_3m_O';
+thisR.set('asset',blueAssetName,'translation',[-0.5 0 0]);
+bluePos = thisR.get('asset',blueAssetName,'world position');
 
-assetName = 'figure_3m_O';
-[~,T1] = thisR.set('asset', assetName, 'translation', [-0.5 0 0]);
-bluePos = thisR.get('asset', assetName, 'world position');
-
-% Look at the blue guy
-thisR.set('to', bluePos);
-
-piWrite(thisR)
-scene = piRender(thisR, 'render type', 'radiance');
-sceneWindow(scene);
-sceneSet(scene, 'render flag', 'hdr');
-
-%%  Look from the yellow guy to the blue guy
-
-% We are still looking at the blue guy (from behind)
 yellowAssetName = 'figure_6m_O';
-yellowPos = thisR.get('asset', yellowAssetName, 'world position');
+yellowPos = thisR.get('asset',yellowAssetName,'world position');
 
-% Just outside of the yellow guy's position
-thisR.set('from', yellowPos + [0 0 -0.2]);
+thisR.set('from',yellowPos + [0 0 -0.2]);
+thisR.set('to',bluePos);
 
-piWrite(thisR)
-scene = piRender(thisR, 'render type', 'radiance');
-sceneWindow(scene);
-sceneSet(scene, 'render flag', 'hdr');
+fprintf('Camera from: [%.2f %.2f %.2f]\n',thisR.get('from'));
+fprintf('Camera to:   [%.2f %.2f %.2f]\n',thisR.get('to'));
 
-%% Now from the blue guy to the yellow guy
+%% Render once
 
-% Not inside the blue guy.  Just outside the blue guy's position
-thisR.set('from', bluePos + [0 0 0.1]);
-thisR.set('to', yellowPos);
+scene = piWRS(thisR,'render flag','hdr');
+fprintf('Rendered viewpoint scene: %d x %d pixels\n',sceneGet(scene,'cols'),sceneGet(scene,'rows'));
 
-piWrite(thisR)
-scene = piRender(thisR, 'render type', 'radiance');
-sceneWindow(scene);
-sceneSet(scene, 'render flag', 'hdr');
-
-%% Finally, from the direction of red sphere towards the blue guy
-
-sphereAssetName = 'Sphere_O';
-spherePos = thisR.get('asset', sphereAssetName, 'world position');
-
-% Start at the sphere and change the from in the direction of the blue guy
-thisR.set('from', spherePos + 0.7*(bluePos - spherePos));
-thisR.set('to', bluePos);
-
-piWrite(thisR)
-scene = piRender(thisR, 'render type', 'radiance');
-sceneWindow(scene);
-sceneSet(scene, 'render flag', 'hdr');
-
-%%  END
-
+%% END
