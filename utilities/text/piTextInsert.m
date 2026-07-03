@@ -17,7 +17,7 @@ function piTextInsert(aRecipe, aString)
 %    aRecipe is modified upon return
 %
 % See also
-%   charactersRender, s_arLetters2.m
+%   textRender, s_textRenderBasic.m
 
 % Example:
 %{

@@ -82,8 +82,10 @@ thisR.sampler.subtype = 'sobol';
 thisR.set('aperture diameter',3);
 oi = piWRS(thisR,'remote resources',true);
 %}
+
 %% Init ISET prefs
-piPrefsInit
+piPrefsInit;
+
 %% Parse inputs
 varargin = ieParamFormat(varargin);
 p = inputParser;
@@ -115,8 +117,11 @@ if remoteRender
         isetdocker.setUserPrefs;
     end
 end
+cleanupRemoteSceneDir = onCleanup(@() localClearRemoteSceneDir()); 
 
 overwritelensfile   = p.Results.overwritelensfile;
+originalLensFile = localOriginalLensFile(thisR);
+restoreLensFile = onCleanup(@() localRestoreLensFile(thisR, originalLensFile)); 
 
 if ~isequal(thisR.exporter,'copy'),  overwritepbrtfile   = true;
 else,                                overwritepbrtfile   = false;
@@ -264,10 +269,39 @@ end
 
 
 % set workDir back to the default
-if ~isempty(getpref('ISETDocker','remoteHost'))
+end   % End of piWrite
+
+function localClearRemoteSceneDir()
+%% Clear transient remote-scene preference, including on write failures.
+
+if ispref('ISETDocker','remoteSceneDir')
     rmpref('ISETDocker','remoteSceneDir');
 end
-end   % End of piWrite
+
+end
+
+function lensFile = localOriginalLensFile(thisR)
+%% Return the original lens file path when piWrite may rewrite it.
+
+lensFile = [];
+try
+    if isequal(thisR.get('optics type'),'lens')
+        lensFile = thisR.get('lensfile');
+    end
+catch
+    lensFile = [];
+end
+
+end
+
+function localRestoreLensFile(thisR, originalLensFile)
+%% Restore lens file paths temporarily rewritten for remote rendering.
+
+if ~isempty(originalLensFile)
+    thisR.set('lensfile', originalLensFile);
+end
+
+end
 
 %% ---------  Helper functions
 %
@@ -363,7 +397,8 @@ end
 function piWriteHeader(thisR,fileID)
 % Write the header
 
-fprintf(fileID,'# PBRT file created with piWrite on %i/%i/%i %i:%i:%0.2f \n',clock);
+timestamp = datevec(datetime("now"));
+fprintf(fileID,'# PBRT file created with piWrite on %i/%i/%i %i:%i:%0.2f \n',timestamp);
 fprintf(fileID,'# PBRT version = %i \n',thisR.version);
 fprintf(fileID,'\n');
 
@@ -486,10 +521,10 @@ if isfield(thisR.camera,'motion')
         [motionTranslateStart(1),...
         motionTranslateStart(2),...
         motionTranslateStart(3)]);
-    if ~isempty(thisR.get('camera motion rotation start'));
+    if ~isempty(thisR.get('camera motion rotation start'))
         fprintf(fileID,'Rotate %f %f %f %f \n',motionRotateStart(:,1)); % Z
         fprintf(fileID,'Rotate %f %f %f %f \n',motionRotateStart(:,2)); % Y
-        fprintf(fileID,'Rotate %f %f %f %f \n',motionRotateStart(:,3));  % X
+        fprintf(fileID,'Rotate %f %f %f %f \n',motionRotateStart(:,3)); % X
     end
     fprintf(fileID,'ActiveTransform EndTime \n');
     fprintf(fileID,'Translate %0.2f %0.2f %0.2f \n',...
@@ -819,4 +854,3 @@ if overwritemedia
 end
 
 end
-

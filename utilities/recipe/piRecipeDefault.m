@@ -27,6 +27,8 @@ function [thisR, info] = piRecipeDefault(varargin)
 %   scene name - Specify a PBRT scene name based on the directory.
 %   scene filename - Some scenes have multiple possible PBRT files.
 %                    Specify the one you want here, optionally
+%   add default light - Add an equal-energy distant light when the parsed
+%                    scene has no lights. Default false.
 %
 % Outputs
 %   thisR - the ISET3d recipe with information from the PBRT scene file.
@@ -72,10 +74,12 @@ varargin = ieParamFormat(varargin);
 p = inputParser;
 p.addParameter('scenename','MacBethChecker',@ischar);
 p.addParameter('scenefilename','',@ischar);
+p.addParameter('adddefaultlight',false,@islogical);
 
 p.parse(varargin{:});
 
 sceneDir   = p.Results.scenename;
+addDefaultLight = p.Results.adddefaultlight;
 
 %%  To read the file,the upper/lower case must be right
 
@@ -523,8 +527,38 @@ thisR.set('render type',{'radiance','depth'});
 % In principle, we might light to check that the scene has a light.
 % But we don't yet have a clear way for the 'Copy' case.
 if isequal(exporter,'PARSE') && thisR.get('n lights') == 0
-    warning('No lights in this scene.');
+    if addDefaultLight
+        thisR = localAddDefaultDistantLight(thisR);
+    else
+        warning('No lights in this scene.');
+    end
 end
+
+end
+
+function thisR = localAddDefaultDistantLight(thisR)
+%% Add a simple equal-energy distant light for quick renderability.
+
+try
+    lightFrom = thisR.get('from');
+    lightTo = thisR.get('to');
+catch
+    lightFrom = [0 0 -1];
+    lightTo = [0 0 0];
+end
+
+if isempty(lightFrom) || isempty(lightTo)
+    lightFrom = [0 0 -1];
+    lightTo = [0 0 0];
+end
+
+defaultLight = piLightCreate('default_distant', ...
+    'type', 'distant', ...
+    'specscale float', 1, ...
+    'spd spectrum', 'equalEnergy', ...
+    'from', lightFrom, ...
+    'to', lightTo);
+thisR.set('light', defaultLight, 'add');
 
 end
 

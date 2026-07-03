@@ -1,4 +1,4 @@
-function [result, dockerCommand] = dockercmd(obj,cmd,varargin)
+function [result, dockerCommand, status] = dockercmd(obj,cmd,varargin)
 % Gateway to run docker commands on the remote machine
 %
 % Synopsis
@@ -45,23 +45,22 @@ else,        flags = '-it ';
 end
 
 % context
-dockerContext = sprintf('--context %s ',obj.renderContext);
+dockerContext = obj.dockerContextFlag();
 pbrtcontainer = getpref('ISETDocker','PBRTContainer');
 
 switch ieParamFormat(cmd)
     case 'psfind'
         % Find the docker containers including the string
         dockerCommand = sprintf("docker %s ps | grep %s", dockerContext, p.Results.string);
-        [~, result] = system(dockerCommand);
+        [status, result] = system(dockerCommand);
     case 'nvidiasmi'
         % Check the nvidia GPUs on the remote machine
         remoteCommand = "nvidia-smi ";
         dockerCommand = sprintf('docker %s exec %s %s sh -c " %s "',...
             dockerContext, flags, pbrtcontainer, remoteCommand);
-        [~, result] = system(dockerCommand);
+        [status, result] = system(dockerCommand);
         disp(result);
 
     otherwise
         error('Unknown command %s\n',cmd);
 end
-

@@ -64,6 +64,7 @@ verbose = obj.verbosity; % 0, 1, 2, 3
 if ~exist('commandonly','var')
     commandonly = false;
 end
+status = 0;
 
 %% Build up the render command
 pbrtOutputFile = thisR.get('output file'); 
@@ -73,13 +74,31 @@ currName       = thisR.get('output basename');
 
 iDockerPrefs   = getpref('ISETDocker');
 
+contextReport = obj.validateDockerContext('checkversion', false);
+if ~contextReport.ok
+    error('ISETDocker:InvalidDockerContext', '%s', isetdocker.validationMessage(contextReport));
+end
+
 % Check that the container is running remotely.  If not, start.
 if isfield(iDockerPrefs,'PBRTContainer')
+    containerName = iDockerPrefs.PBRTContainer;
     % Test that the container is running remotely
-    result = obj.dockercmd('psfind','string',iDockerPrefs.PBRTContainer);
+    [result, ~, cmdStatus] = obj.dockercmd('psfind','string',containerName);
 
     % Couldn't find it.  Restart.
-    if isempty(result), obj.startPBRT; end
+    if cmdStatus ~= 0 || isempty(result)
+        rmpref('ISETDocker','PBRTContainer');
+        obj.startPBRT;
+    elseif strcmpi(obj.device,'gpu') && ~localContainerGPUReady(obj,containerName)
+        warning('ISETDocker:StaleGPUContainer', ...
+            'PBRT container "%s" is running but cannot see the GPU. Restarting it.', ...
+            containerName);
+        obj.reset();
+        if ~isempty(obj.remoteHost)
+            obj.connect();
+        end
+        obj.startPBRT();
+    end
 else
     % No PBRTContainer specified, so restart.
     obj.startPBRT();
@@ -93,14 +112,7 @@ end
 
 [~, sceneDir, ~] = fileparts(outputFolder);
 
-% By the time we get here, we should know the context from the saved
-% matlab prefs. If it is there, use it.  Otherwise, get the context
-% from the current context (BW).
-if isempty(getpref('ISETDocker','renderContext'))
-     contextFlag = sprintf(' --context %s ',piDockerCurrentContext);
-else
-    contextFlag = [' --context ' getpref('ISETDocker','renderContext')];
-end
+contextFlag = obj.dockerContextFlag();
 
 if strcmpi(obj.device,'gpu')
     device = ' --gpu ';
@@ -115,23 +127,7 @@ if ~isempty(getpref('ISETDocker','remoteHost'))
     else
         remoteSceneDir = fullfile(getpref('ISETDocker','workDir'),sceneFolder);
     end
-    % sync files from local folder to remote
-    % obj.upload(localDIR, remoteDIR, {'excludes','cellarray'}})
-    obj.upload(outputFolder, remoteSceneDir,{'renderings',[currName,'.mat']});
-
     outF = fullfile(remoteSceneDir,'renderings',[currName,'.exr']);
-    
-    % check if there is a remote renderings folder
-    sceneFolder = dir(obj.sftpSession,fullfile(remoteSceneDir));
-    renderingsDir = true;
-    for ii = 1:numel(sceneFolder)
-        if sceneFolder(ii).isdir && strcmp(sceneFolder(ii).name,'renderings')
-            renderingsDir = false;
-        end
-    end
-    if renderingsDir
-        mkdir(obj.sftpSession,fullfile(remoteSceneDir,'renderings'));
-    end
 
     renderCommand = sprintf('pbrt %s --outfile %s %s', device, outF, ...
         fullfile(getpref('ISETDocker','workDir'),sceneDir,[currName, '.pbrt']));
@@ -139,36 +135,61 @@ if ~isempty(getpref('ISETDocker','remoteHost'))
     containerCommand = sprintf('docker %s exec %s %s sh -c " %s "',...
         contextFlag, flags, ourContainer, renderCommand);
 
+    if commandonly
+        result = containerCommand;
+        return;
+    end
+
+    localEnsureRemoteSession(obj);
+
+    % sync files from local folder to remote
+    % obj.upload(localDIR, remoteDIR, {'excludes','cellarray'}})
+    obj.upload(outputFolder, remoteSceneDir,{'renderings',[currName,'.mat']});
+
+    % check if there is a remote renderings folder
+    sceneListing = localRemoteDir(obj,remoteSceneDir);
+    renderingsDir = true;
+    for ii = 1:numel(sceneListing)
+        if sceneListing(ii).isdir && strcmp(sceneListing(ii).name,'renderings')
+            renderingsDir = false;
+        end
+    end
+    if renderingsDir
+        mkdir(obj.sftpSession,fullfile(remoteSceneDir,'renderings'));
+    end
+
     if verbose > 0
         fprintf('[INFO]: USE Docker: %s\n', containerCommand);
     end
-    if ~commandonly
-        renderStart = tic;
-        if verbose > 1
-            [status, result] = system(containerCommand, '-echo');
-            fprintf('[INFO]: Rendered in: %4.2f sec\n', toc(renderStart))
-            fprintf('[INFO]: Returned parameter result is\n***\n%s', result);
-        elseif verbose == 1
+    renderStart = tic;
+    if verbose > 1
+        [status, result] = system(containerCommand, '-echo');
+        fprintf('[INFO]: Rendered in: %4.2f sec\n', toc(renderStart))
+        fprintf('[INFO]: Returned parameter result is\n***\n%s', result);
+    else
 
-            [status, result] = system(containerCommand);
-            if status == 0
-                fprintf('[INFO]: Rendered remotely in: %4.2f sec\n', toc(renderStart))
-            else
-                cprintf('red','[ERROR]: Docker Command: %s\n', containerCommand);
-                error('Error Rendering: %s', result);
-            end
-
-        else
-            [status, result] = system(containerCommand);
-        end
-
+        [status, result] = system(containerCommand);
         if status == 0
-            if ~isempty(getpref('ISETDocker','remoteHost'))
-                if ~getpref('ISETDocker','batch',false)
-                    obj.download(fullfile(remoteSceneDir,'renderings'), fullfile(outputFolder,'renderings'));
-                else
-                    return;
-                end
+            if verbose == 1
+                fprintf('[INFO]: Rendered remotely in: %4.2f sec\n', toc(renderStart))
+            end
+        else
+            if verbose > 0
+                cprintf('red','[ERROR]: Docker Command: %s\n', containerCommand);
+            end
+            error('ISETDocker:RenderFailed', ...
+                'Docker render failed with status %d.\nCommand:\n%s\nResult:\n%s', ...
+                status, containerCommand, result);
+        end
+    end
+
+    if status == 0
+        if ~isempty(getpref('ISETDocker','remoteHost'))
+            if ~getpref('ISETDocker','batch',false)
+                localEnsureRemoteSession(obj);
+                obj.download(fullfile(remoteSceneDir,'renderings'), fullfile(outputFolder,'renderings'));
+            else
+                return;
             end
         end
     end
@@ -185,6 +206,11 @@ else
     containerCommand = sprintf('docker %s exec %s %s sh -c " %s "',...
         contextFlag, flags, ourContainer, renderCommand);
 
+    if commandonly
+        result = containerCommand;
+        return;
+    end
+
     renderStart = tic;
     [status, result] = system(containerCommand);
     if verbose > 0
@@ -192,8 +218,66 @@ else
             fprintf('[INFO]: Rendered remotely in: %4.2f sec\n', toc(renderStart))
         else
             cprintf('red','[ERROR]: Docker Command: %s\n', containerCommand);
-            error('Error Rendering: %s', result);
+            error('ISETDocker:RenderFailed', ...
+                'Docker render failed with status %d.\nCommand:\n%s\nResult:\n%s', ...
+                status, containerCommand, result);
         end
+    end
+end
+
+end
+
+function ready = localContainerGPUReady(obj,containerName)
+%% Verify that a running GPU PBRT container still sees CUDA.
+
+ready = false;
+containerName = char(string(containerName));
+if isempty(regexp(containerName,'^[A-Za-z0-9_.-]+$','once'))
+    return;
+end
+
+contextFlag = obj.dockerContextFlag();
+cmd = sprintf('docker %s exec %s sh -c "nvidia-smi" 2>&1 || true', ...
+    contextFlag,containerName);
+[~,result] = system(cmd);
+
+result = char(result);
+if isempty(strtrim(result)), return; end
+if contains(result,'Failed to initialize NVML') || ...
+        contains(result,'No devices were found') || ...
+        contains(result,'no CUDA-capable device') || ...
+        contains(result,'Error response from daemon')
+    return;
+end
+
+ready = contains(result,'NVIDIA-SMI');
+
+end
+
+function localEnsureRemoteSession(obj)
+%% Ensure an SFTP session exists before remote filesystem calls.
+
+if isempty(obj.remoteHost), return; end
+if isempty(obj.sftpSession)
+    obj.connect();
+end
+
+end
+
+function listing = localRemoteDir(obj,remoteDir)
+%% List a remote directory, reconnecting once if the SFTP session is stale.
+
+try
+    listing = dir(obj.sftpSession,fullfile(remoteDir));
+catch firstErr
+    try
+        obj.disconnect();
+        obj.connect();
+        listing = dir(obj.sftpSession,fullfile(remoteDir));
+    catch secondErr
+        error('ISETDocker:SFTPDirFailed', ...
+            'Could not list remote render directory "%s". First error: %s Second error: %s', ...
+            remoteDir, firstErr.message, secondErr.message);
     end
 end
 

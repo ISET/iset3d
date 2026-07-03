@@ -44,7 +44,7 @@ switch ieParamFormat(param)
     case 'modelname'
         % thisEye.get('model name')
         % Name of the eye model
-        val = obj.modelname;
+        val = obj.modelName;
         
     case 'angularsupport'
         warning('angular support - Not likely to work')
