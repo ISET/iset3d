@@ -1,3 +1,4 @@
+% SkipFile
 %% t_accommodationMTF.m
 %
 % Render a slanted bar through space. Accommodate always at the plane.
@@ -133,5 +134,4 @@ for ii=1:length(oiAll)
     save(saveFilename,'oi','myScene');
     
 end
-
 

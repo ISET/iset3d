@@ -1,3 +1,4 @@
+% SkipFile
 %% t_comparePSF.m
 %
 % Visually compare the PSF generated from the 3D eye modeling and the PSF
@@ -187,4 +188,3 @@ oiCenter = oiGet(oi_2d,'rows')/2;
 oi_2d_crop = oiCrop(oi_2d,[oiCenter-cropSizeHalf oiCenter-cropSizeHalf cropSize cropSize]);
 ieAddObject(oi_2d_crop);
 oiWindow;
-

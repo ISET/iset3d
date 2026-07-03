@@ -1,3 +1,4 @@
+% SkipFile
 %% t_chessSet_cloud.m
 %
 % Render a very nice view of the chess set using the cloud. 
@@ -113,5 +114,4 @@ for ii=1:length(oiAll)
     save(saveFilename,'oi','myScene');
     
 end
-
 

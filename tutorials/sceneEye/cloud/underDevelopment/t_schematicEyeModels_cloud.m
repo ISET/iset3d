@@ -1,3 +1,4 @@
+% SkipFile
 %% t_schematicEyeModels_cloud
 % Render the same scene using a couple of different eye models.
 

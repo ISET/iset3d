@@ -1,3 +1,4 @@
+% SkipFile
 %% t_LCA_cloud.m
 %
 % Render a slanted bar while moving the retina along the optical axis. We
@@ -131,5 +132,4 @@ for ii=1:length(oiAll)
     save(saveFilename,'oi','myScene');
     
 end
-
 
