@@ -1,4 +1,6 @@
 %% t_filmResize
+% SkipFile
+% Long exploratory camera/eye workflow with optional lens-model dependencies.
 %
 % Illustrate the impact of changing the aspect ratio and sampling
 % properties of a scene.  We start with manipulating the pinhole camera
@@ -208,5 +210,4 @@ for ii = 1:numel(aa)
 end
 
 %% END
-
 

@@ -1,4 +1,6 @@
 %% t_eyeRetinaDistance.m
+% SkipFile
+% Uses obsolete dockerWrapper human-eye setup; needs sceneEye rewrite.
 %
 % This tutorial renders a retinal image of "slanted edge." We can use
 % this slanted bar to estimate the modulation transfer function of the

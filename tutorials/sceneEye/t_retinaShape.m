@@ -1,4 +1,6 @@
 %% t_retinaShape
+% SkipFile
+% Requires ISETBio; keep out of ISETCam-only smoke runs.
 %
 % Run the Arizona eye model with a retina that has an arbitrary shape,
 % in this case a bump in it. 
@@ -172,4 +174,3 @@ oiWindow(oi);
 thisSE.summary;
 
 %% END
-

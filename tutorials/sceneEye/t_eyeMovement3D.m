@@ -1,4 +1,6 @@
 %% t_eyeMovement3D.m
+% SkipFile
+% Uses obsolete sceneEye properties; needs API update.
 %
 % This tutorial shows how to translate and rotate the eye throughout the
 % scene. We will use the chess set scene for this tutorial.

@@ -1,89 +1,51 @@
 %% t_piLightSpectrum
 %
-% Render the checkerboard scene with two different light spectra
-%
-% What are the possible spectral we can use?  Let's illustrate in here.  
-% There is a way to get fluorescence, but I don't know how.
-%
-% Blackbody, rgb, and equal energy are illustrated
+% Create a spotlight and assign a few built-in spectral descriptions.
+% The tutorial renders only the final setting to keep the smoke test light.
 %
 % See also
-%   t_piLightType
+%   t_piIntro_light
 
 %% Initialize ISET and Docker
 
-% We start up ISET and check that the user is configured for docker
 ieInit;
 if ~piDockerExists, piDockerConfig; end
 
-%% Read the file
-thisR = piRecipeDefault('scene name','checkerboard');
+%% Read the file and set low-cost render parameters
 
-% Set up the render parameters
+thisR = piRecipeDefault('scene name','checkerboard');
+thisR.set('film resolution',[160 120]);
+thisR.set('rays per pixel',32);
+thisR.set('n bounces',2);
 piCameraTranslate(thisR,'z shift',2);
 
-% Add one equal energy light
-thisR.set('light', 'all', 'delete');
+%% Add one equal-energy spotlight
 
-% The cone angle describes how far the spotlight spreads
-% The cone delta angle describes how rapidly the light falls off at the
-% edges
-spotLgt1 = piLightCreate('spot1',...
-                        'type', 'spot',...
-                        'spd', 'equalEnergy',...
-                        'specscale float', 1,...
-                        'coneangle', 20,...
-                        'cameracoordinate', true);
-thisR.set('light', spotLgt1, 'add');
+thisR.set('light','all','delete');
+spotLight = piLightCreate('spot1',...
+    'type','spot',...
+    'spd','equalEnergy',...
+    'specscale float',1,...
+    'coneangle',20,...
+    'cameracoordinate',true);
+thisR.set('light',spotLight,'add');
 
 thisR.get('light print');
 
-% Render
-piWRS(thisR,'name','Equal energy (spot)');
+%% Change the spectrum without rendering each intermediate state
 
-%%  Change the spectrum to tungsten
+spdNames = {'tungsten','D50'};
+for ii = 1:numel(spdNames)
+    thisR.set('lights','spot1_L','spd',spdNames{ii});
+    fprintf('Updated spot1_L spectrum to %s\n',spdNames{ii});
+end
 
-% What are the possible spd values?
-thisR.set('lights', 'spot1_L', 'spd', 'tungsten');
+thisR.set('lights','spot1_L','spd',3000);
+fprintf('Updated spot1_L spectrum to 3000 K blackbody\n');
 
-piWRS(thisR,'name','Tungsten (spot)');
+%% Render once
 
-%% What are the possible spd strings?
-
-thisR.set('lights', 'spot1_L', 'spd', 'D50');
-
-piWRS(thisR,'name','D50 (spot)');
-
-%% Black body - specify just a single color temperature value
-
-thisR.set('lights', 'spot1_L', 'spd', 3000);
-
-piWRS(thisR,'name','3K (spot)');
-
-%% Now overlay two lights
-
-spotLgt2 = piLightCreate('spot2_L',...
-                        'type', 'spot',...
-                        'spd', 3000,...
-                        'specscale float', 1,...
-                        'coneangle', 20,...
-                        'cameracoordinate', true);
-thisR.set('lights',spotLgt2, 'add');
-
-position = thisR.get('lights','spot1_L','world position');
-thisR.set('lights','spot1_L','from',position + [3 0 0]);
-thisR.set('lights','spot2_L','from',position - [3 0 0]);
-
-thisR.set('lights','spot1_L','spd',8000);
-
-thisR.show('lights');
-
-piWRS(thisR,'name','Mixture (spot)');
-
-%% Adjust spread of the spots
-
-thisR.set('lights','spot1','coneangle',5);
-thisR.set('lights','spot2','coneangle',5);
-piWRS(thisR,'name','Mixture narrow (spot)');
+scene = piWRS(thisR,'name','3K spot','render flag','hdr');
+fprintf('Mean luminance: %.3f cd/m2\n',mean(sceneGet(scene,'luminance'),'all'));
 
 %% END

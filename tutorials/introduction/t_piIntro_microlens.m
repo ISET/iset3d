@@ -1,4 +1,6 @@
 %% Render using a lightfield camera - lens and microlens array
+% SkipFile
+% Requires the optional isetlens repository; keep out of routine smoke runs.
 %
 %   Set up to work with the Chess Set scene.
 %

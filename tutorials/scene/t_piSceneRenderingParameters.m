@@ -1,4 +1,6 @@
 %% Calculations of scene properties and camera properties
+% SkipFile
+% Exercises optional lens rendering settings that fail without isetlens.
 %
 % Maybe t_piSetRenderingParameters
 %

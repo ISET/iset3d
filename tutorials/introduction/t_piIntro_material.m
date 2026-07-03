@@ -1,109 +1,56 @@
 %% Illustrates adding and setting object materials
 %
-% The first part illustrates how to create the materials.
-% 
-% The latter two cells illustrate how to include preset materials
-% using the piMaterialPresets and piMaterialsInsert methods.
-%
-% Dependencies:
-%    ISET3d-v4, (ISETCam or ISETBio), JSONio
-%
-% ZL, BW SCIEN 2018
+% This tutorial creates a simple diffuse material, assigns it to the
+% sphere, and renders once.  Longer material comparison workflows belong
+% in examples rather than the tutorial smoke-test path.
 %
 % See also
 %   piMaterialsInsert, piMaterialPresets, t_piIntro_*
 
 %% Initialize ISET and Docker
+
 ieInit;
 if ~piDockerExists, piDockerConfig; end
 
-%% Read pbrt file, set the rendering parameters, and show it.
+%% Read the sphere recipe and set modest render quality
 
-sceneName = 'sphere';
-thisR = piRecipeCreate(sceneName);
-% thisR.show;
-
-% Low resolution, but multiple bounces for the glass and mirror at the
-% end.
-thisR.set('film resolution',[200 150]*2);
-thisR.set('rays per pixel',64);
+thisR = piRecipeCreate('sphere');
+thisR.set('film resolution',[160 120]);
+thisR.set('rays per pixel',32);
 thisR.set('fov',45);
-thisR.set('nbounces',5);
+thisR.set('nbounces',2);
 
-piWRS(thisR,'name',sprintf('Uber %s',sceneName));
+%% Add a camera-space light
 
-%% The material library
+thisR.set('light','all','delete');
+spotLight = piLightCreate('spot1','type','spot',...
+    'spd','equalEnergy',...
+    'specscale float',1,...
+    'coneangle',20,...
+    'cameracoordinate',true);
+thisR.set('lights',spotLight,'add');
 
-% Print out the named materials in this scene.
-thisR.show('materials');
+%% Build and assign a red diffuse material
 
-% We have additional materials in a piMaterialPresets.
-piMaterialPresets('list');
-
-%% Here is how we build a red matte (diffuse) surface
-
-% Create a red matte material
-redMatte = piMaterialCreate('redMatte', 'type', 'diffuse');
-
-% Add the material to the materials list
-thisR.set('material', 'add', redMatte);
-thisR.get('materials print');
-
-%% Set the spectral reflectance of the matte material to be very red.
+redMatte = piMaterialCreate('redMatte','type','diffuse');
+thisR.set('material','add',redMatte);
 
 wave = 400:10:700;
 reflectance = ones(size(wave));
 reflectance(1:17) = 1e-3;
+spdRef = piMaterialCreateSPD(wave,reflectance);
+thisR.set('material',redMatte,'reflectance value',spdRef);
 
-% Put it in the PBRT spd format.
-spdRef = piMaterialCreateSPD(wave, reflectance);
-
-% Store the reflectance as the diffuse reflectance of the redMatte
-% material
-thisR.set('material', redMatte, 'reflectance value', spdRef);
-
-%% Set the material
 sphereID = piAssetSearch(thisR,'object name','Sphere');
 thisR.set('asset',sphereID(1),'material name',redMatte.name);
 
-% Show that we set it
 thisR.show('materials');
+fprintf('Additional presets can be inserted with piMaterialsInsert.\n');
 
-% Let's have a look
-piWRS(thisR,'name',sprintf('Red %s',sceneName),'render flag','rgb');
+%% Render once
 
-%%  Now Put the sphere in an environment
-
-% Add an environmental light
-thisR.set('light', 'all', 'delete');
-spotLight = piLightCreate('spot1','type','spot');
-thisR.set('lights',spotLight,'add');
-
-thisR.set('skymap', 'room.exr');
-
-scene = piWRS(thisR,'name',sprintf('Red in environment %s',sceneName),'render flag','hdr');
-
-%% White sphere
-
-thisR.set('asset', sphereID, 'material name', 'white');
-thisR.show('materials');
-
-piWRS(thisR, 'name', 'Sphere is white diffuse');
-
-%% Make the sphere glass
-
-piMaterialsInsert(thisR,'names','glass');
-thisR.set('asset', sphereID, 'material name', 'glass');
-thisR.show('materials')
-
-piWRS(thisR, 'name', 'Change sphere to glass');
-
-%% Change the sphere to a mirror
-
-piMaterialsInsert(thisR,'names',{'mirror'});
-thisR.set('asset', sphereID, 'material name', 'mirror');
-thisR.show('materials');
-
-piWRS(thisR, 'name', 'Change glass to mirror');
+scene = piWRS(thisR,'name','Red sphere','render flag','rgb');
+fprintf('Sphere material: %s\n',thisR.get('asset',sphereID(1),'material name'));
+fprintf('Mean luminance: %.3f cd/m2\n',mean(sceneGet(scene,'luminance'),'all'));
 
 %% END

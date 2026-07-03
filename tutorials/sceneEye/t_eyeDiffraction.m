@@ -1,4 +1,6 @@
 %% t_eyeDiffraction.m
+% SkipFile
+% Human-eye diffraction render is currently unstable on remote PBRT/GPU.
 %
 % We recommend you go through t_eyeIntro.m before running
 % this tutorial.

@@ -125,7 +125,7 @@ thisR.set('material', 'add', newMat);
 assetName = thisR.get('asset',assetFig3m,'name')
 curName = thisR.get('asset', assetFig3m, 'material name');
 fprintf('The material for %s is %s\n',assetName,curName);
-thisR.set('asset', assetFig3m, 'material name', glass);
+thisR.set('asset', assetFig3m, 'material name', glassMaterial);
 piWRS(thisR,'name','Glass figure','render type', 'radiance'); 
 %% Set material type: mirror
 % Create a mirror material

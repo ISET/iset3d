@@ -1,4 +1,6 @@
 %% t_arealightSize 
+% SkipFile
+% Depends on the old flat surface scene; rewrite around current assets.
 %
 % Change the area light size and compensate by changing the area light
 % SPD specscale.

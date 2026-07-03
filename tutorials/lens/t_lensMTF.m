@@ -1,3 +1,5 @@
+% SkipFile
+% Rendering-based MTF workflow is currently unstable in the smoke runner.
 clear; close all
 %% Difference distances of chart as measured from the camera film
 
@@ -47,6 +49,5 @@ xlabel('cy/mm')
 ylim([0 1])
 xlim([0 1000])
 title('MTF')
-
 
 

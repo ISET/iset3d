@@ -1,4 +1,6 @@
 %% t_eyeStereo
+% SkipFile
+% Uses obsolete sceneEye constructor arguments; needs API update.
 %
 % Please read t_eyeIntro first.
 %
@@ -34,4 +36,3 @@ oiRight = thisSE.render('render type','radiance');
 oiWindow(oiRight);
 
 %% END
-

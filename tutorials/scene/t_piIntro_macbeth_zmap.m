@@ -44,19 +44,18 @@ thisR.set('film render type',{'radiance','depth','coordinates'});
 % Move the camera closer
 thisR.set('object distance',0.5);
 
-scene = piWRS(thisR);
 rect = [71     2   489   342];
+scene = piWRS(thisR);
+coords = imcrop(scene.metadata.coordinates,rect);
 scene = sceneCrop(scene,rect);
 
 %% Compare the z map and the depth map
 
 ieNewGraphWin([],'wide');
 dmap = sceneGet(scene,'depth map');
-coords = scene.metadata.coordinates;
-zmap = imcrop(coords(:,:,3),rect);
+zmap = coords(:,:,3);
 
 subplot(1,2,1); mesh(dmap);  view(-180,90); axis equal; colorbar; subtitle('Distance')
 subplot(1,2,2); mesh(zmap); view(-180,90); axis equal; colorbar; subtitle('Z-coord')
 
 %% End
-

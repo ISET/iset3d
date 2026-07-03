@@ -1,4 +1,6 @@
 %% t_piIntro_meshLabel
+% SkipFile
+% piLabel currently depends on the obsolete dockerWrapper API.
 %
 % Many scenes, but not all, can be labeled at each pixel by the object
 % identity. The key routine is piLabel. 

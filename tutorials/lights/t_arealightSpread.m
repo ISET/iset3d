@@ -1,4 +1,6 @@
 %% t_arealightLookat.m
+% SkipFile
+% Depends on the old flat surface scene; rewrite around current assets.
 %
 % Look at the light directly.
 % Also, rotate the light and translate it and scale its size.
