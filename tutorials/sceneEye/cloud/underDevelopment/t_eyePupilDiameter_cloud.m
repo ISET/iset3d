@@ -1,3 +1,4 @@
+% SkipFile
 %% t_eyePupilDiameter_cloud.m
 %
 % Render the slanted bar at different pupil diameters.
@@ -124,7 +125,6 @@ for ii=1:length(oiAll)
     save(saveFilename,'oi','myScene');
     
 end
-
 
 
 

@@ -1,3 +1,4 @@
+% SkipFile
 %% t_eyeDoF.m
 %
 % This tutorial shows the effect of pupil diameter on the depth of field in
@@ -136,7 +137,6 @@ for ii=1:length(oiAll)
     save(saveFilename,'oi','myScene');
     
 end
-
 
 
 

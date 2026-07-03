@@ -1,3 +1,4 @@
+% SkipFile
 %% t_eccentricity.m
 %
 % This script demonstrates the eccentricity parameter in the sceneEye

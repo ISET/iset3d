@@ -1,3 +1,4 @@
+% SkipFile
 %% t_accommodation_cloud.m
 %
 % Demonstrate sceneEye accommodation using the numbersAtDepth scene and
@@ -118,7 +119,6 @@ for ii=1:length(oiAll)
     save(saveFilename,'oi','myScene');
     
 end
-
 
 
 
