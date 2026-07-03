@@ -135,7 +135,6 @@ scalePupilArea   = p.Results.scalepupilarea;
 meanLuminance    = p.Results.meanluminance;     
 meanIlluminance  = p.Results.meanilluminance;   
 wave             = p.Results.wave;
-verbosity        = p.Results.verbosity;
 
 % Deal with denoise string names.
 if islogical(p.Results.denoise)
@@ -182,7 +181,13 @@ outF = strcat('renderings/',currName,'.exr');
 % renderDocker is a isetdocker object.  The parameters control which
 % machine and with what parameters the docker image/containter is invoked.
 
-[status, result] = renderDocker.render(thisR, p.Results.commandonly);
+[status, result, renderCommand] = renderDocker.render(thisR, p.Results.commandonly);
+if p.Results.commandonly
+    ieObject = [];
+    result = renderCommand;
+    if nargout > 2, thisD = renderDocker; end
+    return;
+end
 if getpref('ISETDocker','batch', false), ieObject =[]; return; end
 
 % Lots of output when verbosity is 2.
@@ -201,16 +206,14 @@ if nargout > 2, thisD = renderDocker; end
 %% Check the returned rendering image.
 
 if status
-    warning('Docker did not run correctly');
+    error('piRender:RenderFailed', ...
+        'Docker render failed with status %d.\nCommand:\n%s\nResult:\n%s', ...
+        status, renderCommand, result);
+end
 
-    % The status may contain a useful error message that we should
-    % look up.  The ones we understand should offer help here.
-    fprintf('Status:\n'); disp(status);
-    fprintf('Result:\n'); disp(result);
-    ieObject = [];
-
-    % Did not work, so we might as well return.
-    return;
+if ~isfile(outFile)
+    error('piRender:MissingOutput', ...
+        'Render completed but expected EXR output was not found: %s', outFile);
 end
 
 %% EXR-based denoising option here
@@ -255,5 +258,3 @@ if isstruct(ieObject)
 end
 
 end
-
-

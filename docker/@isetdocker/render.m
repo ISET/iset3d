@@ -64,6 +64,7 @@ verbose = obj.verbosity; % 0, 1, 2, 3
 if ~exist('commandonly','var')
     commandonly = false;
 end
+status = 0;
 
 %% Build up the render command
 pbrtOutputFile = thisR.get('output file'); 
@@ -126,23 +127,7 @@ if ~isempty(getpref('ISETDocker','remoteHost'))
     else
         remoteSceneDir = fullfile(getpref('ISETDocker','workDir'),sceneFolder);
     end
-    % sync files from local folder to remote
-    % obj.upload(localDIR, remoteDIR, {'excludes','cellarray'}})
-    obj.upload(outputFolder, remoteSceneDir,{'renderings',[currName,'.mat']});
-
     outF = fullfile(remoteSceneDir,'renderings',[currName,'.exr']);
-    
-    % check if there is a remote renderings folder
-    sceneFolder = dir(obj.sftpSession,fullfile(remoteSceneDir));
-    renderingsDir = true;
-    for ii = 1:numel(sceneFolder)
-        if sceneFolder(ii).isdir && strcmp(sceneFolder(ii).name,'renderings')
-            renderingsDir = false;
-        end
-    end
-    if renderingsDir
-        mkdir(obj.sftpSession,fullfile(remoteSceneDir,'renderings'));
-    end
 
     renderCommand = sprintf('pbrt %s --outfile %s %s', device, outF, ...
         fullfile(getpref('ISETDocker','workDir'),sceneDir,[currName, '.pbrt']));
@@ -150,36 +135,61 @@ if ~isempty(getpref('ISETDocker','remoteHost'))
     containerCommand = sprintf('docker %s exec %s %s sh -c " %s "',...
         contextFlag, flags, ourContainer, renderCommand);
 
+    if commandonly
+        result = containerCommand;
+        return;
+    end
+
+    localEnsureRemoteSession(obj);
+
+    % sync files from local folder to remote
+    % obj.upload(localDIR, remoteDIR, {'excludes','cellarray'}})
+    obj.upload(outputFolder, remoteSceneDir,{'renderings',[currName,'.mat']});
+
+    % check if there is a remote renderings folder
+    sceneListing = localRemoteDir(obj,remoteSceneDir);
+    renderingsDir = true;
+    for ii = 1:numel(sceneListing)
+        if sceneListing(ii).isdir && strcmp(sceneListing(ii).name,'renderings')
+            renderingsDir = false;
+        end
+    end
+    if renderingsDir
+        mkdir(obj.sftpSession,fullfile(remoteSceneDir,'renderings'));
+    end
+
     if verbose > 0
         fprintf('[INFO]: USE Docker: %s\n', containerCommand);
     end
-    if ~commandonly
-        renderStart = tic;
-        if verbose > 1
-            [status, result] = system(containerCommand, '-echo');
-            fprintf('[INFO]: Rendered in: %4.2f sec\n', toc(renderStart))
-            fprintf('[INFO]: Returned parameter result is\n***\n%s', result);
-        elseif verbose == 1
+    renderStart = tic;
+    if verbose > 1
+        [status, result] = system(containerCommand, '-echo');
+        fprintf('[INFO]: Rendered in: %4.2f sec\n', toc(renderStart))
+        fprintf('[INFO]: Returned parameter result is\n***\n%s', result);
+    else
 
-            [status, result] = system(containerCommand);
-            if status == 0
-                fprintf('[INFO]: Rendered remotely in: %4.2f sec\n', toc(renderStart))
-            else
-                cprintf('red','[ERROR]: Docker Command: %s\n', containerCommand);
-                error('Error Rendering: %s', result);
-            end
-
-        else
-            [status, result] = system(containerCommand);
-        end
-
+        [status, result] = system(containerCommand);
         if status == 0
-            if ~isempty(getpref('ISETDocker','remoteHost'))
-                if ~getpref('ISETDocker','batch',false)
-                    obj.download(fullfile(remoteSceneDir,'renderings'), fullfile(outputFolder,'renderings'));
-                else
-                    return;
-                end
+            if verbose == 1
+                fprintf('[INFO]: Rendered remotely in: %4.2f sec\n', toc(renderStart))
+            end
+        else
+            if verbose > 0
+                cprintf('red','[ERROR]: Docker Command: %s\n', containerCommand);
+            end
+            error('ISETDocker:RenderFailed', ...
+                'Docker render failed with status %d.\nCommand:\n%s\nResult:\n%s', ...
+                status, containerCommand, result);
+        end
+    end
+
+    if status == 0
+        if ~isempty(getpref('ISETDocker','remoteHost'))
+            if ~getpref('ISETDocker','batch',false)
+                localEnsureRemoteSession(obj);
+                obj.download(fullfile(remoteSceneDir,'renderings'), fullfile(outputFolder,'renderings'));
+            else
+                return;
             end
         end
     end
@@ -196,6 +206,11 @@ else
     containerCommand = sprintf('docker %s exec %s %s sh -c " %s "',...
         contextFlag, flags, ourContainer, renderCommand);
 
+    if commandonly
+        result = containerCommand;
+        return;
+    end
+
     renderStart = tic;
     [status, result] = system(containerCommand);
     if verbose > 0
@@ -203,7 +218,9 @@ else
             fprintf('[INFO]: Rendered remotely in: %4.2f sec\n', toc(renderStart))
         else
             cprintf('red','[ERROR]: Docker Command: %s\n', containerCommand);
-            error('Error Rendering: %s', result);
+            error('ISETDocker:RenderFailed', ...
+                'Docker render failed with status %d.\nCommand:\n%s\nResult:\n%s', ...
+                status, containerCommand, result);
         end
     end
 end
@@ -234,5 +251,34 @@ if contains(result,'Failed to initialize NVML') || ...
 end
 
 ready = contains(result,'NVIDIA-SMI');
+
+end
+
+function localEnsureRemoteSession(obj)
+%% Ensure an SFTP session exists before remote filesystem calls.
+
+if isempty(obj.remoteHost), return; end
+if isempty(obj.sftpSession)
+    obj.connect();
+end
+
+end
+
+function listing = localRemoteDir(obj,remoteDir)
+%% List a remote directory, reconnecting once if the SFTP session is stale.
+
+try
+    listing = dir(obj.sftpSession,fullfile(remoteDir));
+catch firstErr
+    try
+        obj.disconnect();
+        obj.connect();
+        listing = dir(obj.sftpSession,fullfile(remoteDir));
+    catch secondErr
+        error('ISETDocker:SFTPDirFailed', ...
+            'Could not list remote render directory "%s". First error: %s Second error: %s', ...
+            remoteDir, firstErr.message, secondErr.message);
+    end
+end
 
 end

@@ -11,6 +11,27 @@ tests = functiontests(localfunctions);
 
 end
 
+function testRemoteScenePrefCleanedAfterWriteFailure(testCase)
+%% Test transient remoteSceneDir preference cleanup on piWrite errors.
+
+localSaveISETDockerPrefs(testCase);
+setpref('ISETDocker','remoteHost','orange.stanford.edu');
+setpref('ISETDocker','workDir','/home/wandell/ISETRemoteRender');
+
+thisR = piRecipeDefault('scene name', 'SimpleScene');
+thisR.outputFile = fullfile('/dev/null','bad_scene.pbrt');
+
+didError = false;
+try
+    piWrite(thisR);
+catch
+    didError = true;
+end
+testCase.verifyTrue(didError);
+testCase.verifyFalse(ispref('ISETDocker','remoteSceneDir'));
+
+end
+
 function testReadWriteRoundTrip(testCase)
 %% Test reading a minimal PBRT file and writing it back with updates.
 
@@ -66,5 +87,61 @@ testCase.verifyTrue(isfile(outputFile));
 
 testCase.verifyEqual(roundTripR.get('film resolution'), [400, 300]);
 testCase.verifyEqual(roundTripR.get('fov'), 60);
+
+end
+
+function testRemoteLensPathRestoredAfterWrite(testCase)
+%% Test piWrite restores lens paths temporarily rewritten for remote render.
+
+localSaveISETDockerPrefs(testCase);
+setpref('ISETDocker','remoteHost','orange.stanford.edu');
+setpref('ISETDocker','workDir','/home/wandell/ISETRemoteRender');
+
+tempDir = fullfile(piRootPath, 'local', 'test_lens_restore');
+if ~isfolder(tempDir), mkdir(tempDir); end
+testCase.addTeardown(@() localRemoveDir(tempDir));
+
+thisR = piRecipeDefault('scene name', 'SimpleScene');
+thisR.camera = piCameraCreate('omni','lens file','dgauss.22deg.3.0mm.json');
+thisR.outputFile = fullfile(tempDir, 'lens_restore.pbrt');
+
+originalLensFile = thisR.get('lensfile');
+piWrite(thisR);
+
+testCase.verifyEqual(thisR.get('lensfile'), originalLensFile);
+testCase.verifyFalse(ispref('ISETDocker','remoteSceneDir'));
+
+end
+
+function localSaveISETDockerPrefs(testCase)
+%% Restore ISETDocker preferences after tests that intentionally mutate them.
+
+hadPrefs = ispref('ISETDocker');
+if hadPrefs
+    oldPrefs = getpref('ISETDocker');
+else
+    oldPrefs = struct();
+end
+testCase.addTeardown(@() localRestoreISETDockerPrefs(hadPrefs,oldPrefs));
+
+end
+
+function localRestoreISETDockerPrefs(hadPrefs,oldPrefs)
+if ispref('ISETDocker')
+    rmpref('ISETDocker');
+end
+if hadPrefs
+    names = fieldnames(oldPrefs);
+    for ii = 1:numel(names)
+        setpref('ISETDocker',names{ii},oldPrefs.(names{ii}));
+    end
+end
+
+end
+
+function localRemoveDir(dirName)
+if exist(dirName, 'dir')
+    rmdir(dirName, 's');
+end
 
 end
