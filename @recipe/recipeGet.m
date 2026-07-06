@@ -650,15 +650,13 @@ switch ieParamFormat(param)  % lower case, no spaces
                         val = thisR.camera.focusdistance.value; % Meters
                 end
 
-                % If the isetlens repository is on the path, we convert the
-                % distance to the focal plane into millimeters and warn if
-                % there is no film distance that will bring the object into
-                % focus.
+                % If lensFocus is on the path, we convert the distance to
+                % the focal plane into millimeters and warn if there is no
+                % film distance that will bring the object into focus.
                 %{
                 if isempty(val) && exist('lensFocus','file')
-                    % If isetlens is on the path, we run lensFocus to check
-                    % that the specified focus distance is a legitimate
-                    % value.
+                    % Run lensFocus to check that the specified focus
+                    % distance is a legitimate value.
                     lensFile     = thisR.get('lens file');
                     filmdistance = lensFocus(lensFile,val*1e+3); %mm
                     if filmdistance < 0
@@ -710,8 +708,7 @@ switch ieParamFormat(param)  % lower case, no spaces
         %
         % When there is a lens, PBRT sets the filmdistance so that an
         % object at the focaldistance is in focus. This code calculates
-        % roughly where that will be.  It requires having isetlens on the
-        % path, though.
+        % roughly where that will be.  It requires lensFocus on the path.
         %
         % For humanEye or realisticEye, call retina distance in mm.
         %
@@ -734,8 +731,7 @@ switch ieParamFormat(param)  % lower case, no spaces
                     % lens file. We calculate the focal length.
                     lensFile = thisR.get('lens file');
                     if exist('lensFocus','file')
-                        % If isetlens is on the path, we convert the
-                        % distance to the in-focus object plane into
+                        % Convert the distance to the in-focus object plane into
                         % millimeters and see whether there is a film
                         % distance so that that object plane is in focus.
                         %
@@ -745,8 +741,8 @@ switch ieParamFormat(param)  % lower case, no spaces
                             warning('%s lens cannot focus an object at this distance.', lensFile);
                         end
                     else
-                        % No lensFocus, so tell the user about isetlens
-                        warning('Add isetlens to your path to calculate the film distance.')
+                        % No lensFocus, so tell the user about setup.
+                        warning('lensFocus is not on the path; check your ISET3D path setup.')
                     end
                 end
             case 'environment'
@@ -925,7 +921,7 @@ switch ieParamFormat(param)  % lower case, no spaces
                 % Perhaps we should match the pinhole case instead, and
                 % make this the FOV of the shorter dimension?
                 if ~exist('lensFocus','file')
-                    warning('To calculate FOV of a lens, you need isetlens on your path');
+                    warning('To calculate FOV of a lens, lensFocus must be on your ISET3D path.');
                     return;
                 end
                 lensFile      = thisR.get('lens file');

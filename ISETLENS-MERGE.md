@@ -150,6 +150,13 @@ folded into the larger ISET3d test and tutorial ecosystem.
    only after shortening them to the tutorial standard.  Move broader workflows
    to `examples/`.
 
+   Status: a first local/non-Docker batch has been added under
+   `tutorials/lens/` and `examples/lens/`.  The human-eye optics material
+   should be handled in a separate sceneEye pass that brings Gullstrand
+   workflows into alignment with the Navarro and Arizona eye model tutorials
+   and tests.  The goal is for all three eye-model families to run before the
+   education merge is considered complete.
+
 7. Record the source commit.
 
    History preservation is not required.  Copy the curated files and document

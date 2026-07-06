@@ -1,45 +1,31 @@
 function tests = test_isetlensIntegration()
-% TEST_ISETLENSINTEGRATION - ISET3d-side tests for optional isetlens paths.
+% TEST_ISETLENSINTEGRATION - ISET3d-side tests for in-tree lens paths.
 %
-% These tests protect the ISET3d integration points that should become safer
-% before isetlens is merged into this repository.  Tests that require isetlens
-% skip when lensC/lensFocus are not on the MATLAB path.
+% These tests protect ISET3d integration points that depend on the imported
+% ISETLens runtime code.
 
 tests = functiontests(localfunctions);
 
 end
 
 %% ------------------------------------------------------------------------
-function testRecipeLensQueriesWithoutIsetlens(testCase)
-%% Current no-isetlens behavior: lens-derived quantities are unavailable.
+function testLensRootCompatibility(testCase)
+%% ilensRootPath should point at the imported in-tree lens subtree.
 
-localRequireNoLensFocus(testCase);
+localRequireLensRuntime(testCase);
 
-thisR = localOmniRecipe();
-thisR.set('film diagonal',3);
-thisR.set('focal distance',1);
-
-lastwarn('');
-evalc('filmDistance = thisR.get(''film distance'',''mm'');');
-[warnMsg,~] = lastwarn();
-testCase.verifyEmpty(filmDistance);
-testCase.verifyTrue(contains(warnMsg,'Add isetlens to your path'), ...
-    'Missing lensFocus should produce an actionable film-distance warning.');
-
-lastwarn('');
-evalc('fov = thisR.get(''fov'');');
-[warnMsg,~] = lastwarn();
-testCase.verifyEmpty(fov);
-testCase.verifyTrue(contains(warnMsg,'To calculate FOV of a lens'), ...
-    'Missing lensFocus should produce an actionable FOV warning.');
+lensRoot = ilensRootPath();
+testCase.verifyEqual(lensRoot,fullfile(piRootPath,'lens'));
+testCase.verifyTrue(isfolder(fullfile(lensRoot,'@lensC')));
+testCase.verifyTrue(isfolder(fullfile(lensRoot,'utility','lens')));
 
 end
 
 %% ------------------------------------------------------------------------
-function testRecipeLensQueriesWithIsetlens(testCase)
-%% Recipe lens queries should agree with the underlying isetlens calculation.
+function testRecipeLensQueriesWithInTreeLens(testCase)
+%% Recipe lens queries should agree with the imported lens calculation.
 
-localRequireIsetlens(testCase);
+localRequireLensRuntime(testCase);
 
 thisR = localOmniRecipe();
 thisR.set('film diagonal',3);
@@ -63,7 +49,7 @@ end
 function testMicrolensInsertWithStandardLenses(testCase)
 %% piMicrolensInsert should produce a stable combined-lens JSON structure.
 
-localRequireIsetlens(testCase);
+localRequireLensRuntime(testCase);
 
 tempDir = fullfile(piRootPath,'local','test_isetlensIntegration');
 if ~isfolder(tempDir), mkdir(tempDir); end
@@ -93,7 +79,7 @@ end
 function testStandardLensLocalIntegration(testCase)
 %% Non-Docker integration with a standard lens file.
 
-localRequireIsetlens(testCase);
+localRequireLensRuntime(testCase);
 
 lensFile = fullfile(piDirGet('lens'),'dgauss.22deg.3.0mm.json');
 thisLens = lensC('filename',lensFile);
@@ -120,26 +106,23 @@ thisR.camera = piCameraCreate('omni','lens file','dgauss.22deg.3.0mm.json');
 end
 
 %% ------------------------------------------------------------------------
-function localRequireNoLensFocus(testCase)
-if ~isempty(which('lensFocus'))
-    testCase.assumeFail('lensFocus is already on the path; no-isetlens behavior is not applicable.');
-end
-end
+function localRequireLensRuntime(testCase)
+lensRoot = fullfile(piRootPath,'lens');
+oldPath = path;
+addpath(genpath(lensRoot),'-begin');
+testCase.addTeardown(@() path(oldPath));
 
-%% ------------------------------------------------------------------------
-function localRequireIsetlens(testCase)
-if isempty(which('lensC')) || isempty(which('lensFocus'))
-    repoRoot = fullfile(piRootPath,'..','isetlens');
-    if isfolder(repoRoot)
-        oldPath = path;
-        addpath(genpath(repoRoot));
-        testCase.addTeardown(@() path(oldPath));
-    end
-end
+lensConstructor = which('lensC');
+lensFocusFile = which('lensFocus');
 
-if isempty(which('lensC')) || isempty(which('lensFocus'))
-    testCase.assumeFail('isetlens is not available on the MATLAB path.');
-end
+testCase.assertNotEmpty(lensConstructor, ...
+    'lensC should be available from the in-tree ISET3D lens runtime.');
+testCase.assertNotEmpty(lensFocusFile, ...
+    'lensFocus should be available from the in-tree ISET3D lens runtime.');
+testCase.verifyTrue(startsWith(lensConstructor,fullfile(lensRoot,'@lensC')), ...
+    'lensC should resolve to the imported ISET3D lens subtree.');
+testCase.verifyTrue(startsWith(lensFocusFile,fullfile(lensRoot,'utility','lens')), ...
+    'lensFocus should resolve to the imported ISET3D lens subtree.');
 end
 
 %% ------------------------------------------------------------------------
