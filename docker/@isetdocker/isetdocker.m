@@ -301,7 +301,10 @@ classdef isetdocker < handle
                 error('ISETDocker:InvalidDockerContext', '%s', isetdocker.validationMessage(report));
             end
 
-            useImage = getpref('ISETDocker','dockerImage');
+            useImage = obj.dockerImage;
+            if isempty(useImage)
+                useImage = getpref('ISETDocker','dockerImage');
+            end
             rng('shuffle'); % make random numbers random
             uniqueid = randi(20000);
             if ispc

@@ -8,9 +8,6 @@
 
 %%
 ieInit
-if piCamBio
-    error('Use ISETBio, not ISETCam');
-end
 if ~piDockerExists, piDockerConfig; end
 
 %% Here are the World positions of the letters in the scene
