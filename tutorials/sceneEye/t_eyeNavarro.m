@@ -1,10 +1,5 @@
 %% t_eyeNavarro.m
 %
-% *** 
-%   isetdocker needs to be updated to handle the human eye chromatic
-%   aberration that we had with dockerWrapper (BW)
-% **
-%
 % We recommend you go through t_eyeIntro.m before running
 % this tutorial.
 %
@@ -68,10 +63,10 @@ thisSE.set('fov',40);
 % Render the scene
 thisSE.set('render type', {'radiance','depth'});
 
-%% Render as a scene with the GPU docker wrapper
+%% Render as a scene with isetdocker
 
-%  thisDocker = isetdocker;
-scene = thisSE.piWRS('name','pinhole');
+thisDocker = isetdocker;
+scene = thisSE.piWRS('docker',thisDocker,'name','pinhole');
 
 % You can see the depth map if you like
 %   scenePlot(scene,'depth map');
@@ -122,15 +117,7 @@ thisSE.set('accommodation',1/distA);
 thisSE.summary;
 
 
-%% This is where isetdocker needs to be fixed.
-
-%{
-% Runs on the CPU on mux for humaneye case.  Make it explicit in this case.
-thisDocker = dockerWrapper.humanEyeDocker;
-thisSE.piWRS('docker wrapper',thisDocker,'name','navarro-A');
-%}
-
-thisSE.piWRS('docker',isetdocker,'name','navarro-A');
+thisSE.piWRS('docker',thisDocker,'name','navarro-A');
 
 %{
 oi = ieGetObject('oi'); oi = piAIdenoise(oi); 
@@ -145,13 +132,7 @@ thisSE.set('accommodation',1/distB);
 % Summarize
 thisSE.summary;
 
-%{
-% Runs on the CPU on mux for humaneye case.  Make it explicit in this case.
-thisDocker = dockerWrapper.humanEyeDocker;
-thisSE.piWRS('docker',thisDocker,'name','navarro-A');
-%}
-
-thisSE.piWRS('docker',isetdocker,'name','navarro-A');
+thisSE.piWRS('docker',thisDocker,'name','navarro-B');
 
 %{
 oi = ieGetObject('oi'); oi = piAIdenoise(oi); 
@@ -164,14 +145,7 @@ ieReplaceObject(oi); oiWindow(oi);
 % Focus on the C
 thisSE.set('accommodation',1/distC);  
 
-%{
-% Default renderer for sceneEye is humanEyeDocker, so try just the
-% default.  Should also work.
-thisSE.summary;
 thisSE.piWRS('docker',thisDocker,'name','navarro-C');
-%}
-
-thisSE.piWRS('docker',isetdocker,'name','navarro-A');
 
 
 %{

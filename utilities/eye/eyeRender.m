@@ -8,7 +8,7 @@ function [oi, cMosaic] = eyeRender(thisSE, options)
 
     arguments
         thisSE;
-        options.dockerWrapper = [];
+        options.docker = [];
         options.fovScale = .1; % how much to reduce the FOV
         options.show = false; %display output in windows
         options.numThreads = 0; % use the default unless the user sets a value
@@ -19,8 +19,8 @@ function [oi, cMosaic] = eyeRender(thisSE, options)
         Warning("Can't use eye rendering without ISETBio");
         return
     else
-        if ~isempty(options.dockerWrapper)
-            oi = thisSE.render('docker wrapper',options.dockerWrapper);
+        if ~isempty(options.docker)
+            oi = thisSE.render('docker',options.docker);
         else
             oi = thisSE.render();
         end
@@ -49,6 +49,5 @@ function [oi, cMosaic] = eyeRender(thisSE, options)
 
     end
 end
-
 
 

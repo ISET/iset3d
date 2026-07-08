@@ -11,9 +11,6 @@
 
 ieInit;
 if ~piDockerExists, piDockerConfig; end
-if isempty(which('lensC'))
-    error('You must add the isetlens repository to your path');
-end
 %% Read the PBRT scene
 
 % thisR = piRecipeDefault('scene name','chessset');

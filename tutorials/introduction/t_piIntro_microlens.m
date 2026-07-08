@@ -3,7 +3,7 @@
 %   Set up to work with the Chess Set scene.
 %
 % Dependencies:
-%    ISET3d-v4, ISETCam, isetlens
+%    ISET3d-v4, ISETCam
 %
 % This script uses the docker container in two ways.  Once to build the
 % lens file and a second way to render radiance and depth. 
@@ -19,9 +19,6 @@ ieInit;
 if ~piDockerExists, piDockerConfig; end
 
 chdir(fullfile(piRootPath,'local'))
-if isempty(which('lensC')) 
-    error('You must add the isetlens repository to your path'); 
-end
 
 %% Read the pbrt files
 thisR = piRecipeCreate('Chess Set');

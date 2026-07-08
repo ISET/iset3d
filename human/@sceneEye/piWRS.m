@@ -27,10 +27,8 @@ function obj = piWRS(SE,varargin)
 %                       the pupil area. Default true. 
 %    write - Call piWrite first. Default: true 
 %            For debugging we sometimes suppress piWrite. 
-%    docker - Specify an iset docker. If not specified, we use should
-%       find an isetdocker that works for human.  We aren't there yet.
-%       The dockerWrapper system had a call dockerWrapper.humanEye.  We
-%       need that for isetdocker
+%    docker - Specify an isetdocker object. If not specified, use the
+%       configured isetdocker preferences.
 %   'name'  - Set the Scene or OI name
 %   'gamma' - Set the display gamma for the window
 %   'show'  - Default: true
@@ -108,8 +106,8 @@ end
 end
 
 function tf = localIsDockerLike(value)
-%% Accept current isetdocker objects and legacy docker-like values.
+%% Accept empty values or current isetdocker objects.
 
-tf = isempty(value) || isa(value,'isetdocker') || isa(value,'dockerWrapper') || isstruct(value);
+tf = isempty(value) || isa(value,'isetdocker');
 
 end

@@ -86,7 +86,7 @@ Legrand eye Obj 10m the in focus retina distance is 16.35 mm
 
 % We sweep the retinal distance by 50 micron steps to see the blur
 % change.
-humanDocker = dockerWrapper.humanEyeDocker;
+thisDocker = isetdocker;
 for rr =  16.1:0.05:16.75
     thisSE.set('retina distance',rr);
     name = sprintf('%s Foc %.2f Obj %.2f Ret %0.2f',modelName{mm}(1:2),...
@@ -94,7 +94,7 @@ for rr =  16.1:0.05:16.75
         oDistance,...
         thisSE.get('retina distance','mm'));
     thisSE.summary;
-    oi = thisSE.piWRS('name',name,'docker wrapper',humanDocker,'show',true);
+    oi = thisSE.piWRS('name',name,'docker',thisDocker,'show',true);
 end
 
 % If you want to reduce the rendering noise:

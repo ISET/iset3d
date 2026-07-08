@@ -5,10 +5,10 @@
 % (sensor) diagonal.
 %
 % Dependencies:
-%    ISET3d-v4, ISETCam, isetlens
+%    ISET3d-v4, ISETCam
 %
 % See also
-%   t_piIntro_start, isetlens,
+%   t_piIntro_start
 %
 
 %% Initialize ISET and Docker

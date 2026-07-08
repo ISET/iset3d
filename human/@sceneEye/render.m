@@ -20,6 +20,7 @@ function [ieObject, terminalOutput] = render(obj, varargin)
 % Optional key/value pairs:
 %    render type       - Usual recipe render type cell array 
 %    scale Illuminance - Scale the returned oi illuminance (default: true)
+%    docker            - isetdocker object. Default: use isetdocker prefs.
 %    write - Call piWrite first. Default: true - but for debugging we
 %            sometimes suppress the piWrite. 
 %            
@@ -56,7 +57,8 @@ varargin = ieParamFormat(varargin);
 p = inputParser;
 p.addRequired('obj', @(x)(isa(x, 'sceneEye')));
 p.addParameter('scaleilluminance', true, @islogical);
-p.addParameter('dockerwrapper',[],@(x)(isa(x,'dockerWrapper') || isempty(x)));
+p.addParameter('docker',[],@(x)(isempty(x) || isa(x,'isetdocker')));
+p.addParameter('dockerwrapper',[],@localIsLegacyDocker);
 p.addParameter('write',true,@islogical);
 
 % Some day, check that the cell array has one of these types.
@@ -66,7 +68,10 @@ p.addParameter('rendertype',{'radiance','depth'},@iscell);
 p.parse(obj, varargin{:});
 renderType        = p.Results.rendertype;
 scaleIlluminance  = p.Results.scaleilluminance;
-thisDockerWrapper = p.Results.dockerwrapper;
+thisDocker = p.Results.docker;
+if isempty(thisDocker) && isa(p.Results.dockerwrapper,'isetdocker')
+    thisDocker = p.Results.dockerwrapper;
+end
 
 %% Get the render recipe
 
@@ -90,20 +95,12 @@ if p.Results.write
     piWrite(thisR);
 end
 
-%% Render the pbrt file using docker
+%% Render the pbrt file using isetdocker
 
-% We need a dockerWrapper that works for the human eye when we call
-% this.  That should either be set up in the default by setprefs or by
-% passing in a specific dockerWrapper.
-if isempty(thisDockerWrapper)
-    % We decided not to recreate the docker wrapper because we are concerned
-    % that the creation resets the docker image on the remote machine
-    % and slows things down. If that's false, then it would be fine
-    % to recreate thisDockerWrapper as default dockerWrapper above
-    % when p.addParameter is called.
+if isempty(thisDocker)
     [ieObject, terminalOutput] = piRender(thisR,'render type',renderType);
 else
-    [ieObject, terminalOutput] = piRender(thisR,'render type',renderType,'ourdocker',thisDockerWrapper);
+    [ieObject, terminalOutput] = piRender(thisR,'render type',renderType,'docker',thisDocker);
 end
 
 %% Fix up the returned object
@@ -117,5 +114,12 @@ else
     thisR.set('camera',cameraSave);
     % sceneWindow(ieObject);
 end
+
+end
+
+function tf = localIsLegacyDocker(value)
+%% Accept empty values or current isetdocker values.
+
+tf = isempty(value) || isa(value,'isetdocker');
 
 end

@@ -8,7 +8,7 @@
 % different camera parameters in the recipe.  Notice that
 %
 % Dependencies:
-%    ISET3d, ISETCam, isetlens
+%    ISET3d, ISETCam
 %
 % For more information about PBRT lens and camera formats:
 %
@@ -16,7 +16,7 @@
 % Z Liu, BW 2018
 %
 % See also
-%   t_piIntro_start, isetlens, 
+%   t_piIntro_start
 %
 
 %%

@@ -37,9 +37,8 @@ thisSE.set('object distance',20);   % Units are meters, I think (BW).
 thisSE.set('use pinhole',true);
 thisSE.summary;
 
-dockerWrapper.reset;
-thisDocker = dockerWrapper.humanEyeDocker;
-thisSE.piWRS('docker wrapper',thisDocker,'name','slantedBar-pinhole');
+thisDocker = isetdocker;
+thisSE.piWRS('docker',thisDocker,'name','slantedBar-pinhole');
 
 %%  Put the object at the 
 thisSE.set('use pinhole',false);
@@ -71,7 +70,7 @@ thisSE.set('object distance',0.5);   % Units are meters, I think (BW).
     2   was blurry again
 %}
 thisSE.set('accommodation',1);     % Units are diopters (1/m)
-thisSE.piWRS('docker wrapper',thisDocker,'name','slantedBar-eye');
+thisSE.piWRS('docker',thisDocker,'name','slantedBar-eye');
 
 %% Increase the  number of ray samples to get rid of graphics noise
 
