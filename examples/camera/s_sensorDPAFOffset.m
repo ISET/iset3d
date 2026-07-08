@@ -24,7 +24,7 @@
 % REQUIRES ISETLens on your path.
 %
 % See also
-%  s_sensorDPAFMicrolen, t_cameraDPAF, t_cameraLightField
+%  s_sensorDPAFMicrolen, s_cameraDPAF, tls_cameraLightField
 
 %% Initialize a scene and oi
 ieInit;
@@ -190,4 +190,3 @@ ipWindow(rightip);
 rightuData = ipPlot(rightip,'horizontal line',[89 89]);
 
 %% END
-

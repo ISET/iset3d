@@ -1,4 +1,6 @@
 %% t_arealightLookat.m
+% SkipFile
+% Depends on the flat surface scene and renders several light-spread variants.
 %
 % Look at the light directly.
 % Also, rotate the light and translate it and scale its size.

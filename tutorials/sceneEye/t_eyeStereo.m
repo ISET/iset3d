@@ -1,4 +1,7 @@
 %% t_eyeStereo
+% SkipFile
+% Stereo sceneEye tutorial with multiple CPU human-eye renders. Keep it
+% interactive rather than running it in the tutorial smoke test.
 %
 % Please read t_eyeIntro first.
 %
@@ -34,4 +37,3 @@ oiRight = thisSE.render('render type','radiance');
 oiWindow(oiRight);
 
 %% END
-

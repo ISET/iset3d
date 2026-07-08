@@ -1,4 +1,7 @@
 %% t_schematicEyeModels
+% SkipFile
+% Multi-model sceneEye comparison with several CPU human-eye renders. Keep it
+% interactive rather than running it in the tutorial smoke test.
 % Render the same scene using a couple of different eye models.
 
 %% Initialize

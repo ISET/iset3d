@@ -20,6 +20,16 @@ testCase.verifyEqual(eye.get('use pinhole'), false); % defaults to optics/human 
 
 end
 
+function testSceneEyeConstructorLegacyHumanEyeAlias(testCase)
+%% Test legacy constructor spelling for the human-eye model.
+
+eye = sceneEye('simple scene', 'human eye', 'Navarro');
+
+testCase.verifyClass(eye, ?sceneEye);
+testCase.verifyEqual(eye.get('model name'), 'navarro');
+
+end
+
 function testSceneEyeGetSet(testCase)
 %% Test getting and setting parameters on a sceneEye object.
 

@@ -1,4 +1,7 @@
 %% t_eyeRetinaDistance.m
+% SkipFile
+% Human-eye retinal-distance sweep with many CPU optics renders. Keep out of
+% routine tutorial smoke tests.
 %
 % This tutorial renders a retinal image of "slanted edge." We can use
 % this slanted bar to estimate the modulation transfer function of the

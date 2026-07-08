@@ -1,4 +1,7 @@
 %% Render using a lightfield camera - lens and microlens array
+% SkipFile
+% Light-field/microlens rendering depends on lensC-style lens tooling and
+% does a costly two-stage render; keep it out of the smoke test.
 %
 %   Set up to work with the Chess Set scene.
 %

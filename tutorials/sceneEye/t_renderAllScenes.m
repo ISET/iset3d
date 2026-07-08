@@ -1,4 +1,7 @@
 %% t_renderAllScenes.m
+% SkipFile
+% Long sceneEye sweep: renders many scenes and can download external assets.
+% Keep this as an interactive/tutorial script, not a routine smoke test.
 %
 % Requires ISETBio (not ISETCam)
 %

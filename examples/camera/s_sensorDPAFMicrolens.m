@@ -1,7 +1,7 @@
 %% Create a sensor for dual pixel autofocus experiments (DPAF).
 %
-% This is more recently updated in t_cameraDPAF and extended in
-% t_cameraLightField.
+% This is more recently updated in s_cameraDPAF and extended in
+% tls_cameraLightField.
 %
 % Questions to answer:  
 % 
@@ -11,7 +11,7 @@
 %   below?
 %
 % See also
-%  t_cameraDPAF, t_cameraLightField
+%  s_cameraDPAF, tls_cameraLightField
 
 %% Initialize a scene and oi
 ieInit;
@@ -134,4 +134,3 @@ rightip = ipCompute(rightip,rightSensor);
 ipWindow(rightip);
 rightuData = ipPlot(rightip,'horizontal line',[89 89]);
 %% END
-

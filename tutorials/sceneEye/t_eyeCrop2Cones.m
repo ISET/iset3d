@@ -1,4 +1,7 @@
 %% t_eyeCrop2Cones
+% SkipFile
+% ISETBio cone-mosaic analysis built from a sceneEye render; candidate to
+% move or mirror into ISETBio rather than the iset3d smoke-test set.
 %
 %  We render a retinal irrdiance and then study the cone excitations from
 %  different portions of the retinal image. 

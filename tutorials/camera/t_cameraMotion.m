@@ -121,12 +121,11 @@ scenes{ii} = piRender(thisR);
 scenes{ii} = sceneSet(scenes{ii},'name','Camera Motion: rotation');
 %sceneWindow(scene2);
 end
-sceneSum = sceneAdd(scenes);
+sceneSum = sceneAdd(scenes,ones(1,numFrames),'average');
 sceneWindow(sceneSum);
 
 
 %% END
-
 
 
 

@@ -1,4 +1,6 @@
 %% Explore light creation with new area light parameters
+% SkipFile
+% Depends on local area-light scene assets and renders many lighting variants.
 %
 % The shape of the area light is specified as a trianglemesh in
 % the recipe.  It is a flat surface in this example.
@@ -145,4 +147,3 @@ for ii=1:numel(lList)
 end
 
 %% END
-

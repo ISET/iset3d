@@ -1,4 +1,7 @@
 %% Illustrate creating a goniometric light
+% SkipFile
+% Experimental multi-render lighting script; parts are marked "Not working"
+% and later sections depend on additional scene assets such as bunny.
 %
 % TODO:  Create exr files with localized patches so we understand the
 % geometry. 

@@ -109,7 +109,11 @@ id2end = p2Root(end);
 
 sz1 = localAssetObjectSize(thisR,id1);
 sz2 = localAssetObjectSize(thisR,id2);
-copySpacing = max([sz1(2), sz2(2)]);
+if isempty(sz1) || numel(sz1) < 2 || isempty(sz2) || numel(sz2) < 2
+    copySpacing = 1;
+else
+    copySpacing = max([sz1(2), sz2(2)]);
+end
 
 % Create copies at a position is relative to the position of the original
 % object.  I am confused about the size units.
@@ -136,7 +140,7 @@ function sz = localAssetObjectSize(thisR,assetID)
 sz = [];
 assetType = thisR.get('asset',assetID,'type');
 if strcmp(assetType,'object')
-    sz = thisR.get('asset',assetID,'size');
+    sz = localSafeAssetSize(thisR,assetID);
     if ~isempty(sz), return; end
 end
 
@@ -145,12 +149,24 @@ for nodeIndex = 1:subtree.nnodes
     thisNode = subtree.get(nodeIndex);
     if isfield(thisNode,'type') && strcmp(thisNode.type,'object')
         [objectID,~] = piAssetFind(thisR,'name',thisNode.name);
-        sz = thisR.get('asset',objectID,'size');
+        sz = localSafeAssetSize(thisR,objectID);
         if ~isempty(sz), return; end
     end
 end
 
-error('t_assetsCopy:MissingAssetSize', ...
-    'Could not find an object size for asset id %d.',assetID);
+end
+
+function sz = localSafeAssetSize(thisR,assetID)
+% Return object size when the optional mesh reader is available.
+
+try
+    sz = thisR.get('asset',assetID,'size');
+catch ME
+    if contains(ME.message,'readSurfaceMesh')
+        sz = [];
+    else
+        rethrow(ME);
+    end
+end
 
 end

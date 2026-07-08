@@ -13,13 +13,7 @@ ieInit;
 if ~piDockerExists, piDockerConfig; end
 %% Read the PBRT scene
 
-% thisR = piRecipeDefault('scene name','chessset');
-thisDB = isetdb;
-sceneName = 'ChessSet';
-thisScene = thisDB.contentFind('PBRTResources', 'name',sceneName);
-thisR = piRead(thisScene,'docker',isetdocker);
-
-% thisR = piRecipeDefault('scene name','ChessSet');
+thisR = piRecipeDefault('scene name','ChessSet');
 thisR.set('spatial resolution',512);
 %% Create a camera with a double Gauss lens
 

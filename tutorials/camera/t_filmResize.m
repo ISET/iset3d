@@ -1,4 +1,7 @@
 %% t_filmResize
+% SkipFile
+% Long camera/eye comparison tutorial with many renders, denoising, and a
+% human-eye parameter sweep. Not appropriate for the smoke-test runner.
 %
 % Illustrate the impact of changing the aspect ratio and sampling
 % properties of a scene.  We start with manipulating the pinhole camera

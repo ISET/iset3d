@@ -1,4 +1,7 @@
 %% t_scatteringExample
+% SkipFile
+% Long participating-media analysis: renders an 18-angle sweep at high sample
+% counts and is not suitable for the routine tutorial smoke test.
 %
 % Synopsis
 %  This script demonstrates a scattering example in iset3d, simulating how
@@ -265,6 +268,5 @@ denom = 4 * pi * (1 + g^2 + 2 * g * cosd(angle)).^(3/2);
 val = num ./ denom;
 
 end
-
 
 

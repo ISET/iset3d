@@ -1,4 +1,7 @@
 %% t_eyeMovement3D.m
+% SkipFile
+% ISETBio-dependent human-eye motion sweep with many CPU renders; keep out
+% of the iset3d smoke test while deciding whether to move it to ISETBio.
 %
 % This tutorial shows how to translate and rotate the eye throughout the
 % scene. We will use the chess set scene for this tutorial.
@@ -76,6 +79,3 @@ end
 
 % Loop through images like a video
 % TODO: Best way to do this?
-
-
-    

@@ -1,4 +1,6 @@
 %% t_lightHeadlamp
+% SkipFile
+% Depends on flatSurface and projection-light assets that are not always local.
 %
 %   Use Projected Light Headlamps
 %   (with option to try Area light version)
@@ -102,4 +104,3 @@ if ~ismac %code to add denoising for benchmarking
 else
     piWRS(thisR);
 end
-

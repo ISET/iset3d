@@ -1,4 +1,7 @@
 %% t_lightProjection
+% SkipFile
+% Experimental projection-light tutorial. It depends on scene assets such as
+% flatSurface that may be neither local nor available from SDR.
 %
 %   Initial Experiments with Projected Lights
 %
@@ -184,5 +187,4 @@ for ii = 1 % 0:3 in case we want to try options
     piWRS(thisR,'mean luminance',-1);
 end
 %}
-
 

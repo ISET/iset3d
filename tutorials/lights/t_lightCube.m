@@ -1,4 +1,6 @@
 %% Illustrate the piLightCube method
+% SkipFile
+% Depends on the flat surface scene and renders many cube-light viewpoints.
 %
 % The cube light has six sides the emit different colors in each
 % direction.  Placing the cube near the camera lets you determine how
