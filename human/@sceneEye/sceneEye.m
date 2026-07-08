@@ -9,6 +9,7 @@ classdef sceneEye < hiddenHandle
 % 
 % Optional key/val
 %    'eye model' - 'navarro','legrand','arizona'
+%                  Legacy alias: 'human eye'
 %     
 % Output
 %    sceneEye - Modified scene eye object
@@ -125,10 +126,16 @@ methods
 
         p = inputParser;
         p.addRequired('pbrtfile',@(x)(isempty(x) || ischar(x)));
-        p.addParameter('eyemodel','navarro',@(x)ismember(x,{'navarro','legrand','arizona'}));
+        p.addParameter('eyemodel','navarro',@localIsEyeModel);
+        p.addParameter('humaneye','',@localIsEyeModel);
         p.parse(pbrtFile,varargin{:});
 
-        obj.modelName = p.Results.eyemodel;
+        eyeModel = lower(char(string(p.Results.eyemodel)));
+        if ~isempty(p.Results.humaneye)
+            eyeModel = lower(char(string(p.Results.humaneye)));
+        end
+
+        obj.modelName = eyeModel;
 
         % Setup the pbrt scene recipe
         if isempty(pbrtFile),  obj.recipe = recipe;
@@ -136,11 +143,11 @@ methods
         end
         
         % Create the camera model
-        obj.set('camera',piCameraCreate('humaneye','eye model',p.Results.eyemodel));
+        obj.set('camera',piCameraCreate('humaneye','eye model',eyeModel));
         
         % At this point the camera is created.  The recipe should have an
         % output dir, so we can create the default lens file
-        switch (p.Results.eyemodel)
+        switch eyeModel
             case 'navarro'
                 navarroWrite(obj.recipe,0);
             case 'arizona'
@@ -229,5 +236,12 @@ methods (Access=public)
     [objNew] = write(obj, varargin)
 end
 
+
+end
+
+function tf = localIsEyeModel(value)
+%% True for supported sceneEye model names and empty legacy defaults.
+
+tf = isempty(value) || any(strcmpi(value,{'navarro','legrand','arizona'}));
 
 end

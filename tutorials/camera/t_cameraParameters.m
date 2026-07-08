@@ -1,42 +1,123 @@
-%% Camera settings: object distance and field of view
+%% 
 %
-% This tutorial uses the Chess Set scene with the default pinhole camera.
-% It introduces camera get/set calls and renders one low-resolution image.
+% Camera settings:  Object distance and focal distance illustration
+%
+% Illustrates depth of field
+%
+% Loads the Chess Set scene and illustrates the effect of changing
+% different camera parameters in the recipe.  Notice that
+%
+% Dependencies:
+%    ISET3d, ISETCam
+%
+% For more information about PBRT lens and camera formats:
+%
+%
+% Z Liu, BW 2018
 %
 % See also
-%   piCameraCreate, recipe/get, recipe/set
+%   t_piIntro_start
+%
 
-%% Initialize
-
-ieInit;
+%%
+ieInit
 if ~piDockerExists, piDockerConfig; end
 
-%% Read the recipe and inspect camera parameters
+%% Very low scene resolution to start.  We only visualize the depth
 
+% The recipe has a pinhole camera (also called perspective)
 thisR = piRecipeDefault('scene name','ChessSet');
-thisR.set('film resolution',[160 160]);
-thisR.set('rays per pixel',32);
-thisR.set('nbounces',2);
+thisR.get('camera subtype')
 
-cameraSubtype = thisR.get('camera subtype');
-objectDistance = thisR.get('object distance');
-fov = thisR.get('fov');
+%% For this object distance, what are the scene depths (m)
+objDistance = thisR.get('object distance');  % In meters
+fprintf('Distance between camera and scene position %f\n',objDistance);
 
-fprintf('Camera subtype: %s\n',cameraSubtype);
-fprintf('Object distance: %.2f m\n',objectDistance);
-fprintf('Field of view: %.1f deg\n',fov);
+focalDistance = thisR.get('focal distance');
+fprintf('Distance to focal plane %f\n',focalDistance);
 
-%% Move the camera closer and narrow the field of view
+%{
+[depthRange, depthmap]= piSceneDepth(thisR);
+fprintf('%f close, %f far\n',depthRange(1),depthRange(2));
+ieNewGraphWin; imagesc(depthmap); axis image
+%}
 
-thisR.set('object distance',objectDistance - 0.2);
-thisR.set('fov',20);
+thisR.summarize;
+piWrite(thisR);
+[scene,result] = piRender(thisR);
+scene = sceneSet(scene,'name','far both');
+sceneWindow(scene);
 
-fprintf('Updated object distance: %.2f m\n',thisR.get('object distance'));
-fprintf('Updated field of view: %.1f deg\n',thisR.get('fov'));
+%%
+scenePlot(scene,'depth map');
+depthrange = sceneGet(scene,'depth range');
 
-%% Render once
+%% Move the camera closer
 
-scene = piWRS(thisR,'render flag','hdr');
-fprintf('Depth range: %.2f to %.2f m\n',sceneGet(scene,'depth range'));
+% Move the camera closer
+thisR.set('object distance',objDistance - 0.2);   % In meters
+thisR.summarize;
+piWrite(thisR);
+
+scene = piRender(thisR);
+scene = sceneSet(scene,'name','far camera');
+sceneWindow(scene);
+scenePlot(scene,'depth map')
+
+%% Add a lens
+
+% lensFiles = lensList;
+lensfile  = 'dgauss.22deg.50.0mm.json';    % 30 38 18 10
+thisR.camera = piCameraCreate('omni','lensFile',lensfile);
+
+%% Set up rendering parameters
+
+thisR.set('film diagonal',22);    % In mm
+
+% Pick out a bit of the image to look at.  Middle dimension is up.
+% Third dimension is z.  I picked a from/to that put the ruler in the
+% middle.  The in focus is about the pawn or rook.
+thisR.set('from',[0 0.14 -0.7]);     % Get higher and back away than default
+thisR.set('to',  [0.05 -0.07 0.5]);  % Look down default compared to default 
+thisR.set('object distance',1.2);    % From-To separation in meters
+
+% We can use bdpt if you are using the docker with the "test" tag (see
+% header). Otherwise you must use 'path'
+thisR.integrator.subtype = 'path';  
+thisR.sampler.subtype    = 'sobol';
+
+% This value determines the number of ray bounces.  If the scene has
+% glass or mirrors, we need to have at least 2 or more.
+% thisR.set('nbounces',4); 
+
+% Change this for depth of field effects.
+thisR.set('aperture diameter',2);   % thisR.summarize('all');
+
+%%  Now, set up the in-focus distance 
+
+% Adjust focal plane position, shrink the FOV, increase the resolution
+focalDistance = 0.5;
+thisR.set('film diagonal',11);  % mm
+thisR.set('focal distance',focalDistance);   % In meters
+thisR.set('film resolution',[300 300]);
+thisR.summarize
+piWrite(thisR);
+
+oi = piRender(thisR);
+oi = oiSet(oi,'name','near focus');
+oiWindow(oi);
+
+%%  Set up for different focal planes
+
+% Move the focal plane position, shrink the FOV, increase the resolution
+
+focalDistance = 0.8;
+thisR.set('focal distance',focalDistance);   % In meters
+thisR.summarize
+piWrite(thisR);
+
+oi = piRender(thisR);
+oi = oiSet(oi,'name','far focus');
+oiWindow(oi);
 
 %% END

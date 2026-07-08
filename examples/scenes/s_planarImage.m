@@ -1,4 +1,7 @@
 %% t_planarImage.m
+% SkipFile
+% Legacy sceneEye textured-plane tutorial. It uses old constructor parameters
+% and requires ISETBio plus CPU human-eye rendering, so keep it interactive.
 %
 % This tutorial demonstrates how to use the textured plane scene. With this
 % scene, we can load up an image texture, place it on a scaled, 2D plane at

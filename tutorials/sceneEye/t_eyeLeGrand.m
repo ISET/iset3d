@@ -73,8 +73,8 @@ thisSE.set('render type',{'radiance','depth'});
 thisSE.summary;
 
 %% Render the pinhole
-thisDocker = dockerWrapper;
-thisSE.piWRS('docker wrapper',thisDocker,'name','legrand-pinhole');
+thisDocker = isetdocker;
+thisSE.piWRS('docker',thisDocker,'name','legrand-pinhole');
 
 % You can see the depth map if you like
 %   scene = ieGetObject('scene');
@@ -102,6 +102,6 @@ thisSE.set('film resolution',384);
 thisSE.summary;
 
 % Render
-thisSE.piWRS('docker wrapper',dockerWrapper.humanEyeDocker,'name','legrand');
+thisSE.piWRS('docker',thisDocker,'name','legrand');
 
 %% END

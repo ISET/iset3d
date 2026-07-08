@@ -1,6 +1,7 @@
 %% t_eyeMovement3D.m
 % SkipFile
-% Uses obsolete sceneEye properties; needs API update.
+% ISETBio-dependent human-eye motion sweep uses obsolete sceneEye properties
+% and many CPU renders; keep it out of smoke tests pending API decisions.
 %
 % This tutorial shows how to translate and rotate the eye throughout the
 % scene. We will use the chess set scene for this tutorial.
@@ -78,6 +79,3 @@ end
 
 % Loop through images like a video
 % TODO: Best way to do this?
-
-
-

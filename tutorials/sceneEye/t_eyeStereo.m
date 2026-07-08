@@ -1,6 +1,7 @@
 %% t_eyeStereo
 % SkipFile
-% Uses obsolete sceneEye constructor arguments; needs API update.
+% Stereo sceneEye tutorial uses obsolete constructor/API patterns and
+% multiple CPU human-eye renders; keep it interactive for now.
 %
 % Please read t_eyeIntro first.
 %

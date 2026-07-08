@@ -1,4 +1,7 @@
 %% t_absorptionExample
+% SkipFile
+% Long participating-media analysis with multiple high-sample renders. Keep
+% this as an interactive example rather than a routine tutorial smoke test.
 %
 % Synopsis:
 %
@@ -245,7 +248,6 @@ targetRecipe.world = {'WorldBegin'};
 
 
 end
-
 
 
 

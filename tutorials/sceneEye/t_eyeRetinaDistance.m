@@ -1,6 +1,7 @@
 %% t_eyeRetinaDistance.m
 % SkipFile
-% Uses obsolete dockerWrapper human-eye setup; needs sceneEye rewrite.
+% Human-eye retinal-distance sweep currently relies on legacy sceneEye/
+% docker setup and many CPU optics renders, so keep it out of smoke tests.
 %
 % This tutorial renders a retinal image of "slanted edge." We can use
 % this slanted bar to estimate the modulation transfer function of the
@@ -88,7 +89,7 @@ Legrand eye Obj 10m the in focus retina distance is 16.35 mm
 
 % We sweep the retinal distance by 50 micron steps to see the blur
 % change.
-humanDocker = dockerWrapper.humanEyeDocker;
+thisDocker = isetdocker;
 for rr =  16.1:0.05:16.75
     thisSE.set('retina distance',rr);
     name = sprintf('%s Foc %.2f Obj %.2f Ret %0.2f',modelName{mm}(1:2),...
@@ -96,7 +97,7 @@ for rr =  16.1:0.05:16.75
         oDistance,...
         thisSE.get('retina distance','mm'));
     thisSE.summary;
-    oi = thisSE.piWRS('name',name,'docker wrapper',humanDocker,'show',true);
+    oi = thisSE.piWRS('name',name,'docker',thisDocker,'show',true);
 end
 
 % If you want to reduce the rendering noise:

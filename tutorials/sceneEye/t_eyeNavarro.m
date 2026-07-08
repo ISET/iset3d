@@ -1,10 +1,5 @@
 %% t_eyeNavarro.m
 %
-% *** 
-%   isetdocker needs to be updated to handle the human eye chromatic
-%   aberration that we had with dockerWrapper (BW)
-% **
-%
 % We recommend you go through t_eyeIntro.m before running
 % this tutorial.
 %
@@ -68,10 +63,10 @@ thisSE.set('fov',40);
 % Render the scene
 thisSE.set('render type', {'radiance','depth'});
 
-%% Render as a scene with the GPU docker wrapper
+%% Render as a scene with isetdocker
 
-%  thisDocker = isetdocker;
-scene = thisSE.piWRS('name','pinhole');
+thisDocker = isetdocker;
+scene = thisSE.piWRS('docker',thisDocker,'name','pinhole');
 
 % You can see the depth map if you like
 %   scenePlot(scene,'depth map');

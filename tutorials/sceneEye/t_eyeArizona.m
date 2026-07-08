@@ -48,9 +48,8 @@ thisSE.set('fov',30);             % Degrees
 % Summary of status
 thisSE.summary;
 
-% Render the scene with the GPU
-thisDockerGPU = dockerWrapper;
-thisSE.piWRS('docker wrapper',thisDockerGPU,'name','pinhole');
+thisDocker = isetdocker;
+thisSE.piWRS('docker',thisDocker,'name','pinhole');
 
 %% Now use the optics model with chromatic aberration
 
@@ -89,13 +88,6 @@ thisSE.set('spatial samples',256);
 thisSE.set('n bounces',3);
 
 %% Accommodate to letter A distance (in diopters)
-% Default docker for human eye is currently CPU on remote.  It will
-% remain so until we get humaneye running on the GPU.
-%
-% This docker can be created and specified explicitly using
-%
-%   thisDocker = dockerWrapper.humanEyeDocker;
-%   thisSE.piWRS('name','arizona-A','docker wrapper',thisDocker);
 
 thisSE.set('accommodation',1/distA);
 % thisSE.get('accommodation')
@@ -104,13 +96,12 @@ thisSE.set('accommodation',1/distA);
 thisSE.summary;
 
 %%
-thisDocker = dockerWrapper.humanEyeDocker;
-thisSE.piWRS('docker wrapper',thisDocker,'name','arizona-A');
+thisSE.piWRS('docker',thisDocker,'name','arizona-A');
 
 %% Make an oi of the chess set scene using the LeGrand eye model
 
 thisSE.set('accommodation',1/distC);  
-thisSE.piWRS('docker wrapper',thisDocker,'name','arizona-C');
+thisSE.piWRS('docker',thisDocker,'name','arizona-C');
 
 %% Have a look with the slanted bar scene
 
@@ -128,7 +119,7 @@ thisSE.set('fov',2);
 thisSE.set('rays per pixel',256);  % Pretty quick, but not high quality
 
 thisSE.set('use pinhole',true);
-thisSE.piWRS('docker wrapper',thisDockerGPU);  % Render and show
+thisSE.piWRS('docker',thisDocker);  % Render and show
 
 %% Now the human eye model
 
@@ -142,8 +133,7 @@ thisSE.set('chromatic aberration',nSpectralBands);
 
 thisSE.set('object distance',20);
 
-thisDocker = dockerWrapper.humanEyeDocker;
-oi = thisSE.piWRS('docker wrapper',thisDocker,'show',false,'name','8bands');
+oi = thisSE.piWRS('docker',thisDocker,'show',false,'name','8bands');
 
 % Maybe we should set a denoise flag in piWRS?
 oi = piAIdenoise(oi); 

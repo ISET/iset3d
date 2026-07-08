@@ -91,13 +91,13 @@ inFocusAcc = 1/oDistance;   % 1 diopter
 
 % We step the accommodation, hoping that the best focus matches the
 % object distance (1 diopter)
-humanDocker = dockerWrapper.humanEyeDocker;
+thisDocker = isetdocker;
 for aa =  0.8:.2:1.2
     thisSE.set('accommodation',aa);
     name = sprintf('%s Foc %.2f Obj %.2f (D)',modelName{mm}(1:2),...
         thisSE.get('accommodation'));
     thisSE.summary;
-    oi = thisSE.piWRS('name',name,'docker wrapper',humanDocker,'show',true);
+    oi = thisSE.piWRS('name',name,'docker',thisDocker,'show',true);
 end
 
 % oi = ieGetObject('oi'); oi = piAIdenoise(oi); ,oiWindow(oi);

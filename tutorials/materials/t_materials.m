@@ -40,6 +40,10 @@ newMat = piMaterialCreate(glassMaterial,'type','dielectric');
 thisR.set('material','add',newMat);
 thisR.set('asset',assetFig3m,'material name',glassMaterial);
 
+assetName = thisR.get('asset',assetFig3m,'name');
+curName = thisR.get('asset', assetFig3m, 'material name');
+fprintf('The material for %s is %s\n',assetName,curName);
+
 assetMirror = piAssetSearch(thisR,'object name','mirror');
 mirrorMaterial = 'newMirror';
 newMat = piMaterialCreate(mirrorMaterial,'type','conductor');

@@ -108,8 +108,13 @@ objectlist = txtLines(piContains(txtLines, 'ObjectInstance'));
 
 %% Render on a CPU
 
-thisDocker = dockerWrapper('gpuRendering',false);
-[ieObject, result]   = piRender(thisR,'our docker',thisDocker);
+thisDocker = isetdocker('verbosity',0,'validate',false);
+thisDocker.device = 'cpu';
+thisDocker.deviceID = '';
+if isempty(thisDocker.dockerImage) || contains(lower(thisDocker.dockerImage),'gpu')
+    thisDocker.dockerImage = 'digitalprodev/pbrt-v4-cpu';
+end
+[ieObject, result]   = piRender(thisR,'docker',thisDocker);
 idmap      = ieObject.metadata;
 
 end

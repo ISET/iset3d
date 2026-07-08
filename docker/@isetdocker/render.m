@@ -89,6 +89,18 @@ if isfield(iDockerPrefs,'PBRTContainer')
     if cmdStatus ~= 0 || isempty(result)
         rmpref('ISETDocker','PBRTContainer');
         obj.startPBRT;
+    elseif ~localContainerMatchesDevice(containerName,obj.device)
+        savedDevice = localContainerDeviceLabel(containerName);
+        requestedDevice = upper(char(string(obj.device)));
+        warning('ISETDocker:ContainerDeviceMismatch', ...
+            ['Saved PBRT container "%s" is a %s container, but this render ' ...
+            'requested %s rendering. Restarting PBRT with a matching container.'], ...
+            containerName,savedDevice,requestedDevice);
+        obj.reset();
+        if ~isempty(obj.remoteHost)
+            obj.connect();
+        end
+        obj.startPBRT();
     elseif strcmpi(obj.device,'gpu') && ~localContainerGPUReady(obj,containerName)
         warning('ISETDocker:StaleGPUContainer', ...
             'PBRT container "%s" is running but cannot see the GPU. Restarting it.', ...
@@ -251,6 +263,38 @@ if contains(result,'Failed to initialize NVML') || ...
 end
 
 ready = contains(result,'NVIDIA-SMI');
+
+end
+
+function tf = localContainerMatchesDevice(containerName,device)
+%% True when the saved PBRT container type matches the requested renderer.
+
+containerName = char(string(containerName));
+device = lower(char(string(device)));
+
+switch device
+    case 'gpu'
+        tf = startsWith(containerName,'pbrt-gpu-');
+    case 'cpu'
+        tf = startsWith(containerName,'pbrt-cpu-');
+    otherwise
+        tf = true;
+end
+
+end
+
+function deviceLabel = localContainerDeviceLabel(containerName)
+%% Return a user-facing device label inferred from a PBRT container name.
+
+containerName = char(string(containerName));
+
+if startsWith(containerName,'pbrt-gpu-')
+    deviceLabel = 'GPU';
+elseif startsWith(containerName,'pbrt-cpu-')
+    deviceLabel = 'CPU';
+else
+    deviceLabel = 'PBRT';
+end
 
 end
 

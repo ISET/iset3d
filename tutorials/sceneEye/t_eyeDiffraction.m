@@ -1,6 +1,7 @@
 %% t_eyeDiffraction.m
 % SkipFile
-% Human-eye diffraction render is currently unstable on remote PBRT/GPU.
+% Multi-render human-eye diffraction comparison is useful interactively, but
+% currently slow/unstable for routine smoke tests (CPU/remote dependent).
 %
 % We recommend you go through t_eyeIntro.m before running
 % this tutorial.
@@ -35,7 +36,6 @@ thisSE.get('lookat')
 
 thisSE.set('use pinhole',true);
 
-% humanDocker = dockerWrapper;
 scene = thisSE.piWRS('name','pinhole');
 
 % piAssetGeometry(thisSE.recipe);
@@ -56,7 +56,6 @@ thisSE.set('diffraction',true);
 thisSE.set('pupil diameter',4);
 thisSE.set('film diagonal',10);
 
-% humanDocker = dockerWrapper.humanEyeDocker;
 oi = thisSE.piWRS('name','navarro');
 
 %%

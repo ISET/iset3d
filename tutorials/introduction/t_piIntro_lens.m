@@ -9,6 +9,8 @@
 %
 % See also
 %   piCameraCreate, lensList
+%   t_piIntro_start
+%
 
 %% Initialize ISET and Docker
 

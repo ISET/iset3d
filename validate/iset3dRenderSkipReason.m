@@ -99,15 +99,17 @@ try
         thisDocker.startPBRT();
     end
     [gpuStatus,gpuResult] = localCheckContainerGPU(thisDocker);
+    if localGPUCheckFailed(gpuStatus,gpuResult)
+        thisDocker.reset();
+        thisDocker.startPBRT();
+        [gpuStatus,gpuResult] = localCheckContainerGPU(thisDocker);
+    end
 catch err
     details = localOneLine(err.message);
     return;
 end
 
-if gpuStatus ~= 0 || contains(gpuResult,'Failed to initialize NVML') || ...
-        contains(gpuResult,'No devices were found') || ...
-        contains(gpuResult,'no CUDA-capable device') || ...
-        contains(gpuResult,'Error response from daemon')
+if localGPUCheckFailed(gpuStatus,gpuResult)
     details = sprintf('configured GPU is not visible in PBRT Docker container: %s', ...
         localOneLine(gpuResult));
     return;
@@ -132,6 +134,16 @@ cmd = sprintf('docker %s exec %s sh -c "nvidia-smi"', ...
     contextFlag,containerName);
 cmd = sprintf('%s 2>&1 || true',cmd);
 [status,result] = system(cmd);
+
+end
+
+function tf = localGPUCheckFailed(status,result)
+%% True when the PBRT container cannot use the configured GPU.
+
+tf = status ~= 0 || contains(result,'Failed to initialize NVML') || ...
+    contains(result,'No devices were found') || ...
+    contains(result,'no CUDA-capable device') || ...
+    contains(result,'Error response from daemon');
 
 end
 

@@ -97,6 +97,7 @@ if ~isdeployed
         % Check for "docker for mac"
         [status, ~] = system('docker ps -a');
         if status == 0
+            localResetStalePBRTContainer(args.debug);
             if args.debug
                 disp('Docker configured successfully!');
                 system('which docker', '-echo');
@@ -109,6 +110,7 @@ if ~isdeployed
             [s, ~] = system('open /Applications/Docker.app');
             [status, ~] = system('which docker', '-echo');
             if s==0 && status==0
+                localResetStalePBRTContainer(args.debug);
                 if args.debug
                     disp('Docker configured successfully!');
                     system('docker -v', '-echo');
@@ -200,6 +202,7 @@ end
         % Check for docker
         [status, result] = system('docker ps -a');
         if status == 0
+            localResetStalePBRTContainer(args.debug);
             if args.debug; disp('Docker configured successfully!'); end
             % dockerWrapper.config(args);
         else
@@ -210,6 +213,7 @@ end
         % Check for docker
         [status, result] = system('docker ps -a');
         if status == 0
+            localResetStalePBRTContainer(args.debug);
             if args.debug; disp('Docker configured successfully!'); end
             % dockerWrapper.config(args);
         else
@@ -221,4 +225,59 @@ end
         error('unknown system: not ismac or isunix or ispc!\n');
     end
 end
+end
+
+function localResetStalePBRTContainer(debug)
+%% Reset a saved GPU PBRT container that can no longer see the GPU.
+
+if ~ispref('ISETDocker','PBRTContainer'), return; end
+
+try
+    prefs = getpref('ISETDocker');
+    if ~isfield(prefs,'device') || ~strcmpi(prefs.device,'gpu')
+        return;
+    end
+
+    thisDocker = isetdocker('verbosity',0);
+    containerName = getpref('ISETDocker','PBRTContainer');
+    if localPBRTContainerGPUReady(thisDocker,containerName)
+        return;
+    end
+
+    if debug
+        fprintf('Resetting stale PBRT container "%s".\n',containerName);
+    end
+    thisDocker.reset();
+catch err
+    if debug
+        warning('piDockerConfig:StaleContainerResetFailed', ...
+            'Could not reset stale PBRT container: %s',err.message);
+    end
+end
+
+end
+
+function ready = localPBRTContainerGPUReady(thisDocker,containerName)
+%% Verify that the saved PBRT container sees NVIDIA-SMI.
+
+ready = false;
+containerName = char(string(containerName));
+if isempty(regexp(containerName,'^[A-Za-z0-9_.-]+$','once'))
+    return;
+end
+
+contextFlag = thisDocker.dockerContextFlag();
+cmd = sprintf('docker %s exec %s sh -c "nvidia-smi" 2>&1 || true', ...
+    contextFlag,containerName);
+[~,result] = system(cmd);
+
+if isempty(strtrim(result)) || contains(result,'Failed to initialize NVML') || ...
+        contains(result,'No devices were found') || ...
+        contains(result,'no CUDA-capable device') || ...
+        contains(result,'Error response from daemon')
+    return;
+end
+
+ready = contains(result,'NVIDIA-SMI');
+
 end

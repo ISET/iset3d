@@ -27,10 +27,9 @@ function obj = piWRS(SE,varargin)
 %                       the pupil area. Default true. 
 %    write - Call piWrite first. Default: true 
 %            For debugging we sometimes suppress piWrite. 
-%    docker - Specify an iset docker. If not specified, we use should
-%       find an isetdocker that works for human.  We aren't there yet.
-%       The dockerWrapper system had a call dockerWrapper.humanEye.  We
-%       need that for isetdocker
+%    docker - Specify an isetdocker object. Pinhole scene previews use the
+%       configured/default renderer. Human-eye optics renders force a CPU
+%       PBRT image because the human-eye model is not GPU-enabled.
 %   'name'  - Set the Scene or OI name
 %   'gamma' - Set the display gamma for the window
 %   'show'  - Default: true
@@ -57,10 +56,12 @@ p.parse(SE, varargin{:});
 scaleIlluminance  = p.Results.scaleilluminance;
 show = p.Results.show;
 
-renderArgs = varargin;
-if isempty(p.Results.docker) && ~isempty(p.Results.dockerwrapper)
-    renderArgs = [renderArgs, {'docker', p.Results.dockerwrapper}];
+thisDocker = p.Results.docker;
+if isempty(thisDocker) && ~isempty(p.Results.dockerwrapper)
+    thisDocker = p.Results.dockerwrapper;
 end
+thisDocker = localSceneEyeDocker(SE,thisDocker);
+renderArgs = localRenderArgsWithDocker(varargin,thisDocker);
 
 thisR = SE.recipe;
 
@@ -108,8 +109,76 @@ end
 end
 
 function tf = localIsDockerLike(value)
-%% Accept current isetdocker objects and legacy docker-like values.
+%% Accept empty values or current isetdocker objects.
 
-tf = isempty(value) || isa(value,'isetdocker') || isa(value,'dockerWrapper') || isstruct(value);
+tf = isempty(value) || isa(value,'isetdocker');
+
+end
+
+function thisDocker = localSceneEyeDocker(SE,thisDocker)
+%% Use CPU PBRT for human-eye optics, preserving default renderer for pinhole.
+
+if SE.usePinhole
+    return;
+end
+
+if ~isempty(thisDocker) && strcmpi(thisDocker.device,'cpu')
+    thisDocker = localEnsureHumanEyeCPUImage(thisDocker);
+    return;
+end
+
+thisDocker = localHumanEyeDocker(thisDocker);
+
+end
+
+function thisDocker = localHumanEyeDocker(templateDocker)
+%% Create a CPU isetdocker for human-eye PBRT renders.
+
+if isempty(templateDocker)
+    thisDocker = isetdocker('verbosity',0);
+else
+    thisDocker = isetdocker('verbosity',templateDocker.verbosity,'validate',false);
+    thisDocker.label = templateDocker.label;
+    thisDocker.remoteHost = templateDocker.remoteHost;
+    thisDocker.remoteUser = templateDocker.remoteUser;
+    thisDocker.workDir = templateDocker.workDir;
+    thisDocker.renderContext = templateDocker.renderContext;
+end
+
+thisDocker.device = 'cpu';
+thisDocker.deviceID = '';
+thisDocker = localEnsureHumanEyeCPUImage(thisDocker);
+
+end
+
+function thisDocker = localEnsureHumanEyeCPUImage(thisDocker)
+%% Ensure human-eye optics do not accidentally use a GPU PBRT image.
+
+thisDocker.device = 'cpu';
+thisDocker.deviceID = '';
+if isempty(thisDocker.dockerImage) || contains(lower(thisDocker.dockerImage),'gpu')
+    thisDocker.dockerImage = 'digitalprodev/pbrt-v4-cpu';
+end
+
+end
+
+function renderArgs = localRenderArgsWithDocker(args,thisDocker)
+%% Remove legacy docker keys and append the selected isetdocker object.
+
+renderArgs = {};
+ii = 1;
+while ii <= numel(args)
+    if (ischar(args{ii}) || isstring(args{ii})) && ...
+            ismember(ieParamFormat(args{ii}),{'docker','dockerwrapper'})
+        ii = ii + 2;
+    else
+        renderArgs = [renderArgs args(ii:min(ii+1,numel(args)))]; %#ok<AGROW>
+        ii = ii + 2;
+    end
+end
+
+if ~isempty(thisDocker)
+    renderArgs = [renderArgs {'docker',thisDocker}];
+end
 
 end

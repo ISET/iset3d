@@ -1,6 +1,7 @@
 %% Illustrate creating a goniometric light
 % SkipFile
-% Depends on a missing goniometric map (sky-blue-sun.exr).
+% Depends on missing/extra goniometric assets (for example sky-blue-sun.exr)
+% and includes experimental multi-render sections.
 %
 % TODO:  Create exr files with localized patches so we understand the
 % geometry. 

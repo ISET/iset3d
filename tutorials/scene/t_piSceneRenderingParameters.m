@@ -1,6 +1,7 @@
 %% Calculations of scene properties and camera properties
 % SkipFile
-% Exercises optional lens rendering settings that fail without isetlens.
+% Multi-render lens/depth tutorial exercises optional lens settings and a
+% PBRT film-diagonal edge case; keep it interactive until stabilized.
 %
 % Maybe t_piSetRenderingParameters
 %

@@ -20,6 +20,10 @@ function [ieObject, terminalOutput] = render(obj, varargin)
 % Optional key/value pairs:
 %    render type       - Usual recipe render type cell array 
 %    scale Illuminance - Scale the returned oi illuminance (default: true)
+%    docker            - isetdocker object. Pinhole scene previews use the
+%                        configured/default renderer. Human-eye optics
+%                        renders force a CPU PBRT image because the
+%                        human-eye model is not GPU-enabled.
 %    write - Call piWrite first. Default: true - but for debugging we
 %            sometimes suppress the piWrite. 
 %            
@@ -56,7 +60,8 @@ varargin = ieParamFormat(varargin);
 p = inputParser;
 p.addRequired('obj', @(x)(isa(x, 'sceneEye')));
 p.addParameter('scaleilluminance', true, @islogical);
-p.addParameter('dockerwrapper',[],@(x)(isa(x,'dockerWrapper') || isempty(x)));
+p.addParameter('docker',[],@(x)(isempty(x) || isa(x,'isetdocker')));
+p.addParameter('dockerwrapper',[],@localIsLegacyDocker);
 p.addParameter('write',true,@islogical);
 
 % Some day, check that the cell array has one of these types.
@@ -66,7 +71,11 @@ p.addParameter('rendertype',{'radiance','depth'},@iscell);
 p.parse(obj, varargin{:});
 renderType        = p.Results.rendertype;
 scaleIlluminance  = p.Results.scaleilluminance;
-thisDockerWrapper = p.Results.dockerwrapper;
+thisDocker = p.Results.docker;
+if isempty(thisDocker) && isa(p.Results.dockerwrapper,'isetdocker')
+    thisDocker = p.Results.dockerwrapper;
+end
+thisDocker = localSceneEyeDocker(obj,thisDocker);
 
 %% Get the render recipe
 
@@ -90,20 +99,12 @@ if p.Results.write
     piWrite(thisR);
 end
 
-%% Render the pbrt file using docker
+%% Render the pbrt file using isetdocker
 
-% We need a dockerWrapper that works for the human eye when we call
-% this.  That should either be set up in the default by setprefs or by
-% passing in a specific dockerWrapper.
-if isempty(thisDockerWrapper)
-    % We decided not to recreate the docker wrapper because we are concerned
-    % that the creation resets the docker image on the remote machine
-    % and slows things down. If that's false, then it would be fine
-    % to recreate thisDockerWrapper as default dockerWrapper above
-    % when p.addParameter is called.
+if isempty(thisDocker)
     [ieObject, terminalOutput] = piRender(thisR,'render type',renderType);
 else
-    [ieObject, terminalOutput] = piRender(thisR,'render type',renderType,'ourdocker',thisDockerWrapper);
+    [ieObject, terminalOutput] = piRender(thisR,'render type',renderType,'docker',thisDocker);
 end
 
 %% Fix up the returned object
@@ -116,6 +117,60 @@ else
     % If debugMode, put back the saved camera information.
     thisR.set('camera',cameraSave);
     % sceneWindow(ieObject);
+end
+
+end
+
+function tf = localIsLegacyDocker(value)
+%% Accept empty values or current isetdocker values.
+
+tf = isempty(value) || isa(value,'isetdocker');
+
+end
+
+function thisDocker = localSceneEyeDocker(obj,thisDocker)
+%% Use CPU PBRT for human-eye optics, preserving default renderer for pinhole.
+
+if obj.usePinhole
+    return;
+end
+
+if ~isempty(thisDocker) && strcmpi(thisDocker.device,'cpu')
+    thisDocker = localEnsureHumanEyeCPUImage(thisDocker);
+    return;
+end
+
+thisDocker = localHumanEyeDocker(thisDocker);
+
+end
+
+function thisDocker = localHumanEyeDocker(templateDocker)
+%% Create a CPU isetdocker for human-eye PBRT renders.
+
+if isempty(templateDocker)
+    thisDocker = isetdocker('verbosity',0);
+else
+    thisDocker = isetdocker('verbosity',templateDocker.verbosity,'validate',false);
+    thisDocker.label = templateDocker.label;
+    thisDocker.remoteHost = templateDocker.remoteHost;
+    thisDocker.remoteUser = templateDocker.remoteUser;
+    thisDocker.workDir = templateDocker.workDir;
+    thisDocker.renderContext = templateDocker.renderContext;
+end
+
+thisDocker.device = 'cpu';
+thisDocker.deviceID = '';
+thisDocker = localEnsureHumanEyeCPUImage(thisDocker);
+
+end
+
+function thisDocker = localEnsureHumanEyeCPUImage(thisDocker)
+%% Ensure human-eye optics do not accidentally use a GPU PBRT image.
+
+thisDocker.device = 'cpu';
+thisDocker.deviceID = '';
+if isempty(thisDocker.dockerImage) || contains(lower(thisDocker.dockerImage),'gpu')
+    thisDocker.dockerImage = 'digitalprodev/pbrt-v4-cpu';
 end
 
 end

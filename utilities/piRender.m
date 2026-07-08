@@ -30,8 +30,8 @@ function [ieObject, result, thisD, outFile] = piRender(thisR, varargin)
 %  reuse      - Boolean. Indicate whether to use an existing file if one of
 %               the correct size exists (default is false)
 %
-%  docker     - Specify the docker wrapper to use.  Default is build
-%               from scratch with defaults in the Matlab getprefs('docker')
+%  docker     - Specify the isetdocker object to use. Default is built
+%               from ISETDocker preferences.
 %
 %  verbosity  - How much to print to standard output:
 %               0 Silent

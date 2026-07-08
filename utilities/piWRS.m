@@ -21,8 +21,7 @@ function [obj, results, thisD] = piWRS(thisR,varargin)
 %           ... others).  If it is a char, then we convert it to a cell.
 %   'show' -  Call a window to show the object and insert it in
 %             the vcSESSION database (Default: true);
-%   'docker wrapper' - Specify the docker wrapper we will pass to
-%                      piRender ('our docker') is an equivalent.
+%   'docker' - Specify the isetdocker object passed to piRender.
 %
 %   'name'  - Set the Scene or OI name
 %   'gamma'      - Set the display gamma for the window

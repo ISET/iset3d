@@ -1,6 +1,7 @@
 %% t_filmResize
 % SkipFile
-% Long exploratory camera/eye workflow with optional lens-model dependencies.
+% Long camera/eye comparison tutorial with many renders, denoising, and a
+% human-eye parameter sweep. Not appropriate for the smoke-test runner.
 %
 % Illustrate the impact of changing the aspect ratio and sampling
 % properties of a scene.  We start with manipulating the pinhole camera
@@ -167,17 +168,17 @@ thisSE = sceneEye('chessset','eye model',modelName{mm});
 thisSE.set('use pinhole',true);
 thisSE.piWRS;
 
-humanD = dockerWrapper.humanEyeDocker;
+thisDocker = isetdocker;
 thisSE.set('use pinhole',false);
-thisSE.piWRS('docker wrapper',humanD);
+thisSE.piWRS('docker',thisDocker);
 
 thisSE.get('fov')
 thisSE.set('fov',22);
-thisSE.piWRS('docker wrapper',humanD);
+thisSE.piWRS('docker',thisDocker);
 
 ss = thisSE.get('spatial samples');
 thisSE.set('spatial samples',2*ss);
-thisSE.piWRS('docker wrapper',humanD);
+thisSE.piWRS('docker',thisDocker);
 
 oi = ieGetObject('oi'); 
 oi = piAIdenoise(oi); ieReplaceObject(oi); 
@@ -185,7 +186,7 @@ oiWindow;
 
 thisSE.set('spatial samples',ss);
 thisSE.set('render type',{'radiance','depth'});
-thisSE.piWRS('docker wrapper',humanD);
+thisSE.piWRS('docker',thisDocker);
 oi = ieGetObject('oi'); 
 oi = piAIdenoise(oi); ieReplaceObject(oi); 
 oiWindow;
@@ -203,11 +204,10 @@ aa =[1/.3, 1/.5, 1, 1/2];
 for ii = 1:numel(aa)
     thisSE.set('accommodation',aa(ii));
     name = sprintf('Acc %.1f',aa(ii));
-    thisSE.piWRS('docker wrapper',humanD,'name',name);
+    thisSE.piWRS('docker',thisDocker,'name',name);
     oi = ieGetObject('oi');
     oi = piAIdenoise(oi); ieReplaceObject(oi);
     oiWindow;
 end
 
 %% END
-

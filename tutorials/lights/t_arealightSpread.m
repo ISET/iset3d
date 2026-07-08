@@ -1,6 +1,7 @@
 %% t_arealightLookat.m
 % SkipFile
-% Depends on the old flat surface scene; rewrite around current assets.
+% Depends on the local/legacy flat-surface scene and renders several
+% light-spread variants; keep skipped until rewritten around current assets.
 %
 % Look at the light directly.
 % Also, rotate the light and translate it and scale its size.

@@ -35,20 +35,94 @@ testCase.verifyEqual(thisSE.recipe.get('camera'), originalCamera);
 end
 
 %% ------------------------------------------------------------------------
-function testDockerWrapperAliasForwardedAsDocker(testCase)
+function testDockerAliasAcceptsISETDocker(testCase)
 stubDir = localInstallSceneEyeStubs(testCase);
 cleanupPath = onCleanup(@() rmpath(stubDir)); %#ok<NASGU>
 
 thisSE = sceneEye('simple scene', 'eye model', 'navarro');
 thisSE.set('use pinhole', true);
-legacyDocker = struct('label', 'legacy docker wrapper');
+thisDocker = isetdocker('verbosity',0);
 
-thisSE.piWRS('docker wrapper', legacyDocker, 'show', false);
+thisSE.piWRS('docker wrapper', thisDocker, 'show', false);
 
 call = load(fullfile(stubDir, 'piRenderCall.mat'));
 testCase.verifyTrue(localHasName(call.renderArgs, 'docker'), ...
-    'Legacy docker wrapper input should be forwarded to piRender as docker.');
-testCase.verifyEqual(localValueForName(call.renderArgs, 'docker'), legacyDocker);
+    'docker wrapper alias should be forwarded to piRender as docker.');
+testCase.verifyEqual(localValueForName(call.renderArgs, 'docker'), thisDocker);
+end
+
+%% ------------------------------------------------------------------------
+function testRenderForwardsISETDocker(testCase)
+stubDir = localInstallSceneEyeStubs(testCase);
+cleanupPath = onCleanup(@() rmpath(stubDir)); %#ok<NASGU>
+
+thisSE = sceneEye('simple scene', 'eye model', 'navarro');
+thisSE.set('use pinhole', true);
+thisDocker = isetdocker('verbosity',0);
+
+thisSE.render('docker', thisDocker);
+
+call = load(fullfile(stubDir, 'piRenderCall.mat'));
+testCase.verifyTrue(localHasName(call.renderArgs, 'docker'), ...
+    'sceneEye.render should forward isetdocker as docker.');
+testCase.verifyEqual(localValueForName(call.renderArgs, 'docker'), thisDocker);
+end
+
+%% ------------------------------------------------------------------------
+function testOpticsPiWRSUsesCPUDocker(testCase)
+stubDir = localInstallSceneEyeStubs(testCase);
+cleanupPath = onCleanup(@() rmpath(stubDir)); %#ok<NASGU>
+
+thisSE = sceneEye('simple scene', 'eye model', 'navarro');
+thisSE.set('use pinhole', false);
+save(fullfile(stubDir, 'piRenderThrow.mat'), 'stubDir');
+
+testCase.verifyError(@() thisSE.piWRS('show', false), 'Stub:piRender');
+
+call = load(fullfile(stubDir, 'piRenderCall.mat'));
+thisDocker = localValueForName(call.renderArgs, 'docker');
+testCase.verifyEqual(thisDocker.device, 'cpu');
+testCase.verifyEqual(thisDocker.dockerImage, 'digitalprodev/pbrt-v4-cpu');
+end
+
+%% ------------------------------------------------------------------------
+function testOpticsPiWRSOverridesGPUDocker(testCase)
+stubDir = localInstallSceneEyeStubs(testCase);
+cleanupPath = onCleanup(@() rmpath(stubDir)); %#ok<NASGU>
+
+thisSE = sceneEye('simple scene', 'eye model', 'navarro');
+thisSE.set('use pinhole', false);
+gpuDocker = isetdocker('verbosity',0);
+gpuDocker.device = 'gpu';
+gpuDocker.deviceID = '1';
+gpuDocker.dockerImage = 'vistalab/pbrt-v4-gpu';
+save(fullfile(stubDir, 'piRenderThrow.mat'), 'stubDir');
+
+testCase.verifyError(@() thisSE.piWRS('docker', gpuDocker, 'show', false), ...
+    'Stub:piRender');
+
+call = load(fullfile(stubDir, 'piRenderCall.mat'));
+thisDocker = localValueForName(call.renderArgs, 'docker');
+testCase.verifyEqual(thisDocker.device, 'cpu');
+testCase.verifyEqual(thisDocker.deviceID, '');
+testCase.verifyEqual(thisDocker.dockerImage, 'digitalprodev/pbrt-v4-cpu');
+end
+
+%% ------------------------------------------------------------------------
+function testOpticsRenderUsesCPUDocker(testCase)
+stubDir = localInstallSceneEyeStubs(testCase);
+cleanupPath = onCleanup(@() rmpath(stubDir)); %#ok<NASGU>
+
+thisSE = sceneEye('simple scene', 'eye model', 'navarro');
+thisSE.set('use pinhole', false);
+save(fullfile(stubDir, 'piRenderThrow.mat'), 'stubDir');
+
+testCase.verifyError(@() thisSE.render(), 'Stub:piRender');
+
+call = load(fullfile(stubDir, 'piRenderCall.mat'));
+thisDocker = localValueForName(call.renderArgs, 'docker');
+testCase.verifyEqual(thisDocker.device, 'cpu');
+testCase.verifyEqual(thisDocker.dockerImage, 'digitalprodev/pbrt-v4-cpu');
 end
 
 %% ------------------------------------------------------------------------
@@ -66,17 +140,17 @@ localWriteFunction(fullfile(stubDir, 'piWrite.m'), sprintf([ ...
 
 localWriteFunction(fullfile(stubDir, 'piRender.m'), sprintf([ ...
     'function [obj, results, thisD] = piRender(thisR,varargin)\n' ...
+    'renderArgs = varargin;\n' ...
+    'save(''%s'', ''renderArgs'');\n' ...
     'if exist(''%s'', ''file'')\n' ...
     '    error(''Stub:piRender'', ''Stub piRender requested failure.'');\n' ...
     'end\n' ...
-    'renderArgs = varargin;\n' ...
-    'save(''%s'', ''renderArgs'');\n' ...
     'obj = struct(''type'', ''scene'');\n' ...
     'results = ''stub results'';\n' ...
     'thisD = [];\n' ...
     'end\n'], ...
-    localMatlabPath(fullfile(stubDir, 'piRenderThrow.mat')), ...
-    localMatlabPath(fullfile(stubDir, 'piRenderCall.mat'))));
+    localMatlabPath(fullfile(stubDir, 'piRenderCall.mat')), ...
+    localMatlabPath(fullfile(stubDir, 'piRenderThrow.mat'))));
 
 localWriteFunction(fullfile(stubDir, 'sceneWindow.m'), sprintf([ ...
     'function sceneWindow(varargin)\n' ...
@@ -87,6 +161,25 @@ localWriteFunction(fullfile(stubDir, 'oiWindow.m'), sprintf([ ...
     'function oiWindow(varargin)\n' ...
     'save(''%s'', ''varargin'');\n' ...
     'end\n'], localMatlabPath(fullfile(stubDir, 'oiWindowCalled.mat'))));
+
+localWriteFunction(fullfile(stubDir, 'isetdocker.m'), sprintf([ ...
+    'classdef isetdocker\n' ...
+    '    properties\n' ...
+    '        label = ''''\n' ...
+    '        device = ''''\n' ...
+    '        deviceID = ''''\n' ...
+    '        dockerImage = ''''\n' ...
+    '        remoteHost = ''''\n' ...
+    '        remoteUser = ''''\n' ...
+    '        workDir = ''''\n' ...
+    '        renderContext = ''''\n' ...
+    '        verbosity = 0\n' ...
+    '    end\n' ...
+    '    methods\n' ...
+    '        function obj = isetdocker(varargin)\n' ...
+    '        end\n' ...
+    '    end\n' ...
+    'end\n']));
 
 addpath(stubDir, '-begin');
 end
