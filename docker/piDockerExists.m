@@ -13,6 +13,22 @@ function [dockerExists, status, result] = piDockerExists()
 
 %% Can we use Docker?
 
+% MATLAB launched as a GUI app (Dock, Spotlight, Finder) does not inherit
+% the login shell's PATH, so Docker installs in the usual Homebrew
+% locations can be invisible to system() even though a Terminal shell
+% finds them fine.  Add them here so 'which docker' can succeed.  Mirrors
+% the PATH fix in piDockerConfig.m.
+if ismac
+    initPath = getenv('PATH');
+    homebrewPaths = {'/usr/local/bin', '/opt/homebrew/bin'};
+    for ii = 1:numel(homebrewPaths)
+        if ~piContains(initPath, homebrewPaths{ii})
+            initPath = [homebrewPaths{ii}, ':', initPath]; %#ok<AGROW>
+        end
+    end
+    setenv('PATH', initPath);
+end
+
 [status, result] = system('which docker');
 
 % This approach brings up the docker desktop window, starting in 2022.  So,

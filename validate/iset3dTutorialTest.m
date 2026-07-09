@@ -15,6 +15,12 @@ function run = iset3dTutorialTest(varargin)
 repoRoot = iset3dRootPath;
 localEnsureISETCam(repoRoot);
 
+% The renderer preflight check caches its result in a persistent
+% variable for the duration of one run.  Clear it here so each fresh
+% call re-checks Docker/GPU state instead of reusing a stale verdict
+% left over from an earlier call in the same MATLAB session.
+clear('iset3dRenderSkipReason');
+
 config = struct();
 config.repositoryName = 'ISET3d';
 config.repositoryRoot = repoRoot;
