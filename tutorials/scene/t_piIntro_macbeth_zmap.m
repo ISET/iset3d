@@ -44,8 +44,8 @@ thisR.set('film render type',{'radiance','depth','coordinates'});
 % Move the camera closer
 thisR.set('object distance',0.5);
 
-scene = piWRS(thisR);
 rect = [71     2   489   342];
+scene = piWRS(thisR);
 metadata = sceneGet(scene,'metadata');
 coords = metadata.coordinates;
 scene = sceneCrop(scene,rect);

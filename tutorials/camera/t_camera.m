@@ -1,4 +1,6 @@
 %% Cameras
+% SkipFile
+% Requires the optional isetlens repository; keep out of routine smoke runs.
 % We render the chess set scene through a camera with a lens . The output is 
 % the spectral irradiance at the sensor surface (the optical image).
 % 

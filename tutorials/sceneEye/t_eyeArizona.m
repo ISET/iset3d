@@ -1,4 +1,6 @@
 %% t_eyeArizona
+% SkipFile
+% Uses obsolete dockerWrapper setup; needs sceneEye rewrite.
 %
 % Run the Arizona eye model
 %

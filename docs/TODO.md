@@ -1,5 +1,39 @@
 # ISET3D TODO
 
+## Rendering Database Resources
+
+- After obtaining the MongoDB credentials, create the missing `PBRTResources`
+  metadata records for the texture files already synced to
+  `/acorn/data/iset/PBRTResources/texture`.
+  - Open an SSH tunnel in a terminal and leave it running:
+
+    ```bash
+    ssh -N -L 49154:acorn:49153 wandell@orange.stanford.edu
+    ```
+
+  - In MATLAB, run the texture uploader using the Mongo credential:
+
+    ```matlab
+    pw = input('Mongo password: ', 's');
+    report = piTextureResourcesUpload( ...
+        'dry run', false, ...
+        'sync files', false, ...
+        'db server', 'localhost:49154', ...
+        'db username', 'wandell', ...
+        'db password', pw);
+    clear pw
+    ```
+
+  - Confirm there are no `failed` `dbStatus` entries in `report`, then verify:
+
+    ```matlab
+    pbrtDB = isetdb( ...
+        dbServer="localhost:49154", ...
+        dbUsername="wandell", ...
+        dbPassword=string(input('Mongo password: ', 's')));
+    remoteTextures = pbrtDB.contentFind('PBRTResources', 'type', 'texture', 'show', true);
+    ```
+
 ## Tutorial Smoke-Test Cleanup
 
 - Find the legitimate `flatSurface` / `flat surface` scene in the scene database or SDR and update the lighting tutorials to use that canonical asset.

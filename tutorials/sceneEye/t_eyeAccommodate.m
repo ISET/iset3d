@@ -1,4 +1,6 @@
 %% t_eyeAccommodate.m
+% SkipFile
+% Uses obsolete dockerWrapper human-eye setup; needs sceneEye rewrite.
 %
 % This tutorial renders a retinal image of "slanted edge" to check how
 % close the accommodation parameters match

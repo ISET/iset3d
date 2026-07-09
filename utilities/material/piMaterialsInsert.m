@@ -74,8 +74,6 @@ mNames = p.Results.names;
 if ischar(mType), mType = {mType}; end
 if ischar(mNames), mNames = {mNames}; end
 
-
-
 %% We should have either material type (mType) or material names (mNames)
 
 % Individually named materials

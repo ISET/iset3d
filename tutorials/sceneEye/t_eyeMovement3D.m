@@ -1,7 +1,7 @@
 %% t_eyeMovement3D.m
 % SkipFile
-% ISETBio-dependent human-eye motion sweep with many CPU renders; keep out
-% of the iset3d smoke test while deciding whether to move it to ISETBio.
+% ISETBio-dependent human-eye motion sweep uses obsolete sceneEye properties
+% and many CPU renders; keep it out of smoke tests pending API decisions.
 %
 % This tutorial shows how to translate and rotate the eye throughout the
 % scene. We will use the chess set scene for this tutorial.
@@ -12,7 +12,7 @@
 
 %% Initialize ISETBIO
 if isequal(piCamBio,'isetcam')
-    fprintf('%s: requires ISETBIO, not ISETCam\n',mfilename); 
+    fprintf('%s: requires ISETBIO, not ISETCam\n',mfilename);
     return;
 end
 ieInit;
@@ -23,14 +23,14 @@ ieInit;
 % This section takes around 5 min to render on a 2 core machine.
 
 % This scene consists of several chess pieces on a chess set. The
-% dimensions match a real world chess set.  
+% dimensions match a real world chess set.
 myScene = sceneEye('chessSet');
 
 % Since we will be rendering many images, let's keep the quality fairly low
-myScene.resolution = 128; 
+myScene.resolution = 128;
 myScene.numRays = 256;
 
-% Note: 
+% Note:
 % We have to be careful around the "to" point. For example, a render of
 % from = [0 0 0] and to = [0 1 1] is going to be very different than a
 % render from = [0 0 0] and to = [0 100 1]. One rotates the camera from the
@@ -43,10 +43,10 @@ imageFrames = cell(length(xShift),1);
 for ii = 1:length(xShift)
     myScene.eyePos = originalPos + [xShift(ii) 0 0];
     myScene.name = sprintf('eyePos_%0.2f',xShift(ii));
-    
+
     oi = myScene.render;
     imageFrames{ii} = oiGet(oi,'rgb');
-    
+
     vcAddAndSelectObject(oi);
     oiWindow;
 end
@@ -62,17 +62,17 @@ end
 % Set the position back to the original.
 myScene.eyePos = originalPos;
 
-% Scan the scene 
+% Scan the scene
 xShift = [-100 -50 0 50 100].*10^-3; % convert from mm to meters;
 originalTo = myScene.eyeTo;
 imageFrames = cell(length(xShift),1);
 for ii = 1:length(xShift)
     myScene.eyeTo = originalTo + [xShift(ii) 0 0];
     myScene.name = sprintf('eyeTo_%0.2f',xShift(ii));
-    
+
     oi = myScene.render;
     imageFrames{ii} = oiGet(oi,'rgb');
-    
+
     vcAddAndSelectObject(oi);
     oiWindow;
 end

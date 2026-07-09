@@ -1,6 +1,7 @@
 %% t_arealightArray.m
 % SkipFile
-% Depends on the flat surface scene and renders several area-light arrays.
+% Depends on the local/legacy flat-surface scene and renders several
+% area-light arrays; keep skipped until rewritten around current assets.
 %
 % Exposes the code used in oeLights and cubeLights for how to create
 % an array of area lights

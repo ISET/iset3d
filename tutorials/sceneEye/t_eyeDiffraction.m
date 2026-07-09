@@ -1,7 +1,7 @@
 %% t_eyeDiffraction.m
 % SkipFile
-% Multi-render human-eye diffraction comparison. Useful interactively, but
-% too slow and CPU-render dependent for the routine tutorial smoke test.
+% Multi-render human-eye diffraction comparison is useful interactively, but
+% currently slow/unstable for routine smoke tests (CPU/remote dependent).
 %
 % We recommend you go through t_eyeIntro.m before running
 % this tutorial.

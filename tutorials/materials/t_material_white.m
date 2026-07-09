@@ -1,67 +1,45 @@
 %% t_material_white
 %
-%
-% Illustrate how to change all the materials in a scene to
-% white/diffuse so we get a sense of the lighting.
+% Change all object materials in a scene to diffuse white so the lighting
+% is easy to inspect.
 %
 % See also
+%   t_materials
 
-%%
+%% Initialize
+
 ieInit;
-if ~piDockerExists, piDockerConfig;end
+if ~piDockerExists, piDockerConfig; end
 
-%% Work with the cornell box?
+%% Work with the Cornell box
 
 thisR = piRecipeDefault('scene name','cornell_box');
-%{
-wLight    = piLightCreate('white','type','area');
-thisR.set('light',wLight,'add');
-thisR.set('asset',wLight.name,'world rotation',[180 0 0]);
-% piWRS(thisR,'render flag','hdr');
-%}
-lightName = 'new_spot_light_L';
-spotLight = piLightCreate(lightName,...
-                        'type','spot',...
-                        'spd','equalEnergy',...
-                        'specscale', 1, ...
-                        'coneangle', 15,...
-                        'conedeltaangle', 10, ...
-                        'cameracoordinate', true);
-thisR.set('light', spotLight, 'add');
-piWRS(thisR);
+thisR.set('film resolution',[160 120]);
+thisR.set('rays per pixel',32);
+thisR.set('nbounces',2);
 
-%%  Find the object IDs
+spotLight = piLightCreate('new_spot_light_L',...
+    'type','spot',...
+    'spd','equalEnergy',...
+    'specscale',1,...
+    'coneangle',15,...
+    'conedeltaangle',10,...
+    'cameracoordinate',true);
+thisR.set('light',spotLight,'add');
 
-thisR.show('objects');
+%% Insert one white diffuse material and assign it to every object
 
-redWallID  = piAssetSearch(thisR,'material name','cbox_red');
-greenWallID = piAssetSearch(thisR,'material name','cbox_green');
-largeBoxID = piAssetSearch(thisR,'object name','large_box');
-smallBoxID = piAssetSearch(thisR,'object name','small_box');
-boxID      = piAssetSearch(thisR,'object name','003_cornell');
-
-%%  Assign some materials
-% piMaterialPresets('list');
-
-newMaterials = {'diffuse-white','wood-medium-knots','wood-mahogany',...
-    'marble-beige','macbethchart','mirror'};
-piMaterialsInsert(thisR,'name',newMaterials);
-
-thisR.set('asset',smallBoxID,'material name','wood-medium-knots');
-%thisR.set('asset',largeBoxID,'material name','wood-mahogany');
-thisR.set('asset',largeBoxID,'material name','mirror');
-%this doesn't work...
-%thisR.set('asset',boxID,'material name','macbethchart');
-thisR.set('asset',greenWallID,'material name','wood-medium-knots');
-thisR.set('asset',redWallID','material name','marble-beige');
-piWRS(thisR);
-
-%%  Turn everything diffuse white to illustrate the big lighting change
+piMaterialsInsert(thisR,'name','diffuse-white');
 
 oNames = thisR.get('object names');
-for ii=1:numel(oNames)
- thisR.set('asset',oNames{ii},'material name','diffuse-white');
+for ii = 1:numel(oNames)
+    thisR.set('asset',oNames{ii},'material name','diffuse-white');
 end
-piWRS(thisR);
+fprintf('Assigned diffuse-white to %d objects\n',numel(oNames));
+
+%% Render once
+
+scene = piWRS(thisR,'render flag','hdr');
+fprintf('Rendered white-material scene: %d x %d pixels\n',sceneGet(scene,'cols'),sceneGet(scene,'rows'));
 
 %% END

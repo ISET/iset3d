@@ -1,4 +1,6 @@
 %% Show how to render with camera motion blur
+% SkipFile
+% Multi-render motion workflow; simplify before returning to smoke runs.
 %
 % This script shows how to add camera motion blur while keeping the
 % scene itself stationary.

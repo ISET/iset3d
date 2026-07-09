@@ -86,8 +86,7 @@ lensFile = [lensFile,'.json'];
 % This is the geometric arrangement
 
 LFMicrolensGeometry(pixelSize,mLensSize);
-%% 
-% 
+
 %% Create the camera with the combined imaging lens and microlens
 % In this part of the code we start to use the ISET3d rendering methods.
 
@@ -138,7 +137,7 @@ LF = LFImage2buffer(rgb,nMicrolens(2),nMicrolens(1));
 % good view based on the photons at the corner samples.
 
 [imgArray, imgCorners] = LFbuffer2SubApertureViews(LF);
-ieNewGraphWin; imagesc(imgArray); axis image;
+ieFigure; imagesc(imgArray); axis image;
 %% 
 % If you want to see just one of the pictures, you can do this.  Maybe we should 
 % write a function for this.  Notice that the corners are returned from the LFbuffer2SubApertureViews() 
@@ -175,7 +174,11 @@ lightfield = ip2lightfield(ip,'pinholes',nMicrolens,'colorspace','srgb');
 % 
 % Run this code by hand.  It doesn't do well with the LiveScript!
 
+% This crashed Matlab the last time I ran it
+%
 % LFDispVidCirc(lightfield.^(1/2.2));
+%
+
 %% Additional ideas for more analyses
 % I  found that Don Dansereau posted a recent (May 2020) GitHub update with 
 % new features!  (https://github.com/doda42/LFToolbox).  A good project might 
@@ -186,7 +189,7 @@ lightfield = ip2lightfield(ip,'pinholes',nMicrolens,'colorspace','srgb');
 %{
 % There are other LF functions to explore for visualizing the data.
   outputImage = LFAutofocus(lightfield);
-  ieNewGraphWin;
+  ieFigure;
   imagescRGB(outputImage);
 %}
 %{
@@ -194,7 +197,7 @@ lightfield = ip2lightfield(ip,'pinholes',nMicrolens,'colorspace','srgb');
 % the 'depth map' option.  This lets you see how far away the scene objects
 % are.
   dMap = piRender(thisR,'render type','depth');
-  ieNewGraphWin; 
+  ieFigure; 
   imagesc(dMap); colormap(flipud(gray)); colorbar;
 %}
 %% 

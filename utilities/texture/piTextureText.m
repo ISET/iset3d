@@ -57,10 +57,13 @@ for ii=1:numel(textureParams)
                 thisText = sprintf(' "%s %s" "%s" ',...
                     thisType, textureParams{ii}, thisVal);
                 
-                % Do not do all the checking and file movement below.
-                % Just add the text.
-                val = strcat(val, thisText);
-                continue; 
+                % DB-backed resources may intentionally use absolute remote
+                % paths.  Ordinary recipes with local absolute texture files
+                % still need staging into the output folder for upload.
+                if ~isequal(textureParams{ii}, 'filename') || thisR.useDB || ~exist(thisVal, 'file')
+                    val = strcat(val, thisText);
+                    continue; 
+                end
             else
 
                 if contains(lower(thisVal),{'true','false'}) && strcmp(thisType,'bool')
@@ -112,12 +115,17 @@ for ii=1:numel(textureParams)
             texturePathTmp = 'textures';
             if ~isempty(texturePath) && exist(thisVal,'file')
                 if ~exist(fullfile(oDir,'textures',[n,e]),'file') && ~thisR.useDB
-                    fullpathTex = which(thisVal);
-                    copyfile(fullpathTex, ...
-                        fullfile(oDir,'textures'));
+                    if isfile(thisVal)
+                        fullpathTex = thisVal;
+                    else
+                        fullpathTex = which(thisVal);
+                    end
+                    copyfile(fullpathTex, oTexDir);
                 end
                 texturePathTmp = texturePath;
                 texturePath = 'textures';
+                thisText = sprintf(' "%s %s" "textures/%s" ',...
+                    thisType, textureParams{ii}, [n,e]);
             end
 
             thisVal = [n,e];
@@ -180,14 +188,16 @@ for ii=1:numel(textureParams)
                         imgFile = pathToLinux(imgFile);
                     end
 
-                    if isempty(texturePath) 
-                        thisText = strrep(thisText, imgFile, ['textures/',thisVal]);
-                    end
-
-                    if isempty(getpref('ISETDocker','remoteHost'))
+                    if ~thisR.useDB
                         texturesDir = [thisR.get('output dir'),'/textures'];
                         if ~exist(texturesDir,'dir'), mkdir(texturesDir); end
-                        copyfile(imgFile,texturesDir);
+                        if ~exist(fullfile(texturesDir, thisVal), 'file')
+                            copyfile(imgFile,texturesDir);
+                        end
+                        thisText = sprintf(' "%s %s" "textures/%s" ',...
+                            thisType, textureParams{ii}, thisVal);
+                    elseif isempty(texturePath) 
+                        thisText = strrep(thisText, imgFile, ['textures/',thisVal]);
                     end
                 end
             end

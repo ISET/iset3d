@@ -1,7 +1,7 @@
 %% Calculations of scene properties and camera properties
 % SkipFile
-% Multi-render lens/depth tutorial currently exercises a PBRT film-diagonal
-% edge case; keep it interactive until that path is stabilized.
+% Multi-render lens/depth tutorial exercises optional lens settings and a
+% PBRT film-diagonal edge case; keep it interactive until stabilized.
 %
 % Maybe t_piSetRenderingParameters
 %

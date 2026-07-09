@@ -1,6 +1,7 @@
 %% Illustrate use of material presents
 % SkipFile
-% Depends on external preset texture assets and renders many material variants.
+% Depends on external preset texture assets (including optional Polligon
+% materials) and renders many material variants.
 %
 % We have some materials with easy to understand names that we can
 % insert in a scene.  This script illustrates how to find one of them,

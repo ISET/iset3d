@@ -1,86 +1,47 @@
 %% Introducing iset3d calculations with the Chess Set
 %
-% Brief description:
-%  This script renders the chess set.  
-% 
-%  This script:
-%
-%    * Initializes the recipe
-%    * Sets the film (sensor) resolution parameters
-%    * Calls the renderer that invokes PBRT via docker
-%    * Loads the returned radiance and depth map into an ISET Scene structure.
-%    * Adds a point light
-%
-% Dependencies:
-%    ISET3d and either ISETCam or ISETBio
+% This short tutorial renders the chess set once and shows the basic
+% recipe controls used throughout the introductory scripts.
 %
 % See also
 %   t_piIntro_*, piRecipeDefault, @recipe
-%
 
 %% Initialize ISET and Docker
 
-% Start up ISET and check that docker is configured 
 ieInit;
 if ~piDockerExists, piDockerConfig; end
 
-%% Read the recipe
+%% Read the recipe and set modest render quality
 
 thisR = piRecipeDefault('scene name','chessset');
-    
-%% Set the render quality
-
-% There are many rendering parameters.  This is an introductory
-% script, so we set a minimal number of parameters.  Much of what is
-% described in other scripts expands on this section.
-
-thisR.set('film resolution',[256 256]);
-thisR.set('rays per pixel',64);
-thisR.set('n bounces',4); % Number of bounces traced for each ray
-
+thisR.set('film resolution',[160 160]);
+thisR.set('rays per pixel',32);
+thisR.set('n bounces',2);
 thisR.set('render type',{'radiance','depth'});
 
-% The main way we write, render and show the recipe.  The render flag
-% is optional, and there are several other optional piWRS flags.
-scene = piWRS(thisR,'render flag','hdr');
-
-%% By default, we have also computed the depth map, so we can render it
-
-scenePlot(scene,'depth map');
-
-%% Add a bright point light near the front where the camera is
+%% Add one camera-space point light and one room skymap
 
 thisR.show('lights');
 thisR.set('light','all','delete');
 
-% First create the light
 pointLight = piLightCreate('point',...
     'type','point',...
-    'cameracoordinate', true);
-
-% Then add it to our scene
+    'spd','equalEnergy',...
+    'specscale float',0.6,...
+    'cameracoordinate',true);
 thisR.set('light',pointLight,'add');
 
-piWRS(thisR,'name','Point light');
-
-%% Add a skymap
-
 [~, skyMap] = thisR.set('skymap','room.exr');
-
+thisR.set('light',skyMap.name,'rotate',[30 0 0]);
 thisR.show('lights');
 
-piWRS(thisR, 'name', 'Point light and skymap');
+%% Render once and inspect the returned scene
 
-%% Rotate the skymap
+scene = piWRS(thisR,'render flag','hdr');
+depthMap = sceneGet(scene,'depth map');
+fprintf('Rendered chess set: %d x %d pixels\n',sceneGet(scene,'cols'),sceneGet(scene,'rows'));
+fprintf('Depth range: %.2f to %.2f m\n',min(depthMap(:)),max(depthMap(:)));
 
-thisR.set('light',skyMap.name,'rotate',[30 0 0]);
-
-piWRS(thisR, 'name','Rotated skymap');
-
-%% World orientation
-thisR.set('light', skyMap.name, 'world orientation', [30 0 30]);
-thisR.get('light', skyMap.name, 'world orientation')
-
-piWRS(thisR, 'name','No rotation skymap');
+scenePlot(scene,'depth map');
 
 %% END

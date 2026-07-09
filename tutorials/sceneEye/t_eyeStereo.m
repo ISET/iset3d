@@ -1,7 +1,7 @@
 %% t_eyeStereo
 % SkipFile
-% Stereo sceneEye tutorial with multiple CPU human-eye renders. Keep it
-% interactive rather than running it in the tutorial smoke test.
+% Stereo sceneEye tutorial uses obsolete constructor/API patterns and
+% multiple CPU human-eye renders; keep it interactive for now.
 %
 % Please read t_eyeIntro first.
 %

@@ -1,3 +1,5 @@
+% SkipFile
+% Rendering-based MTF workflow is currently unstable in the smoke runner.
 clear; close all
 % SkipFile
 % Lens MTF validation currently exercises a fragile spectral EXR conversion

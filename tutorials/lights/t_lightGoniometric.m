@@ -1,7 +1,7 @@
 %% Illustrate creating a goniometric light
 % SkipFile
-% Experimental multi-render lighting script; parts are marked "Not working"
-% and later sections depend on additional scene assets such as bunny.
+% Depends on missing/extra goniometric assets (for example sky-blue-sun.exr)
+% and includes experimental multi-render sections.
 %
 % TODO:  Create exr files with localized patches so we understand the
 % geometry. 

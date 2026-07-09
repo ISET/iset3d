@@ -1,7 +1,7 @@
 %% t_piIntro_meshLabel
 % SkipFile
-% CPU instance-label rendering is useful interactively, but historically
-% intermittent and not suitable for routine tutorial smoke tests.
+% piLabel currently depends on docker labeling paths that are intermittent,
+% so keep it out of routine tutorial smoke tests.
 %
 % Many scenes, but not all, can be labeled at each pixel by the object
 % identity. The key routine is piLabel. 

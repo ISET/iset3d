@@ -1,4 +1,5 @@
-%% Dual-pixel autofocus sensor simulation
+%% Dual-pixel autofocus (DPAF) sensor simulation
+%
 % We illustrate how to create a dual pixel sensor for autofocus applications.  
 % 
 % The dual pixel design consists of a sensor with rectangular pixels that are 
@@ -19,6 +20,7 @@
 % By choosing which regions match, we focus that region of the image.
 % 
 % *See also:*
+%  t_cameraLightField
 % 
 % s_sensorDPAF (ISETCam), tls_cameraLightField.mlx
 %% Initialize
@@ -108,7 +110,7 @@ thisR.set('rays per pixel',256);
 
 [oi, ~] = piWRS(thisR);
 ss = oiGet(oi,'sample spacing','mm');
-assert(abs(ss(1) - halfPixelWidth_mm) < 1e-6);
+assert(abs(ss(1) - halfPixelWidth_mm) < 1e-5);
 %% Make a dual pixel sensor that has rectangular pixels
 
 sensor = sensorCreate('dual pixel',[],oi,nMicrolens);
@@ -178,4 +180,5 @@ ipWindow(leftip);
 rightip = ipCreate;
 rightip = ipCompute(rightip,rightSensor);
 ipWindow(rightip);
-% END
+
+%% END

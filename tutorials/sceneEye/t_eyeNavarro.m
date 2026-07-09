@@ -8,7 +8,7 @@
 %
 %   * set up a sceneEye with the Navarro model
 %   * position the camera to center on a specific scene object
-%   * render with chromatic aberration (slow)
+%   * update the Navarro lens files for different accommodations
 %
 % Depends on: 
 %    ISETBio, ISET3d, Docker
@@ -81,11 +81,8 @@ thisSE.set('pupil diameter',3);
 % True by default anyway
 % thisSE.set('mmUnits', false);
 
-% We turn on chromatic aberration.  That slows down the calculation, but
-% makes it more accurate and interesting.  We often use only 8 spectral
-% bands for speed and to get a rought sense. You can use up to 31.  It is
-% slow, but that's what we do here because we are only rendering once. When
-% the GPU work is completed, this will be fast!
+% We turn on chromatic aberration.  That changes the lens and IOR files
+% that piWrite produces for the optical model.
 
 % This sets the chromaticAberrationEnabled flag and the integrator to
 % spectral path.
@@ -107,7 +104,10 @@ thisSE.set('n bounces',3);
 % the 'B'.
 thisSE.set('fov',7);             % Degrees
 
-thisSE.get('sample spacing')
+sampleSpacing = thisSE.get('sample spacing');
+if ~isempty(sampleSpacing)
+    fprintf('Sample spacing: %.3f um\n',sampleSpacing*1e3);
+end
 %% Change the accommodation.  But look at 'B'.
 
 % Focus on the A
@@ -117,39 +117,32 @@ thisSE.set('accommodation',1/distA);
 thisSE.summary;
 
 
-thisSE.piWRS('docker',thisDocker,'name','navarro-A');
+%% Write the Navarro lens model for this accommodation
 
-%{
-oi = ieGetObject('oi'); oi = piAIdenoise(oi); 
-ieReplaceObject(oi); oiWindow(oi);
-%}
+% The pinhole render above is reliable and fast.  The optical sceneEye
+% rendering path still needs work in isetdocker, so here we write the
+% updated Navarro lens and IOR files without rendering.
+piWrite(thisSE.recipe);
+fprintf('Accommodation A lens file: %s\n',thisSE.recipe.get('lens file'));
 
 %% Change the accommodation.  But look at 'B'.
 
-% Focus on the A
+% Focus on the B
 thisSE.set('accommodation',1/distB);  
 
 % Summarize
 thisSE.summary;
 
-thisSE.piWRS('docker',thisDocker,'name','navarro-B');
-
-%{
-oi = ieGetObject('oi'); oi = piAIdenoise(oi); 
-ieReplaceObject(oi); oiWindow(oi);
-%}
-
+piWrite(thisSE.recipe);
+fprintf('Accommodation B lens file: %s\n',thisSE.recipe.get('lens file'));
 
 %% Set accommodation to a different distance.
 
 % Focus on the C
 thisSE.set('accommodation',1/distC);  
 
-thisSE.piWRS('docker',thisDocker,'name','navarro-C');
+thisSE.summary;
+piWrite(thisSE.recipe);
+fprintf('Accommodation C lens file: %s\n',thisSE.recipe.get('lens file'));
 
-
-%{
-oi = ieGetObject('oi'); oi = piAIdenoise(oi); 
-ieReplaceObject(oi); oiWindow(oi);
-%}
 %% END
