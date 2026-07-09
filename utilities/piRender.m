@@ -181,6 +181,10 @@ outF = strcat('renderings/',currName,'.exr');
 % renderDocker is a isetdocker object.  The parameters control which
 % machine and with what parameters the docker image/containter is invoked.
 
+if ~p.Results.commandonly
+    localAssertRenderResourcesAvailable(thisR);
+end
+
 [status, result, renderCommand] = renderDocker.render(thisR, p.Results.commandonly);
 if p.Results.commandonly
     ieObject = [];
@@ -255,6 +259,25 @@ if isstruct(ieObject)
         otherwise
             error('Unknown struct type %s\n',ieObject.type);
     end
+end
+
+end
+
+function localAssertRenderResourcesAvailable(thisR)
+%% Fail before Docker when staged render resources are missing.
+
+[assetList, missingAssets, textureList, missingTextures, lightList, missingLights] = ...
+    piRenderValidate(thisR);
+
+missingFiles = [ ...
+    assetList(missingAssets), ...
+    textureList(missingTextures), ...
+    lightList(missingLights)];
+
+if ~isempty(missingFiles)
+    msg = sprintf('%s\n', missingFiles{:});
+    error('piRender:MissingRenderResources', ...
+        'Missing staged render resources before PBRT launch:\n%s', msg);
 end
 
 end

@@ -32,16 +32,18 @@ textureList = {};
 missingTextures = [];
 
 tList = thisR.textures.list;
-for ii = 1:numel(tList)
-    if isfield(tList{ii}, 'filename') && ~isempty(tList{ii}.filename.value)
-        fpath = fullfile(thisR.get('output dir'), tList{ii}.filename.value);
+textureValues = localCollectionValues(tList);
+for ii = 1:numel(textureValues)
+    curTexture = textureValues{ii};
+    if isfield(curTexture, 'filename') && ~isempty(curTexture.filename.value)
+        fpath = localRenderResourcePath(thisR, curTexture.filename.value, 'textures');
         textureList{end + 1} = fpath;
-        if exist(fpath, 'file')
-        else
+        if ~localResourceExists(thisR, fpath)
             missingTextures(end + 1) = numel(textureList);
         end
     end
 end
+
 %% Lights
 lightList = {};
 missingLights = [];
@@ -122,4 +124,70 @@ end
 if sum(missingAssets) + sum(missingTextures) +  sum(missingLights)> 0
     warning('Some files are not found, please check')
 end
+end
+
+function valuesList = localCollectionValues(collection)
+%% Return collection contents as a cell array for maps, structs, and cells.
+
+if isempty(collection)
+    valuesList = {};
+elseif isa(collection, 'containers.Map')
+    valuesList = values(collection);
+elseif iscell(collection)
+    valuesList = collection;
+elseif isstruct(collection)
+    valuesList = num2cell(collection);
+else
+    valuesList = {};
+end
+
+end
+
+function fpath = localRenderResourcePath(thisR, resourceName, resourceFolder)
+%% Resolve the local staged path expected for a render resource.
+
+if isempty(resourceName)
+    fpath = '';
+    return;
+end
+
+resourceName = char(resourceName);
+[resourcePath, resourceBase, resourceExt] = fileparts(resourceName);
+resourceFile = [resourceBase, resourceExt];
+
+if localIsAbsolutePath(resourceName)
+    if thisR.useDB
+        fpath = resourceName;
+    else
+        fpath = fullfile(thisR.get('output dir'), resourceFolder, resourceFile);
+    end
+elseif isempty(resourcePath)
+    fpath = fullfile(thisR.get('output dir'), resourceFolder, resourceFile);
+else
+    fpath = fullfile(thisR.get('output dir'), resourceName);
+end
+
+end
+
+function tf = localResourceExists(thisR, fpath)
+%% Return true when a local staged resource exists or DB mode owns the path.
+
+if isempty(fpath)
+    tf = false;
+elseif thisR.useDB && localIsAbsolutePath(fpath)
+    % DB-backed resources may live only on the mounted remote resource tree.
+    tf = true;
+else
+    tf = exist(fpath, 'file') == 2;
+end
+
+end
+
+function tf = localIsAbsolutePath(pathName)
+%% True for Unix and Windows absolute paths.
+
+pathName = char(pathName);
+tf = startsWith(pathName, filesep) || ...
+    ~isempty(regexp(pathName, '^[A-Za-z]:[\\/]', 'once'));
+
 end
