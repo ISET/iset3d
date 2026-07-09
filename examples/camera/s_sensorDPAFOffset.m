@@ -1,5 +1,5 @@
 %% s_sensorDPAFOffset
-% 
+%
 % Experiment with microlens offsets can be based on this script.
 %
 % To get here, we implemented the uLens iLens combination directly in
@@ -61,8 +61,8 @@ iLens = lensC('file name',iLensName);
 maxOffset = uLensDiameterM/4;
 
 % Linearly scaled offset of the microlens array
- [combinedLensFile, info] = piMicrolensInsert(uLens,iLens,'n microlens',nMicrolens,...
-     'offset method','linear','max offset',uLensDiameterM/4);
+[combinedLensFile, info] = piMicrolensInsert(uLens,iLens,'n microlens',nMicrolens,...
+    'offset method','linear','max offset',uLensDiameterM/4);
 
 thisR.set('film size',info.filmSize);
 

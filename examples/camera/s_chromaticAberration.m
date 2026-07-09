@@ -10,9 +10,6 @@ if ~piDockerExists, piDockerConfig; end
 
 %% Read the pbrt scene
 
-% Read the main scene pbrt file.  
-% Return it as a recipe
-% (used to use textured plane, but it's not in v4)
 thisR = piRecipeDefault('scene name', 'cornell_box');
 
 % add a light so we can see
@@ -38,10 +35,12 @@ piWRS(thisR,'name','pinhole');
  theLenses = lensList;
  theLenses(19).name
 %}
-theLens = 'dgauss.22deg.6.0mm.json';
 % theLens = 'fisheye.87deg.6.0mm.json';
+
+theLens = 'dgauss.22deg.6.0mm.json';
+
 camera = piCameraCreate('omni','lens file',theLens);
-thisR.set('camera',camera);          
+thisR.set('camera',camera);
 thisR.set('aperture',7);             % mm
 thisR.set('film resolution',512);    % Spatial samples
 thisR.set('rays per pixel',128);     % Rendering samples
