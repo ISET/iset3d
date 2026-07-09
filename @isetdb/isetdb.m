@@ -44,11 +44,16 @@ classdef isetdb < handle
                     obj.(props{ii}) = getpref("db",props{ii});
                 end
             end
+            obj = localApplyLegacyPrefs(obj, options);
             if ~options.noconnect
                 [server] = split(obj.dbServer,':');
                 port = str2double(server(2));
-                obj.connection = mongoc(server{1}, port, obj.dbName, ...
-                UserName=obj.dbUsername, Password=obj.dbPassword);
+                if strlength(obj.dbUsername) == 0 && strlength(obj.dbPassword) == 0
+                    obj.connection = mongoc(server{1}, port, obj.dbName);
+                else
+                    obj.connection = mongoc(server{1}, port, obj.dbName, ...
+                    UserName=obj.dbUsername, Password=obj.dbPassword);
+                end
             end
         end
 
@@ -143,6 +148,34 @@ classdef isetdb < handle
     end
     methods (Static = true)
         setDbUserPrefs();
+        newPrefs = modernizeDbUserPrefs(varargin);
     end
 end
 
+function obj = localApplyLegacyPrefs(obj, options)
+% Map older db preference names to current isetdb properties.
+
+if options.noprefs || ~ispref("db")
+    return;
+end
+
+if ~isfield(options, "dbServer") && ~ispref("db", "dbServer") && ...
+        ispref("db", "server")
+    legacyServer = string(getpref("db", "server"));
+    if ispref("db", "port") && ~contains(legacyServer, ":")
+        legacyServer = sprintf("%s:%d", legacyServer, getpref("db", "port"));
+    end
+    obj.dbServer = legacyServer;
+end
+
+if ~isfield(options, "dbUsername") && ~ispref("db", "dbUsername") && ...
+        ispref("db", "username")
+    obj.dbUsername = string(getpref("db", "username"));
+end
+
+if ~isfield(options, "dbPassword") && ~ispref("db", "dbPassword") && ...
+        ispref("db", "password")
+    obj.dbPassword = string(getpref("db", "password"));
+end
+
+end

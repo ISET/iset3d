@@ -23,6 +23,9 @@ ISET3d has two related but distinct mechanisms:
    - Large reusable resources live under the shared PBRT resource tree,
      usually:
      `/acorn/data/iset/PBRTResources/`.
+   - `acorn` is a network-attached storage resource, not the render machine.
+     The same path is mounted on the remote render host and in the PBRT Docker
+     container.
    - The Docker container mounts that tree at the same absolute path.
    - Recipes with `thisR.useDB == true` may write references to files already
      present in the shared resource tree instead of copying those files into
@@ -121,6 +124,36 @@ Database examples live in `examples/database/`. In particular:
 - `s_dbSceneUpload.m` shows the intended pattern for uploading a scene folder
   into the shared resource tree and creating a database record.
 - `s_dbTextureUpload.m` shows the same idea for texture resources.
+
+`piTextureResourcesUpload` is the reusable helper for the texture case. Its
+default dry run lists the local image files under `piDirGet('textures')` that
+would be published. With `'dry run', false`, it syncs those files to:
+
+```text
+/acorn/data/iset/PBRTResources/texture
+```
+
+and creates missing `PBRTResources` records of `type='texture'`. The file sync
+uses SFTP to the configured render host, while the metadata step uses the Mongo
+connection configured by `isetdb`. These are separate operations: the texture
+files can exist on acorn even if Mongo metadata creation fails because the
+database endpoint or credentials are not configured.
+
+From some client machines, the Mongo service may be reachable only through the
+remote render host. One working pattern is an SSH tunnel through orange:
+
+```text
+ssh -N -L 49154:acorn:49153 <remoteUser>@orange.stanford.edu
+```
+
+and then:
+
+```matlab
+piTextureResourcesUpload('dry run', false, ...
+    'db server', 'localhost:49154', ...
+    'db username', '<mongo-user>', ...
+    'db password', '<mongo-password>');
+```
 
 Reading a database scene uses `piRead(idbScene,'docker',thisDocker)`. The
 database read path downloads a stored recipe `.mat` file, sets the recipe input
