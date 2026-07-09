@@ -530,7 +530,7 @@ if isequal(exporter,'PARSE') && thisR.get('n lights') == 0
     if addDefaultLight
         thisR = localAddDefaultDistantLight(thisR);
     else
-        warning('No lights in this scene.');
+        warning('piRecipeDefault:NoLights', 'No lights in this scene.');
     end
 end
 

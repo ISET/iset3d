@@ -26,6 +26,11 @@ config.skipPathPatterns = { ...
     [filesep 'data' filesep]};
 config.conditionalSkipFcn = @iset3dRenderSkipReason;
 
+% Many tutorials/examples intentionally render simple scenes with no
+% lights set; that warning is not actionable in this batch test context.
+warnState = warning('off', 'piRecipeDefault:NoLights');
+restoreWarnState = onCleanup(@() warning(warnState));
+
 run = ieRunTutorialExampleTests(config);
 
 end
