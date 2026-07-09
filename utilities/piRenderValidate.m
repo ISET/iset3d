@@ -53,20 +53,18 @@ for ii = 1:numel(lgtList)
     curLight = lgtList{ii};
     % Infinite lights needs an image map (changed to filename 8/19/23
     if isfield(curLight, 'filename') && ~isempty(curLight.filename.value)
-        fpath = fullfile(thisR.get('output dir'), curLight.filename.value);
+        fpath = localLightFilePath(thisR, curLight.filename.value);
         lightList{end + 1} = fpath;
         if exist(fpath, 'file')
         else
             missingLights(end + 1) = numel(lightList);
         end
     end
-    
+
     % Sometimes the light needs .spd spectrum file
     if ischar(curLight.spd.value)
-        [~, ~, e] = fileparts(curLight.spd.value);
-        % If it has extension, it is a file.
-        if ~isempty(e)
-            fpath = fullfile(thisR.get('output dir'), curLight.spd.value);
+        fpath = localLightSpdPath(thisR, curLight.spd.value);
+        if ~isempty(fpath)
             lightList{end + 1} = fpath;
             if exist(fpath, 'file')
             else
@@ -96,19 +94,17 @@ for ii = 1:numel(ids)
         for jj = 1:numel(curNode.lght)
             curLight = curNode.lght{jj};
             if isfield(curLight, 'filename') && ~isempty(curLight.filename.value)
-                fpath = fullfile(thisR.get('output dir'), curLight.filename.value);
+                fpath = localLightFilePath(thisR, curLight.filename.value);
                 lightList{end + 1} = fpath;
                 if exist(fpath, 'file')
                 else
                     missingLights(end + 1) = numel(lightList);
                 end
             end
-            
+
             if ischar(curLight.spd.value)
-                [~, ~, e] = fileparts(curLight.spd.value);
-                % If it has extension, it is a file.
-                if ~isempty(e)
-                    fpath = fullfile(thisR.get('output dir'), curLight.spd.value);
+                fpath = localLightSpdPath(thisR, curLight.spd.value);
+                if ~isempty(fpath)
                     lightList{end + 1} = fpath;
                     if exist(fpath, 'file')
                     else
@@ -179,6 +175,46 @@ elseif thisR.useDB && localIsAbsolutePath(fpath)
     tf = true;
 else
     tf = exist(fpath, 'file') == 2;
+end
+
+end
+
+function fpath = localLightFilePath(thisR, resourceName)
+%% Resolve the staged path for a light's image map (skymap/goniometric) file.
+%
+% Mirrors the prefix logic in piLightGet.m ('filename' case) and the
+% staging locations used by piLightWrite.m, which puts image maps in the
+% output directory's 'skymaps' subfolder unless the path is already
+% absolute, already contains 'skymaps/', or is an 'instanced/' path.
+
+resourceName = char(resourceName);
+if localIsAbsolutePath(resourceName)
+    % A full path (e.g. into a remote-mounted resource tree) is used as-is.
+    fpath = resourceName;
+elseif contains(resourceName, 'instanced/') || contains(resourceName, 'skymaps/')
+    fpath = fullfile(thisR.get('output dir'), resourceName);
+else
+    fpath = fullfile(thisR.get('output dir'), 'skymaps', resourceName);
+end
+
+end
+
+function fpath = localLightSpdPath(thisR, spdValue)
+%% Resolve the staged path for a light's spd value, if it names a file.
+%
+% Mirrors piLightGet.m ('spd' case) and piLightWrite.m: a value with a
+% '.spd' extension is a user-supplied file staged in the output
+% directory; any other named spectrum (e.g. a .mat file or spectrum
+% name) is written out as 'spds/lights/<ieParamFormat(name)>.spd'.
+
+[~, ~, e] = fileparts(spdValue);
+if isequal(e, '.spd')
+    fpath = fullfile(thisR.get('output dir'), spdValue);
+elseif ~isempty(e)
+    fpath = fullfile(thisR.get('output dir'), 'spds', 'lights', ...
+        sprintf('%s.spd', ieParamFormat(spdValue)));
+else
+    fpath = '';
 end
 
 end
