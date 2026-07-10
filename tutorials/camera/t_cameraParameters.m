@@ -62,7 +62,7 @@ piWrite(thisR);
 scene = piRender(thisR);
 scene = sceneSet(scene,'name','far camera');
 sceneWindow(scene);
-scenePlot(scene,'depth map')
+scenePlot(scene,'depth map');
 
 %% Add a lens
 

@@ -1,5 +1,5 @@
 %% t_arealightArray.m
-% SkipFile
+%
 % Depends on the local/legacy flat-surface scene and renders several
 % area-light arrays; keep skipped until rewritten around current assets.
 %
@@ -22,13 +22,13 @@ if ~piDockerExists, piDockerConfig; end
 %% Simple flat surface for the scene
 
 % The recipe has no light
-thisR = piRecipeCreate('flat surface');
+thisR = piRecipeCreate('flat surface white texture');
 thisR.set('rays per pixel',128);
 
 % The flat surface object is called Cube.  It is 1m in size.  I shrink it
 % so we can also see the environment light, later.
 cubeID = piAssetSearch(thisR,'object name','Cube');
-thisR.set('asset',cubeID,'scale',0.25);   
+thisR.set('asset',cubeID,'scale',0.25);
 
 % Add some surface textures.  For now make the surface white.
 piMaterialsInsert(thisR,'names',{'mirror','diffuse-white','marble-beige','wood-mahogany'});
@@ -39,9 +39,9 @@ area = cell(1,3);
 
 % Triangular positions, a few millimeters off to the side of the
 % camera
-pos = [0.005 0 0; 
-       0.100 0 0; 
-       0.05 0.050 0];
+pos = [0.005 0 0;
+    0.100 0 0;
+    0.05 0.050 0];
 
 % Create and set the light parameters.  The default area light is 1m
 % on a side, which is very big.  We make it smaller here.
@@ -53,7 +53,7 @@ for ii=1:3
     thisR.set('light',area{ii},'translate',pos(ii,:));
     thisR.set('light',area{ii},'shape scale',0.005);   % 5 mm size
     thisR.set('light',area{ii},'rotate',[0 180 0]);    % Don't ask
-    thisR.set('light',area{ii},'spread',5);            % 
+    thisR.set('light',area{ii},'spread',5);            %
     thisR.set('light',area{ii},'specscale',100);       % Brighten it
 end
 

@@ -1,5 +1,5 @@
 %% Explore light creation with new area light parameters
-% SkipFile
+% 
 % Depends on local/legacy area-light scene assets and renders many lighting
 % variants; keep skipped until rewritten around current assets.
 %
@@ -17,8 +17,10 @@ ieInit;
 if ~piDockerExists, piDockerConfig; end
 
 %% 
-fileName = fullfile(piRootPath, 'data','scenes','arealight','arealight.pbrt');
-thisR    = piRead(fileName);
+% fileName = fullfile(piRootPath, 'data','scenes','arealight','arealight.pbrt');
+% thisR    = piRead(fileName);
+
+thisR = piRecipeCreate('arealight');
 thisR.simplify;
 
 thisR.set('render type',{'radiance','depth'});
@@ -70,7 +72,7 @@ scene = piWRS(thisR,'render flag','hdr','mean luminance',-1);
 uData1 = scenePlot(scene,'luminance hline',roiLocs);
 
 %%
-ieNewGraphWin;
+ieFigure;
 plot(uData1.pos,uData1.data./uData2.data);
 
 %%
@@ -124,7 +126,7 @@ piWRS(thisR,'render flag','hdr');
 
 %%  Spectrum of an LED light that might be found in a car headlight
 
-ieNewGraphWin; hold on;
+ieFigure; hold on;
 for ii=1:numel(lList)
     [ledSPD,wave] = ieReadSpectra(lList{ii});
     if ii==1, plotRadiance(wave,ledSPD);
