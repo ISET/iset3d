@@ -1,7 +1,6 @@
 %% t_arealightArray.m
 %
-% Depends on the local/legacy flat-surface scene and renders several
-% area-light arrays; keep skipped until rewritten around current assets.
+% Renders several area-light arrays against a textured flat surface.
 %
 % Exposes the code used in oeLights and cubeLights for how to create
 % an array of area lights

@@ -1,4 +1,4 @@
-%% s_snellen.m
+%% s_snellen_split_cloud.m
 %
 % Render:
 %   A retinal image of the original scene through the eye model. This

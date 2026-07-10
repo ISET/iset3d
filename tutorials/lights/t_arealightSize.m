@@ -1,8 +1,4 @@
 %% t_arealightSize 
-% SkipFile
-% Depends on the local/legacy flat-surface scene and renders several
-% area-light sizes; keep skipped until rewritten around current assets.
-%
 % Change the area light size and compensate by changing the area light
 % SPD specscale.
 %
@@ -17,7 +13,7 @@ if ~piDockerExists, piDockerConfig; end
 clear area;
 
 %% Start fresh with the scene.  Not necessary, but ...
-thisR = piRecipeCreate('flat surface');
+thisR = piRecipeCreate('flat surface white texture');
 thisR.set('rays per pixel',128);
 specScale = 50;
 

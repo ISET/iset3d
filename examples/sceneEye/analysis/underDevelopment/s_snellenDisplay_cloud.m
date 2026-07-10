@@ -1,4 +1,4 @@
-% s_snellen.m
+%% s_snellenDisplay_cloud.m
 %
 % Render decomposed images to form final retinal image for the multi-planar
 % display.

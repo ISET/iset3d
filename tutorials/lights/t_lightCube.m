@@ -1,8 +1,4 @@
 %% Illustrate the piLightCube method
-% SkipFile
-% Depends on the local/legacy flat-surface scene and renders many cube-light
-% viewpoints; keep skipped until rewritten around current assets.
-%
 % The cube light has six sides the emit different colors in each
 % direction.  Placing the cube near the camera lets you determine how
 % to rotate the planar surface of the area light to point in the
@@ -18,8 +14,8 @@
 ieInit;
 if ~piDockerExists, piDockerConfig; end
 
-%% Flat curface
-thisR = piRecipeCreate('flat surface');
+%% Flat surface
+thisR = piRecipeCreate('flat surface white texture');
 cubeID = piAssetSearch(thisR,'object name','Cube');
 
 piMaterialsInsert(thisR,'names',{'mirror','diffuse-white','marble-beige','wood-mahogany'});

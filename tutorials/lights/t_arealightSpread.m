@@ -1,8 +1,4 @@
 %% t_arealightLookat.m
-% SkipFile
-% Depends on the local/legacy flat-surface scene and renders several
-% light-spread variants; keep skipped until rewritten around current assets.
-%
 % Look at the light directly.
 % Also, rotate the light and translate it and scale its size.
 %
@@ -15,7 +11,7 @@ if ~piDockerExists, piDockerConfig; end
 
 %% Simple flat surface for the scene
 
-thisR = piRecipeCreate('flat surface');
+thisR = piRecipeCreate('flat surface white texture');
 thisR.set('rays per pixel',128);
 
 % Make an area light that covers the whole surface

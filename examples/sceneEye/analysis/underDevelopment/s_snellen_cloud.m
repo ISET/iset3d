@@ -1,4 +1,4 @@
-%% s_snellen.m
+%% s_snellen_cloud.m
 %
 % Render:
 % (1) The scene through a perspective/pinhole camera. This image will pass

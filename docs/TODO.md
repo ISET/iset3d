@@ -36,6 +36,9 @@
 
 ## Tutorial Smoke-Test Cleanup
 
+- Review tutorials and examples in `underDevelopment` folders and decide
+  which should be refreshed, relocated, renamed as data-generation scripts, or
+  removed.
 - Find the legitimate `flatSurface` / `flat surface` scene in the scene database or SDR and update the lighting tutorials to use that canonical asset.
   - Candidate tutorials currently skipped for this: `tutorials/lights/t_arealightArray.m`, `tutorials/lights/t_arealightSize.m`, `tutorials/lights/t_arealightSpread.m`, `tutorials/lights/t_lightCube.m`, `tutorials/lights/t_lightHeadlamp.m`, and `tutorials/lights/t_lightProjection.m`.
   - Once the scene lookup is stable, remove the related `% SkipFile` tags and rerun `iset3dTutorialTest`.
