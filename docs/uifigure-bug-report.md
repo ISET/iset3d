@@ -19,13 +19,13 @@ reproduces the same corruption and the same hang.
 
 ## Environment
 
-| | |
-| --- | --- |
-| Machine | Apple Silicon Mac (`MACA64`) |
-| macOS | 26.5 (Build 25F71) |
-| MATLAB (crashes) | R2026a, `26.1.0.3276743 (R2026a) Update 3` |
-| MATLAB (does not crash, but still corrupts) | R2025b, `25.2.0.3042426 (R2025b) Update 1` |
-| Screen size (`get(0,'ScreenSize')`) | `[1 1 2560 1440]` |
+|                                             |                                             |
+| ------------------------------------------- | ------------------------------------------- |
+| Machine                                     | Apple Silicon Mac (`MACA64`)              |
+| macOS                                       | 26.5 (Build 25F71)                          |
+| MATLAB (crashes)                            | R2026a,`26.1.0.3276743 (R2026a) Update 3` |
+| MATLAB (does not crash, but still corrupts) | R2025b,`25.2.0.3042426 (R2025b) Update 1` |
+| Screen size (`get(0,'ScreenSize')`)       | `[1 1 2560 1440]`                         |
 
 ## Minimal reproduction
 

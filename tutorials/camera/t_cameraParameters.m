@@ -27,6 +27,10 @@ if ~piDockerExists, piDockerConfig; end
 
 % The recipe has a pinhole camera (also called perspective)
 thisR = piRecipeDefault('scene name','ChessSet');
+% Tutorial smoke settings.  Increase these values for cleaner figures when
+% exploring depth of field interactively.
+thisR.set('film resolution',[180 180]);
+thisR.set('rays per pixel',32);
 thisR.get('camera subtype')
 
 %% For this object distance, what are the scene depths (m)
@@ -42,8 +46,8 @@ fprintf('%f close, %f far\n',depthRange(1),depthRange(2));
 ieNewGraphWin; imagesc(depthmap); axis image
 %}
 
-thisR.summarize;
-piWrite(thisR);
+% thisR.summarize;
+% piWrite(thisR);
 [scene,result] = piRender(thisR);
 scene = sceneSet(scene,'name','far both');
 sceneWindow(scene);
@@ -53,16 +57,19 @@ scenePlot(scene,'depth map');
 depthrange = sceneGet(scene,'depth range');
 
 %% Move the camera closer
-
-% Move the camera closer
+% This duplicates the pinhole render above with only the camera distance
+% changed.  Re-enable this block when you want to compare the two depth
+% maps interactively.
+%{
 thisR.set('object distance',objDistance - 0.2);   % In meters
-thisR.summarize;
-piWrite(thisR);
+% thisR.summarize;
+% piWrite(thisR);
 
 scene = piRender(thisR);
 scene = sceneSet(scene,'name','far camera');
 sceneWindow(scene);
 scenePlot(scene,'depth map');
+%}
 
 %% Add a lens
 
@@ -99,9 +106,9 @@ thisR.set('aperture diameter',2);   % thisR.summarize('all');
 focalDistance = 0.5;
 thisR.set('film diagonal',11);  % mm
 thisR.set('focal distance',focalDistance);   % In meters
-thisR.set('film resolution',[300 300]);
-thisR.summarize
-piWrite(thisR);
+thisR.set('film resolution',[180 180]);
+% thisR.summarize
+% piWrite(thisR);
 
 oi = piRender(thisR);
 oi = oiSet(oi,'name','near focus');
@@ -110,7 +117,9 @@ oiWindow(oi);
 %%  Set up for different focal planes
 
 % Move the focal plane position, shrink the FOV, increase the resolution
-
+% This second optical render duplicates the action above with only the
+% focal distance changed.  Re-enable it to compare near and far focus.
+%{
 focalDistance = 0.8;
 thisR.set('focal distance',focalDistance);   % In meters
 thisR.summarize
@@ -119,5 +128,6 @@ piWrite(thisR);
 oi = piRender(thisR);
 oi = oiSet(oi,'name','far focus');
 oiWindow(oi);
+%}
 
 %% END

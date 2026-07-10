@@ -14,7 +14,10 @@ clear area;
 
 %% Start fresh with the scene.  Not necessary, but ...
 thisR = piRecipeCreate('flat surface white texture');
-thisR.set('rays per pixel',128);
+% Tutorial smoke settings.  Increase rays and resolution when comparing
+% area-light size interactively.
+thisR.set('rays per pixel',32);
+thisR.set('film resolution',[160 120]);
 specScale = 50;
 
 area{1} = piLightCreate('area1',...
@@ -47,10 +50,14 @@ fprintf('Mean (max) luminance: %.4g (%.4g)\n',...
     sceneGet(scene,'mean luminance'), ...
     sceneGet(scene,'max luminance'));
 
-% The specscale is now reduced again so 0.3*0.3
+% The specscale is now reduced again so 0.3*0.3.  This repeats the same
+% render action with one more parameter value, so leave it commented for
+% the automated tutorial path.
+%{
 thisR.set('light',area{1},'shape scale',0.3);
 thisR.set('light',area{1},'specscale',specScale/(0.3*0.3)^2);
 scene = piWRS(thisR,'mean luminance',-1,'render flag','rgb');
 fprintf('Mean (max) luminance: %.4g (%.4g)\n',...
     sceneGet(scene,'mean luminance'), ...
     sceneGet(scene,'max luminance'));
+%}

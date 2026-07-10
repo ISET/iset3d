@@ -21,6 +21,9 @@ if ~piDockerExists, piDockerConfig; end
 
 thisR = piRecipeCreate('arealight');
 thisR.simplify;
+% Keep the automated tutorial render quick.  Increase this for cleaner
+% interactive luminance profiles.
+thisR.set('rays per pixel',32);
 
 thisR.set('render type',{'radiance','depth'});
 thisR.show('lights');
@@ -65,6 +68,9 @@ scene = piWRS(thisR,'render flag','hdr','mean luminance',-1);
 uData2 = scenePlot(scene,'luminance hline',roiLocs);
 
 %% Can we scale it back?
+% This repeats the same render with the light scale restored.  Re-enable it
+% interactively if you want the luminance-ratio comparison.
+%{
 
 thisR.set('light','Area_Yellow_L','specscale',gScale);
 scene = piWRS(thisR,'render flag','hdr','mean luminance',-1);
@@ -73,6 +79,7 @@ uData1 = scenePlot(scene,'luminance hline',roiLocs);
 %%
 ieFigure;
 plot(uData1.pos,uData1.data./uData2.data);
+%}
 
 %%
 roiLocs = [1 74];
@@ -89,7 +96,9 @@ for ii=1:numel(lNames)
     thisR.set('light',lNames{ii},'spread val',ii*10);
 end
 
-scene = piWRS(thisR,'render flag','hdr');
+% The render below duplicates the previous visual check after assigning a
+% spread value to each light.  Re-enable for an interactive comparison.
+% scene = piWRS(thisR,'render flag','hdr');
 
 %% Plot the luminance
 roiLocs = [1 74];
@@ -108,7 +117,7 @@ thisR.set('asset', 'Area_Yellow_L', 'rotate', [-30, 0, 0]); % -5 degree around y
 thisR.set('asset', 'Area_Red_L', 'rotate', [0, 0, 30]); % -5 degree around y axis
 thisR.set('asset', 'Area_Blue_L', 'rotate', [0, 0, -30]); % -5 degree around y axis
 
-piWRS(thisR,'render flag','hdr');
+% piWRS(thisR,'render flag','hdr');
 
 %% Change the SPD of the lights to potential headlamps
 
@@ -121,7 +130,7 @@ thisR.set('light','Area_Red_L','spd',lList{2});
 thisR.set('light','Area_Green_L','spd',lList{3});
 thisR.set('light','Area_Blue_L','spd',lList{4});
 
-piWRS(thisR,'render flag','hdr');
+% piWRS(thisR,'render flag','hdr');
 
 %%  Spectrum of an LED light that might be found in a car headlight
 

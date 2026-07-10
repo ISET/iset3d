@@ -16,6 +16,7 @@ if ~piDockerExists, piDockerConfig; end
 
 %% Flat surface
 thisR = piRecipeCreate('flat surface white texture');
+thisR.set('rays per pixel',32);
 cubeID = piAssetSearch(thisR,'object name','Cube');
 
 piMaterialsInsert(thisR,'names',{'mirror','diffuse-white','marble-beige','wood-mahogany'});
@@ -47,6 +48,10 @@ piWRS(thisR);
 thisR.set('from',[-3 -3 -3]); thisR.set('to',cameraP);
 piWRS(thisR,'render flag','hdr');
 
+%% Additional viewpoints
+% The remaining viewpoints demonstrate the same cube-light orientation idea
+% with different camera positions.  Re-enable them for an interactive sweep.
+%{
 %% Behind, top
 thisR.set('from',[3 3 -3]); thisR.set('to',cameraP);
 piWRS(thisR,'render flag','hdr');
@@ -58,5 +63,6 @@ piWRS(thisR,'render flag','hdr');
 %% Below
 thisR.set('from',[3 -3 3]); thisR.set('to',cameraP);
 piWRS(thisR,'render flag','hdr');
+%}
 
 %% END

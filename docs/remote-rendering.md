@@ -140,19 +140,27 @@ files can exist on acorn even if Mongo metadata creation fails because the
 database endpoint or credentials are not configured.
 
 From some client machines, the Mongo service may be reachable only through the
-remote render host. One working pattern is an SSH tunnel through orange:
+remote render host. Keep the persistent `dbServer` preference pointed at the
+real service endpoint, usually `acorn:49153`, and use a local tunnel only as a
+temporary command override. One working pattern is an SSH tunnel through orange:
 
 ```text
-ssh -N -L 49154:acorn:49153 <remoteUser>@orange.stanford.edu
+ssh -N -o ExitOnForwardFailure=yes -L 49154:acorn:49153 <remoteUser>@orange.stanford.edu
 ```
 
 and then:
 
 ```matlab
+pw = input('Mongo password: ', 's');
+
 piTextureResourcesUpload('dry run', false, ...
+    'sync files', false, ...
     'db server', 'localhost:49154', ...
-    'db username', '<mongo-user>', ...
-    'db password', '<mongo-password>');
+    'db name', getpref('db', 'dbName'), ...
+    'db username', getpref('db', 'dbUsername'), ...
+    'db password', pw);
+
+clear pw
 ```
 
 Reading a database scene uses `piRead(idbScene,'docker',thisDocker)`. The

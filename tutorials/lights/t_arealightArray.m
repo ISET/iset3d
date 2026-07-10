@@ -22,7 +22,9 @@ if ~piDockerExists, piDockerConfig; end
 
 % The recipe has no light
 thisR = piRecipeCreate('flat surface white texture');
-thisR.set('rays per pixel',128);
+% Use a low sample count for the automated tutorial; increase it for
+% cleaner interactive images.
+thisR.set('rays per pixel',32);
 
 % The flat surface object is called Cube.  It is 1m in size.  I shrink it
 % so we can also see the environment light, later.
@@ -66,6 +68,9 @@ piWRS(thisR,'name','3 lights-distant surface');
 %% Move the cube closer to the camera
 
 % This makes it easier to see the three light sources
+% This is another visual variant of the same triangular light array, so it
+% stays commented for the smoke path.
+%{
 thisR.set('asset',cubeID,'translate',[0 0 -0.5]);
 piWRS(thisR,'name','closer surface');
 
@@ -73,6 +78,7 @@ piWRS(thisR,'name','closer surface');
 
 thisR.set('light','room_L','delete');
 piWRS(thisR,'name','closer surface no skymap');
+%}
 
 %% Create a ring of light sources
 
@@ -114,8 +120,10 @@ piWRS(thisR,'name','ring light');
 
 %%  Sweep out some distances by moving the surface
 
+% Re-enable this block when you want to compare ring-light distance.
+%{
 thisR.set('asset',cubeID,'translate',[0 0 -0.1]);
-
 scene = piWRS(thisR,'name','ring light');
+%}
 
 %% END

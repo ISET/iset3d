@@ -12,7 +12,9 @@ if ~piDockerExists, piDockerConfig; end
 %% Simple flat surface for the scene
 
 thisR = piRecipeCreate('flat surface white texture');
-thisR.set('rays per pixel',128);
+% Keep the automated tutorial render quick.  Increase this for a cleaner
+% interactive image when exploring light shape and spread.
+thisR.set('rays per pixel',32);
 
 % Make an area light that covers the whole surface
 
@@ -51,6 +53,11 @@ piWRS(thisR);
 thisR.set('light','area1','shape scale',0.1);   
 piWRS(thisR);
 
+%% Additional light changes
+% The examples below are useful interactively, but they repeat the same
+% render action while changing one parameter value.  Leave them commented
+% for the tutorial smoke path.
+%{
 %%  Rotate the light - it is not two sided
 for ii=1:4
     thisR.set('light','area1','rotate',[0 45 0]);
@@ -64,5 +71,6 @@ piWRS(thisR);
 %%  Translate the light
 thisR.set('light','area1','translate',[0.1 0.1 0]);
 piWRS(thisR);
+%}
 
 %% END

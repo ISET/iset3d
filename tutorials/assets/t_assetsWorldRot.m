@@ -15,7 +15,7 @@ if ~piDockerExists, piDockerConfig; end
 
 thisR = piRecipeDefault('scene name', 'simple scene');
 
-thisR.set('film resolution',[200 150]);
+thisR.set('film resolution',[160 120]);
 thisR.set('rays per pixel',32);
 thisR.set('fov',45);
 thisR.set('nbounces',5); 
@@ -49,7 +49,9 @@ sceneWindow(scene);
 %% Check if we can use the rotation angle to reproduce the rotation.
 
 % Notice the rotation of the figure_3m
-thisR.assets.show; pause(2); close;
+% The asset-tree display and pause are useful interactively but slow and
+% brittle in automated tutorial runs.
+% thisR.assets.show; pause(2); close;
 
 % Delete the rotation we applied above
 thisR.set('asset', R1.name, 'removelasttrans');
@@ -62,7 +64,7 @@ thisR.set('asset', assetName, 'rotation', rotAng);
 thisR = piRecipeDefault('scene name', 'simple scene');
 saveFrom = thisR.get('from');
 
-thisR.set('film resolution',[320 320]);
+thisR.set('film resolution',[160 160]);
 thisR.set('rays per pixel',32);
 thisR.set('fov',45);
 thisR.set('nbounces',5); 
@@ -76,9 +78,13 @@ piCameraTranslate(thisR,'z shift',0.3*oDist,'fromto','both');
 piCameraTranslate(thisR,'y shift',0.8*oDist,'fromto','both');
 piCameraTranslate(thisR,'x shift',0.2*oDist,'fromto','to');
 
+% This final render duplicates the previous visual check with a two-asset
+% world-space rotation.  Re-enable it for a fuller interactive example.
+%{
 piWrite(thisR)
 [scene,result] = piRender(thisR, 'render type', 'radiance');
 sceneWindow(scene);
 sceneSet(scene, 'render flag', 'hdr');
+%}
 
 %% END

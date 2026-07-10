@@ -63,6 +63,9 @@ sceneWindow(scene);
 sceneSet(scene, 'render flag', 'hdr');
 
 %% Now from the blue guy to the yellow guy
+% The remaining views repeat the same render action while changing from/to
+% positions.  Re-enable them for an interactive camera-position sweep.
+%{
 
 % Not inside the blue guy.  Just outside the blue guy's position
 thisR.set('from', bluePos + [0 0 0.1]);
@@ -86,6 +89,6 @@ piWrite(thisR)
 scene = piRender(thisR, 'render type', 'radiance');
 sceneWindow(scene);
 sceneSet(scene, 'render flag', 'hdr');
+%}
 
 %%  END
-

@@ -23,7 +23,10 @@ chdir(fullfile(piRootPath,'local'));
 % about 0.6 m from the camera
 
 thisR = piRecipeDefault('scene name','chessset');
-scene = piWRS(thisR);
+thisR.set('rays per pixel',16);
+% The preview render is useful interactively, but the final microlens render
+% below is the tutorial's real visual checkpoint.
+% scene = piWRS(thisR);
 %% Choose the imaging lens
 % This double gauss lenses has a 22 deg field of view.  It works well with the 
 % chess set scene.  The focal length is a little shorter than expressed in the 
@@ -57,7 +60,9 @@ fprintf('Focal length =  %.3f (mm)\nHeight = %.3f (mm)F-number %.3f\n',...
 % There are a lot of pixels (photosites), but fewer microlenses.  The number 
 % of microlenses determines the effective spatial resolution.
 
-nMicrolens = [40 40]*4;   % Appears to work for rectangular case, too
+% Keep the smoke-test render small.  Increase this to [40 40]*4 for the
+% denser interactive example used in the original tutorial.
+nMicrolens = [40 40];   % Appears to work for rectangular case, too
 filmheight = nMicrolens(1)*microlens.get('lens height');
 filmwidth  = nMicrolens(2)*microlens.get('lens height');
 
@@ -112,7 +117,8 @@ thisR.set('integrator subtype','path');
 % This is the aperture of the imaging lens of the camera in mm
 thisR.set('aperture diameter',6);   % In millimeters
 
-thisR.summarize('all');
+% Full summaries of the chess-set recipe are verbose in automated runs.
+% thisR.summarize('all');
 %% Render and then display
 
 oiName = sprintf('%s-%d',thisR.get('input basename'),thisR.get('aperture diameter'));
@@ -150,12 +156,12 @@ ieFigure; imagesc(imgArray); axis image;
 
 sensor = sensorCreate('light field',oi);
 sensor = sensorCompute(sensor,oi);
-sensorWindow(sensor);
+% sensorWindow(sensor);
 %% Image process ... should really use the whiteScene here
 
 ip = ipCreate;
 ip = ipCompute(ip,sensor);
-ipWindow(ip);
+% ipWindow(ip);
 %% Convert the image processed data into a light field representation
 % The lightfield variable, _lightfield_, has the dimensions
 % 

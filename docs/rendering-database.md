@@ -111,11 +111,15 @@ Remote rendering preferences live under `ISETDocker`. Important fields include:
 
 Database preferences live under `db`. The current `isetdb` property names are:
 
-- `dbServer`, for example `localhost:27017` or a tunneled endpoint;
+- `dbServer`, the stable Mongo endpoint, for example `acorn:49153`;
 - `dbName`, usually `iset`;
 - `dbImage`, usually `mongodb`;
 - `dbUsername`;
 - `dbPassword`.
+
+Avoid saving a temporary SSH tunnel address, such as `localhost:49154`, as the
+persistent `dbServer` preference. Use the real service endpoint in preferences
+and pass the tunnel endpoint only for the MATLAB command that needs it.
 
 Older preferences used:
 
@@ -176,7 +180,9 @@ The current texture image files have been synced to:
 /acorn/data/iset/PBRTResources/texture
 ```
 
-The remaining metadata insert requires a working Mongo endpoint and credentials.
+The current texture metadata records were created through a tunneled Mongo
+connection on 2026-07-10. Re-running the upload helper should normally report
+those records as existing unless the shared resource set has changed.
 
 ## Mongo Connectivity
 
@@ -187,13 +193,29 @@ However, from orange:
 acorn:49153
 ```
 
-was reachable. One workable connection pattern is an SSH tunnel through orange:
+was reachable. The recommended preference value is therefore the real endpoint:
 
-```text
-ssh -N -L 49154:acorn:49153 <remoteUser>@orange.stanford.edu
+```matlab
+setpref('db', 'dbServer', 'acorn:49153')
+setpref('db', 'dbName', 'iset')
+setpref('db', 'dbUsername', '<mongo-user>')
 ```
 
-Then point `isetdb` or the texture uploader at:
+Do not store the password in scripts or documentation. Enter it interactively
+when needed, or store it in a local MATLAB preference only on a trusted machine.
+
+When the client machine cannot resolve `acorn`, open an SSH tunnel through the
+remote render host in a separate Terminal window:
+
+```text
+ssh -N -o ExitOnForwardFailure=yes -L 49154:acorn:49153 <remoteUser>@orange.stanford.edu
+```
+
+Keep that Terminal window open while MATLAB is using Mongo. Stop the tunnel
+with `Ctrl-C` after the database work is finished.
+
+With the tunnel open, point `isetdb` or the texture uploader at the temporary
+local endpoint:
 
 ```text
 localhost:49154
@@ -202,14 +224,27 @@ localhost:49154
 For example:
 
 ```matlab
+pw = input('Mongo password: ', 's');
+
 piTextureResourcesUpload('dry run', false, ...
+    'sync files', false, ...
     'db server', 'localhost:49154', ...
-    'db username', '<mongo-user>', ...
-    'db password', '<mongo-password>');
+    'db name', getpref('db', 'dbName'), ...
+    'db username', getpref('db', 'dbUsername'), ...
+    'db password', pw);
+
+clear pw
 ```
 
-In the current session the tunnel reached Mongo, but the server required
-authentication. Empty credentials and the old demo defaults were not accepted.
+This override should be command-local. The saved `dbServer` preference should
+remain `acorn:49153` so that the preference describes the actual Mongo service,
+not the port chosen for one client-side tunnel.
+
+A better long-term solution would be a small helper that reads the real
+`dbServer` preference, tests whether it is directly reachable, and either
+returns that endpoint or reports the exact SSH tunnel command to run. That would
+keep the connection policy in one place and reduce the chance of saving
+machine-specific tunnel addresses in preferences.
 
 ## Failure Modes
 
@@ -225,7 +260,13 @@ Common failures and what they mean:
 
 - `Failed to resolve 'acorn'`.
   The client machine cannot resolve the storage or database hostname directly.
-  Try reaching it through orange or another Stanford network context.
+  Reach it through orange with the SSH tunnel above, or use another Stanford
+  network context where `acorn` resolves.
+
+- `Address already in use` when starting the SSH tunnel.
+  Another process is already listening on local port `49154`. Either close the
+  earlier tunnel or choose a different local port and pass the matching
+  `localhost:<port>` endpoint to the MATLAB command.
 
 - `Command listCollections requires authentication`.
   The Mongo service was reached, but credentials were missing or wrong.
@@ -250,5 +291,7 @@ For publishing textures:
 
 1. Run `piTextureResourcesUpload('dry run', true)`.
 2. Sync files with `piTextureResourcesUpload('dry run', false, 'create db records', false)`.
-3. Confirm Mongo credentials and endpoint.
-4. Create missing DB records with `piTextureResourcesUpload('dry run', false, 'sync files', false)`.
+3. If `acorn:49153` is not directly reachable, open the SSH tunnel and use
+   `localhost:49154` as a command-local `db server` override.
+4. Confirm Mongo credentials and endpoint.
+5. Create missing DB records with `piTextureResourcesUpload('dry run', false, 'sync files', false)`.

@@ -14,7 +14,10 @@ if ~piDockerExists, piDockerConfig; end
 %% Read the PBRT scene
 
 thisR = piRecipeDefault('scene name','ChessSet');
-thisR.set('spatial resolution',512);
+% Keep the automated tutorial render quick.  Increase to 512 when you want
+% a cleaner depth-of-field figure for interactive inspection.
+thisR.set('spatial resolution',256);
+thisR.set('rays per pixel',32);
 %% Create a camera with a double Gauss lens
 
 lensname    = 'dgauss.22deg.12.5mm.json';
@@ -35,19 +38,21 @@ thisR.set('from',[0,0.18,-0.5]);
 
 piCameraRotate(thisR, 'x rot',-10);
 %% 
-% Summarize the recipe information.  There is a lot for this scene.  But you 
-% can handle it.
-
-thisR.summarize;
+% The full recipe summary is useful interactively but verbose in automated
+% tutorial runs.
+% thisR.summarize;
 %% Write and render
 
 oi = piWRS(thisR,'render type','radiance','show',false);
 oi = piAIdenoise(oi);
-oiWindow(oi)
+oiWindow(oi);
 %% Change the focus distance to 0.4m
-
+% This repeats the same render with a different focus distance.  Re-enable
+% the block for an interactive depth-of-field comparison.
+%{
 thisR.set('focus distance',0.4);
 oi = piWRS(thisR,'render type','radiance','show',false); 
 oi = piAIdenoise(oi);
-oiWindow(oi)
+oiWindow(oi);
+%}
 %%

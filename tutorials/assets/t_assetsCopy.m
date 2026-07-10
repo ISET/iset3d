@@ -43,6 +43,8 @@ if ~piDockerExists, piDockerConfig; end
 
 % Maybe we should have an instance flag?
 thisR = piRecipeCreate('sphere');
+thisR.set('film resolution',[160 120]);
+thisR.set('rays per pixel',32);
 
 % Turn this into an instance recipe
 piObjectInstance(thisR);
@@ -75,9 +77,14 @@ piWRS(thisR,'name','Multiple spheres');  %%  Multiple copies of spheres
 %%
 thisR = piRecipeCreate('chessset');
 thisR.set('fov',40);
+thisR.set('film resolution',[160 120]);
+thisR.set('rays per pixel',32);
 piObjectInstance(thisR);
 
-piWRS(thisR,'name','original');
+% The original and deleted-ruler renders duplicate the final visual check
+% and add remote render time.  Re-enable them when editing this tutorial
+% interactively.
+% piWRS(thisR,'name','original');
 
 %% Turn this into an instance recipe
 
@@ -88,11 +95,13 @@ id2 = 308;
 % Delete the ruler
 thisR.set('asset',id1,'delete');
 thisR.set('asset',id2,'delete');
-piWRS(thisR,'name','deleted ruler');
+% piWRS(thisR,'name','deleted ruler');
 
 %% Copy the ruler
 thisR = piRecipeCreate('chessset');
 thisR.set('fov',40);
+thisR.set('film resolution',[160 120]);
+thisR.set('rays per pixel',32);
 piObjectInstance(thisR);
 
 % The ruler elements
@@ -117,7 +126,9 @@ end
 
 % Create copies at a position is relative to the position of the original
 % object.  I am confused about the size units.
-for ii=1:6
+% Three copies are enough to verify the instance operation in the automated
+% tutorial.  Increase the loop bound for a denser interactive example.
+for ii=1:3
     thisR = piObjectInstanceCreate(thisR, id1end, 'position',ii*[0 copySpacing 0.0]/8);
     thisR = piObjectInstanceCreate(thisR, id2end, 'position',ii*[0 copySpacing 0.0]/8);
 end
