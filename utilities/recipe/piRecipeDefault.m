@@ -477,17 +477,24 @@ end
 
 %% See if we can find the file in data/scenes/web
 
-% Local - just a couple of scenes
-FilePath = fullfile(piRootPath,'data','scenes',sceneDir);
-if ~isfolder(FilePath)
-    FilePath = fullfile(piRootPath,'data','scenes','web',sceneDir);
+% Local - just a couple of scenes.  Use exact-case checks so a stale cache
+% on a case-insensitive file system does not generate wrong-case PBRT files
+% that fail when rsynced to Linux.
+sceneRoot = fullfile(piRootPath,'data','scenes');
+localAssertNoCaseOnlyMatch(sceneRoot,sceneDir);
+FilePath = fullfile(sceneRoot,sceneDir);
+if ~localPathExistsExact(sceneRoot,sceneDir)
+    webSceneRoot = fullfile(sceneRoot,'web');
+    localAssertNoCaseOnlyMatch(webSceneRoot,sceneDir);
+    FilePath = fullfile(webSceneRoot,sceneDir);
 end
 
 % If we can not find it, check on the web.
+localAssertNoCaseOnlyMatch(FilePath,sceneFile);
 fname = fullfile(FilePath,sceneFile);
-if ~exist(fname,'file') 
-    sceneDir = piSceneWebTest(sceneDir,sceneFile);
-    fname = fullfile(sceneDir,sceneFile);
+if ~localPathExistsExact(FilePath,sceneFile)
+    FilePath = piSceneWebTest(sceneDir,sceneFile);
+    fname = fullfile(FilePath,sceneFile);
     % elseif ~strcmpi(fname, which(fname))
     % This isn't working well.  Figure it out some time.
     %
@@ -507,7 +514,13 @@ end
 % By default, do the rendering and mounting from ISET3d/local.  That
 % directory is not part of the git upload area.
 [~,n,e] = fileparts(fname);
-outFile = fullfile(piRootPath,'local',sceneDir,[n,e]);
+localRenderRoot = fullfile(piRootPath,'local');
+localAssertNoCaseOnlyMatch(localRenderRoot,sceneDir);
+localRenderDir = fullfile(localRenderRoot,sceneDir);
+localAssertNoCaseOnlyMatch(localRenderDir,[n,e]);
+localAssertNoCaseOnlyMatch(localRenderDir,[n,'_materials',e]);
+localAssertNoCaseOnlyMatch(localRenderDir,[n,'_geometry',e]);
+outFile = fullfile(localRenderDir,[n,e]);
 thisR.set('outputfile',outFile);
 thisR.set('name',sceneDir);
 
@@ -559,6 +572,91 @@ defaultLight = piLightCreate('default_distant', ...
     'from', lightFrom, ...
     'to', lightTo);
 thisR.set('light', defaultLight, 'add');
+
+end
+
+function tf = localPathExistsExact(rootDir, relativePath)
+%% True only when every path component matches the requested case.
+
+tf = false;
+
+if isempty(relativePath)
+    tf = isfolder(rootDir);
+    return;
+end
+
+if ~isfolder(rootDir)
+    return;
+end
+
+pathParts = regexp(relativePath,'[\\/]+','split');
+currentDir = rootDir;
+
+for ii = 1:numel(pathParts)
+    thisPart = pathParts{ii};
+    if isempty(thisPart)
+        continue;
+    end
+
+    dirListing = dir(currentDir);
+    exactMatch = find(strcmp({dirListing.name},thisPart),1);
+    if isempty(exactMatch)
+        return;
+    end
+
+    if ii < numel(pathParts) && ~dirListing(exactMatch).isdir
+        return;
+    end
+
+    currentDir = fullfile(currentDir,thisPart);
+end
+
+tf = true;
+
+end
+
+function localAssertNoCaseOnlyMatch(rootDir, relativePath)
+%% Error when a path exists only through a case-insensitive match.
+
+if isempty(relativePath) || ~isfolder(rootDir)
+    return;
+end
+
+pathParts = regexp(relativePath,'[\\/]+','split');
+currentDir = rootDir;
+
+for ii = 1:numel(pathParts)
+    thisPart = pathParts{ii};
+    if isempty(thisPart)
+        continue;
+    end
+
+    dirListing = dir(currentDir);
+    dirNames = {dirListing.name};
+    exactMatch = find(strcmp(dirNames,thisPart),1);
+
+    if ~isempty(exactMatch)
+        if ii < numel(pathParts) && ~dirListing(exactMatch).isdir
+            return;
+        end
+        currentDir = fullfile(currentDir,thisPart);
+        continue;
+    end
+
+    caseMatch = find(strcmpi(dirNames,thisPart));
+    if isscalar(caseMatch)
+        error('piRecipeDefault:CaseMismatch', ...
+            ['Found "%s" when looking for "%s". ', ...
+            'Remove or rename the stale local scene cache so the canonical SDR casing is used.'], ...
+            fullfile(currentDir,dirNames{caseMatch}), fullfile(currentDir,thisPart));
+    elseif numel(caseMatch) > 1
+        error('piRecipeDefault:AmbiguousPathCase', ...
+            'Multiple case-insensitive matches for "%s" in "%s".', ...
+            thisPart, currentDir);
+    else
+        return;
+    end
+end
 
 end
 

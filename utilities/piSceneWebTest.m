@@ -38,23 +38,113 @@ function [sceneDir, zipfilenames] = piSceneWebTest(sceneName,sceneFile)
 %   piSceneDeposit, piRead, piRecipeDefault, piRecipeCreate
 %
 
+zipfilenames = {};
+
 % See if the scene is already in data/scene/web
-sceneDir = fullfile(piRootPath,'data','scenes','web',sceneName);
-sceneFile = fullfile(sceneDir,sceneFile);
+sceneFileName = sceneFile;
+sceneRoot = fullfile(piRootPath,'data','scenes','web');
+localAssertNoCaseOnlyMatch(sceneRoot,sceneName);
+sceneDir = fullfile(sceneRoot,sceneName);
+localAssertNoCaseOnlyMatch(sceneDir,sceneFileName);
+sceneFile = fullfile(sceneDir,sceneFileName);
 
 % Download the file to data/scene/web
-if ~isfolder(sceneDir)
+if ~localPathExistsExact(sceneRoot,sceneName)
     depositName = piSceneDeposit(sceneName);
     [sceneDir, zipfilenames] = ieWebGet('deposit name', depositName, ...
         'deposit file', [sceneName,'.zip'],  ...
-        'download dir', fullfile(piRootPath,'data','scenes','web'),...
+        'download dir', sceneRoot,...
         'unzip', true, ...
         'confirm',false);
-elseif ~exist(sceneFile,'file')
+elseif ~localPathExistsExact(sceneDir,sceneFileName)
     error('Folder exists, but sceneFile (%s) is not there.\n',sceneFile);
 else
-    fprintf('File %s already present in %s.\n',sceneName,sceneDIr)
+    fprintf('File %s already present in %s.\n',sceneName,sceneDir)
 end
 
 end
 
+function tf = localPathExistsExact(rootDir, relativePath)
+%% True only when every path component matches the requested case.
+
+tf = false;
+
+if isempty(relativePath)
+    tf = isfolder(rootDir);
+    return;
+end
+
+if ~isfolder(rootDir)
+    return;
+end
+
+pathParts = regexp(relativePath,'[\\/]+','split');
+currentDir = rootDir;
+
+for ii = 1:numel(pathParts)
+    thisPart = pathParts{ii};
+    if isempty(thisPart)
+        continue;
+    end
+
+    dirListing = dir(currentDir);
+    exactMatch = find(strcmp({dirListing.name},thisPart),1);
+    if isempty(exactMatch)
+        return;
+    end
+
+    if ii < numel(pathParts) && ~dirListing(exactMatch).isdir
+        return;
+    end
+
+    currentDir = fullfile(currentDir,thisPart);
+end
+
+tf = true;
+
+end
+
+function localAssertNoCaseOnlyMatch(rootDir, relativePath)
+%% Error when a path exists only through a case-insensitive match.
+
+if isempty(relativePath) || ~isfolder(rootDir)
+    return;
+end
+
+pathParts = regexp(relativePath,'[\\/]+','split');
+currentDir = rootDir;
+
+for ii = 1:numel(pathParts)
+    thisPart = pathParts{ii};
+    if isempty(thisPart)
+        continue;
+    end
+
+    dirListing = dir(currentDir);
+    dirNames = {dirListing.name};
+    exactMatch = find(strcmp(dirNames,thisPart),1);
+
+    if ~isempty(exactMatch)
+        if ii < numel(pathParts) && ~dirListing(exactMatch).isdir
+            return;
+        end
+        currentDir = fullfile(currentDir,thisPart);
+        continue;
+    end
+
+    caseMatch = find(strcmpi(dirNames,thisPart));
+    if isscalar(caseMatch)
+        error('piSceneWebTest:CaseMismatch', ...
+            ['Found "%s" when looking for "%s". ', ...
+            'Remove or rename the stale local scene cache so the canonical SDR casing is used.'], ...
+            fullfile(currentDir,dirNames{caseMatch}), fullfile(currentDir,thisPart));
+    elseif numel(caseMatch) > 1
+        error('piSceneWebTest:AmbiguousPathCase', ...
+            'Multiple case-insensitive matches for "%s" in "%s".', ...
+            thisPart, currentDir);
+    else
+        return;
+    end
+end
+
+end
