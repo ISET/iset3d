@@ -1,6 +1,10 @@
 %% Create a slanted bar target using the flatSurface with a texture
+% SkipFile
 %
 % Deprecated.
+%
+% Deprecated texture-construction workflow superseded by asset recipes and
+% metric scripts.
 %
 %  This led to data_assetsRecipe, s_scenesRecipe, and s_piMetrics* scripts.
 %

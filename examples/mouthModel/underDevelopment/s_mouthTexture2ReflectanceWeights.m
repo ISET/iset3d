@@ -1,5 +1,7 @@
 %% Ideas about how to convert the RGB texture to reflectance weights
+% SkipFile
 %
+% Notes/sketch script, not executable MATLAB.
 %
 
 %% Suppose we have the texture maps

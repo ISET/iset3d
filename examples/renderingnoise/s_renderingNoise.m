@@ -1,5 +1,9 @@
 % Analyze how the rendering noise declines as we increase the number of
+% SkipFile
 % rays per pixel
+%
+% Multi-render quantitative analysis script; too expensive for routine
+% example smoke tests.
 %
 % Idea:
 %
@@ -230,6 +234,5 @@ thisL.LineStyle = '--';
 %%
 
 %}
-
 
 

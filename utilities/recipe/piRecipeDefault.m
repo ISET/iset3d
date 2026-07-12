@@ -124,16 +124,16 @@ switch ieParamFormat(sceneDir)
         exporter = 'PARSE';
     case {'cornellboxreference'}
         % Main Cornell Box. On SDR inside of iset3d
-        sceneDir = 'CornellBoxReference';
-        sceneFile = ['CornellBoxReference','.pbrt'];
+        sceneDir = 'cornellboxreference';
+        sceneFile = [sceneDir,'.pbrt'];
         exporter = 'PARSE';
     case {'flashcards'}
         sceneDir = 'flashCards';
         sceneFile = [sceneDir,'.pbrt'];
         exporter = 'PARSE';
     case 'flatsurface'
-        sceneDir = 'flatSurface';
-        sceneFile = 'flatSurface.pbrt';
+        sceneDir = 'flatsurface';
+        sceneFile = [sceneDir,'.pbrt'];
         exporter = 'PARSE';
     case 'flatsurfacewhitetexture'
         sceneDir = 'flatsurfacewhitetexture';

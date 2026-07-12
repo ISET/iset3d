@@ -1,7 +1,11 @@
 %% psf create
+% SkipFile
 %
 %  Simulating PSFs to compare the RTF method vs Omni method.  And
 %  Zemax someday.
+%
+% Scratch/long-running PSF generation script using legacy raytransfer
+% assets and very high sample counts.
 %
 
 ieInit;
@@ -160,4 +164,3 @@ for d=1:numel(depths)
     
     
 end
-

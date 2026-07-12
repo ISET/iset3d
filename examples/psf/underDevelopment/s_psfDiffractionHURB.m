@@ -1,7 +1,11 @@
 %% Diffraction PSF calculated with HURB
+% SkipFile
 %
 % We compare the linespread function derived with ISETLens and Zemax
 % for a Double Gauss lens.
+%
+% Depends on local Zemax comparison data not included in the standard
+% checkout.
 
 %% % Thomas calculated the double Gauss using Zemax calculation.  
 % So, we use that lens here. 

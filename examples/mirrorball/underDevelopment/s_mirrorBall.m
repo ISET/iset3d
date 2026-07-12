@@ -1,7 +1,10 @@
 %% s_illuminationMirrorBall
+% SkipFile
 %
 % Move script around and create other examples.  This is just a scratch
 % beginning.  Change names.
+%
+% Scratch lighting exploration with multiple remote renders.
 %
 % Puts a mirror ball (sphere) into the scene.  Testing the lighting.
 %

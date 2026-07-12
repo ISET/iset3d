@@ -1,4 +1,8 @@
 %% init
+% SkipFile
+%
+% Historical/debug script marked BROKEN below.  Use newer Cornell box
+% examples instead.
 
 %%
 %% BROKEN

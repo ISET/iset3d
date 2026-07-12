@@ -1,6 +1,9 @@
 %% s_chessSetMake
+% SkipFile
 %
 % Make a recipe for the standard Chess set scene.
+%
+% Recipe data-generation script that writes saved recipe files.
 %
 % The recipe load faster than parsing the scene and objects.
 %

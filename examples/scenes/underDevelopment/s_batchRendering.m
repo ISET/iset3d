@@ -20,6 +20,10 @@
 % 
 % scene_pw = piWRS(thisR_pw);
 %% Fix these
+% SkipFile
+%
+% Developer-local batch rendering scratch script with hard-coded scene
+% repository paths.
 % Too many assets to parse, might not be a good scene for us to parse with
 % iset3d.
 % thisR = piRead('/Users/zhenyi/git_repo/pbrt-v4-scenes/landscape/view-0.pbrt');

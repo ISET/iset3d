@@ -1,6 +1,9 @@
 %% s_makeSimpleScene
+% SkipFile
 %
 % DEPRECATED
+%
+% Out-of-date scene construction/debugging script.
 %
 
 % Not up to date ... either fix or deprecate

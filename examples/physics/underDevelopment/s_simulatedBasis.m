@@ -1,5 +1,9 @@
 %  Converting the radiance in a rendered image into something
+% SkipFile
 %  plausible
+%
+% Depends on an existing scene in the ISET session; not a standalone smoke
+% test.
 %
 
 %% This was a kitchen scene
@@ -100,5 +104,4 @@ sceneb1 = sceneSet(sceneb1,'name',sprintf('dim %d',nDims));
 sceneWindow(sceneb1);
 
 %%  END
-
 

@@ -1,7 +1,10 @@
 %% s_sanmiguel
+% SkipFile
 %
 % This one is really big, and it must be read as Copy, not PARSE, for
 % now.
+%
+% Large remote-render scene exploration with known texture issues.
 %
 % 299 materials, 511 textures.  Many variants.  Really big.  It is
 % taking several minutes to load.  Not sure it will complete.

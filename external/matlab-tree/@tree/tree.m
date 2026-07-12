@@ -273,6 +273,8 @@ classdef tree
                 newNames = obj.Node{id}.name;
             elseif ischar(obj.Node{id})
                 newNames = obj.Node{id};
+            else
+                newNames = '';
             end
             while numel(newNames) >= 10 &&...
                     isequal(newNames(7:8), 'ID')
@@ -569,4 +571,3 @@ classdef tree
     end
     
 end
-

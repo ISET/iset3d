@@ -1,5 +1,7 @@
 %% s_headLens
+% SkipFile
 %
+% Multi-render lens exploration with missing/stale skymap staging.
 
 %%
 ieInit;

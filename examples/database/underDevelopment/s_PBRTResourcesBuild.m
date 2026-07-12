@@ -2,7 +2,12 @@
 % SkipFile
 %
 % Requires authenticated PBRTResources database and remote acorn access.
+%
+% This file documents how to populate PBRTResources.  It is intentionally
+% documentation-only: the reference implementation below is commented out so
+% the script cannot create MongoDB records or sync files by accident.
 
+%{
 ieInit; clear ISETdb
 % set up connection to the database, it's 49153 if we are in Stanford
 % Network. 
@@ -179,3 +184,4 @@ end
 remoteSkymaps = ourDB.contentFind('PBRTResources','type','skymap', 'show',true);
 
 %%
+%}

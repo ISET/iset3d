@@ -1,6 +1,10 @@
 % s_mouthBasisGeneration
+% SkipFile
 %
 % Generate basis functions for measured reflectances of mouth 
+%
+% Data-generation script that depends on local measured reflectance files
+% and writes data/basisFunctions/mouthReflectance.mat.
 %
 % Zheng Lyu, 2020
 %% Init

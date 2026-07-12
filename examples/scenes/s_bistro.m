@@ -1,6 +1,9 @@
 %% s_bistro
+% SkipFile
 %
 % Worked with cardinal download on July 11, 2022
+%
+% Large remote-render scene exploration with multiple variants and lenses.
 %
 %
 
@@ -61,4 +64,3 @@ thisR.set('object distance',10);  % Move closer.
 oi = piWRS(thisR,'name','fisheye 10m');
 
 %%
-

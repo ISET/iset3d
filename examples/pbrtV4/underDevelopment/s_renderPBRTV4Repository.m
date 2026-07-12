@@ -1,5 +1,7 @@
 %% Example of rendering one of the pbrt V4 scenes
+% SkipFile
 %
+% Depends on a developer-local PBRT v4 repository path.
 %
 
 %%
@@ -84,4 +86,3 @@ sceneWindow(scene);
 sceneSet(scene,'gamma',0.6);
 
 %% END
-

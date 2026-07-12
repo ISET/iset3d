@@ -3,8 +3,16 @@
 %
 % Requires authenticated PBRTResources database and remote acorn access.
 %
+% This file documents how to upload a scene and register it in
+% PBRTResources.  It is intentionally documentation-only: the reference
+% implementation below is commented out so the script cannot upload files or
+% create MongoDB records by accident.
+
+%{
 thisDocker = isetdocker;
 pbrtDB = isetdb();
+ourDB = pbrtDB;
+collectionName = 'PBRTResources';
 
 remoteScenes = pbrtDB.contentFind('PBRTResources','type','scene');
 for ii=1:numel(remoteScenes)
@@ -72,7 +80,7 @@ thisDocker.upload(localSceneFolder,remoteSceneDir);
 
 % This scene has multiple different main files that render a bit
 % differently.  We add them all to the database
-[thisID, contentStruct] = ourDB.contentCreate('collection Name',collectionName, ...
+ourDB.contentCreate('collection Name',collectionName, ...
     'type','scene', ...
     'filepath',remoteSceneDir,...
     'name','lte-orb-silver',...
@@ -101,7 +109,7 @@ scene = piWRS(thisR,'docker',thisDocker);
 
 % differently.  We add them all to the database
 sceneFolder = 'lte-orb';
-[thisID, contentStruct] = ourDB.contentCreate('collection Name',collectionName, ...
+[thisID, ~] = ourDB.contentCreate('collection Name',collectionName, ...
     'type','scene', ...
     'filepath',remoteSceneDir,...
     'name','low-poly-taxi',...
@@ -115,3 +123,4 @@ sceneFolder = 'lte-orb';
 queryStruct.hash = thisID;
 
 thisScene = ourDB.contentFind(collectionName, queryStruct);
+%}

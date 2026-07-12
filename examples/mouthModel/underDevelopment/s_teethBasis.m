@@ -1,4 +1,8 @@
 % s_teethBasis
+% SkipFile
+%
+% Depends on local measured teeth basis data not included in the standard
+% checkout.
 
 %% init
 ieInit;

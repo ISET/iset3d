@@ -23,6 +23,7 @@ ieWebGet('deposit name', subDir,'deposit file',sceneName);
 %}
 
 allSDR = piSDRSceneNames;
+sceneName = ieParamFormat(sceneName);
 
 % Find the scene on the Stanford Digital Repository
 switch sceneName

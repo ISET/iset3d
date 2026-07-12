@@ -1,6 +1,9 @@
 %% update assets in flywheel to v4
+% SkipFile
 %
 %  Deprecated.
+%
+% Requires Flywheel/scitran access.
 %
 
 %%

@@ -1,7 +1,10 @@
 %% s_landscape
+% SkipFile
 %
 % This one is really big, and it must be read as Copy, not PARSE, for
 % now.
+%
+% Large remote-render scene exploration.
 %
 % Read 269 materials and 861 textures.
 %

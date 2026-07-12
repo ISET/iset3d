@@ -1,4 +1,8 @@
-%%
+%% 
+% SkipFile
+%
+% Out-of-date PBRT V3 parser/light-editing scratch script.
+
 % OUT OF DATE
 %
 

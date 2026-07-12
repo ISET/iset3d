@@ -1,7 +1,11 @@
 % s_texturesMouthMeasuredRef
+% SkipFile
 %
 % Render mouth model with measured mouth reflectance data. Evaluate the
 % effectiveness by checking chromaticity map.
+%
+% Depends on local mouth texture maps and the older PBRT v3 basis-function
+% renderer.
 %
 % Zheng Lyu, 2020
 %% Init

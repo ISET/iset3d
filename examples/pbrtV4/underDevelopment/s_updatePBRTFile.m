@@ -1,7 +1,10 @@
 %% Update PBRT V3 files to PBRT V4 files
+% SkipFile
 %
 % This script has a template for doing the update.  The key function that
 % changes the pbrt source files is piPBRTUpdateV4.
+%
+% Data-conversion script that writes scene files; not a smoke-test example.
 %
 % See also
 %   piPBRTUpdateV4, piPBRTReformat
@@ -62,4 +65,3 @@ outFile = fullfile(outputDir,'kitchen.pbrt');
 
 outFile = piPBRTUpdateV4(inFile, outFile);
 dir(fileparts(outFile))
-

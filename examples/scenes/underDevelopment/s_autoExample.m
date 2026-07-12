@@ -1,4 +1,7 @@
 % recipe = load('/Volumes/acorn.stanford.edu/data/iset/isetauto/Ford/SceneRecipes/1114041814.mat');
+% SkipFile
+%
+% Depends on private acorn auto-scene recipe files.
 tmp = load('/Volumes/acorn.stanford.edu/Vistalab/data/iset/isetauto/Ford/SceneRecipes/1114041814.mat');
 thisR = tmp.thisR;
 
@@ -39,5 +42,4 @@ sensor = sensorCompute(sensor,oi);
 ip = ipCreate;
 ip = ipCompute(ip,sensor);
 ipWindow(ip);
-
 

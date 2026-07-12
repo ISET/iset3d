@@ -1,8 +1,11 @@
 %% Create and upload PBRT files to flywheel
+% SkipFile
 %
 %   s_mouthUpload.m
 %
 % Description
+%
+% Requires Flywheel/scitran access and private oral-eye assets.
 %
 %
 % Author:
@@ -84,6 +87,5 @@ gcp.fwUploadPBRT(thisR,'scitran',st,...
 %% Remove jobs
 
 %% Close the cluster
-
 
 

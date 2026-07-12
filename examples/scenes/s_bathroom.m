@@ -1,6 +1,9 @@
 %% s_bathroom
+% SkipFile
 %
 % Worked with cardinal download on July 11, 2022
+%
+% Large remote-render scene exploration with multiple lens variants.
 %
 %
 

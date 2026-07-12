@@ -1,7 +1,10 @@
 %% s_car
+% SkipFile
 %
 % This one PARSED up without any editing.
 % It is a lousy object, though.
+%
+% Depends on old IDB/database tooling and developer-local scene paths.
 %
 % See also
 %
@@ -28,4 +31,3 @@ ieReplaceObject(scene); sceneWindow;
 %%  Could denoise
 
 %% END
-
