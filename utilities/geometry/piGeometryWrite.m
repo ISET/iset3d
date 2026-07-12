@@ -363,11 +363,15 @@ for ii = 1:numel(children)
             end
         end
 
-        % % Reference object section (also if an instance (object copy))
-        % if ~isempty(referenceObjectExist) && isfield(thisNode,'referenceObject')
-        %     fprintf(fid, strcat(spacing, indentSpacing, ...
-        %         sprintf('ObjectInstance "%s"', thisNode.referenceObject), '\n'));
-        % end
+        % Reference object section (also if an instance/object copy).  An
+        % instanced branch may have no object children of its own; its
+        % geometry is the referenced object definition written above.
+        if ~isempty(referenceObjectExist) && ...
+                isfield(thisNode,'referenceObject') && ...
+                ~isempty(thisNode.referenceObject)
+            fprintf(fid, strcat(spacing, indentSpacing, ...
+                sprintf('ObjectInstance "%s"', thisNode.referenceObject), '\n'));
+        end
 
         % (fid, obj, thisNode, lvl, outFilePath, writeGeometryFlag, thisR)
         recursiveWriteAttributes(fid, obj, children(ii), lvl + 1, ...
@@ -519,7 +523,7 @@ for nMat = 1:numel(thisNode.material)
     % seems off to me (BW, 4/4/2023)
     if ~iscell(thisNode.shape)
         thisShape = thisNode.shape;
-    elseif iscell(thisNode.shape) && (numel(thisNode.shape)==1)
+    elseif iscell(thisNode.shape) && isscalar(thisNode.shape)
         % At least one entry in the cell?
         thisShape = thisNode.shape{1};
     else

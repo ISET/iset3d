@@ -58,11 +58,13 @@ thisR.set('lights',distantLight,'add');
 piWRS(thisR);
 
 %% Turn this into an instance recipe
+
+% It will look the same, but it is prepared for copies
 piObjectInstance(thisR);
 piWRS(thisR);
 
-%% Find the object
-%
+%% Find the object and make copies
+
 % Maybe this should be thisR.get('asset',idx,'top branch')
 sphereID = piAssetSearch(thisR,'object name','Sphere');
 thisR.set('asset',sphereID,'scale',0.5);
@@ -82,11 +84,11 @@ end
 % instance.  Once at the end is enough.
 thisR.assets = thisR.assets.uniqueNames;
 
-%%  Show the multiple spheres
-
+%  Show the multiple spheres
 piWRS(thisR,'name','Multiple spheres');  %%  Multiple copies of spheres
 
-%%
+%% Now illustrate the idea with the chess set scene
+
 thisR = piRecipeCreate('chessset');
 thisR.set('fov',40);
 thisR.set('film resolution',[160 120]);
@@ -107,7 +109,9 @@ id2 = 308;
 % Delete the ruler
 thisR.set('asset',id1,'delete');
 thisR.set('asset',id2,'delete');
-% piWRS(thisR,'name','deleted ruler');
+
+%%
+piWRS(thisR,'name','deleted ruler');
 
 %% Copy the ruler
 thisR = piRecipeCreate('chessset');
@@ -140,9 +144,9 @@ end
 % object.  I am confused about the size units.
 % Three copies are enough to verify the instance operation in the automated
 % tutorial.  Increase the loop bound for a denser interactive example.
-for ii=1:3
-    thisR = piObjectInstanceCreate(thisR, id1end, 'position',ii*[0 copySpacing 0.0]/8);
-    thisR = piObjectInstanceCreate(thisR, id2end, 'position',ii*[0 copySpacing 0.0]/8);
+for ii=1:2
+    thisR = piObjectInstanceCreate(thisR, id1end, 'position',ii*[0 copySpacing 0.0]/16);
+    thisR = piObjectInstanceCreate(thisR, id2end, 'position',ii*[0 copySpacing 0.0]/16);
 end
 
 % We need to adjust the names of the nodes after inserting.  Not sure why
@@ -155,7 +159,7 @@ thisR.assets = thisR.assets.uniqueNames;
 
 piWRS(thisR,'name','ruler copies');
 
-%%
+%% Consider whether these might be part of the thisR.get('asset', ...) function.
 
 function sz = localAssetObjectSize(thisR,assetID)
 % Return the size of an asset or the first object contained in its subtree.

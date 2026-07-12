@@ -33,3 +33,52 @@ instances2 = thisR.get('instances');
 testCase.verifyGreaterThan(numel(instances2), numel(instances1));
 
 end
+
+function testObjectInstanceWritesReference(testCase)
+%% Test that prepared instances write ObjectInstance records into PBRT.
+
+warningState = warning;
+testCase.addTeardown(@() warning(warningState));
+warning('off','all');
+thisR = piRecipeCreate('sphere');
+warning(warningState);
+
+thisR.set('light','all','delete');
+distantLight = piLightCreate('distant1','type','distant',...
+    'spd','equalEnergy',...
+    'specscale float',1,...
+    'cameracoordinate',true);
+thisR.set('lights',distantLight,'add');
+
+piObjectInstance(thisR);
+sphereID = piAssetSearch(thisR,'object name','Sphere');
+p2Root = thisR.get('asset',sphereID,'pathtoroot');
+referenceID = p2Root(end);
+for ii = 1:3
+    thisR = piObjectInstanceCreate(thisR,referenceID,...
+        'position',ii*[-0.3 0.1 0]);
+end
+thisR.assets = thisR.assets.uniqueNames;
+
+tempDir = tempname;
+mkdir(tempDir);
+testCase.addTeardown(@() localRemoveDir(tempDir));
+
+thisR.outputFile = fullfile(tempDir,'instanced_sphere.pbrt');
+piWrite(thisR);
+
+geometryFile = fullfile(tempDir,'instanced_sphere_geometry.pbrt');
+testCase.assertTrue(isfile(geometryFile));
+
+geometryText = fileread(geometryFile);
+testCase.verifyNotEmpty(strfind(geometryText,'ObjectBegin "Sphere"'));
+testCase.verifyEqual(numel(strfind(geometryText,'ObjectInstance "Sphere"')),4);
+
+end
+
+function localRemoveDir(folderName)
+if isfolder(folderName)
+    rmdir(folderName,'s');
+end
+
+end
