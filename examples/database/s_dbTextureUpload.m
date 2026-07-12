@@ -1,7 +1,10 @@
 %% Upload local material textures into the PBRTResources database
+% SkipFile
 %
 % This script publishes the image files in piDirGet('textures') to the shared
 % acorn resource tree:
+%
+% Requires authenticated PBRTResources database and remote acorn access.
 %
 %   /acorn/data/iset/PBRTResources/texture
 %

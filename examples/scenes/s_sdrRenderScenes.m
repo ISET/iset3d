@@ -1,6 +1,11 @@
 %% Create ISETCam scenes from the SDR PBRT files
+% SkipFile
 %
 % We do this to save computation in the future
+%
+% This is a long prerender/data-generation script.  It renders full SDR
+% scene collections at high resolution and saves scene mat-files under
+% local/prerender, so it is intentionally excluded from routine smoke tests.
 %
 % The script has a lot of edge cases in the comments.
 % I did a lot of scenes, about 60 of them are pretty good.

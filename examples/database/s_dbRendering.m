@@ -1,9 +1,12 @@
 %% Rendering a local and an database scene
+% SkipFile
 %
 % Renders
 % 
 %  * a local scene (slantedBar.pbrt), and 
 %  * an acorn database scene (ChessSet.pbrt)
+%
+% Requires authenticated PBRTResources database access.
 %
 % Also shows how to change the skymap using both local and remote skymap
 % data.
@@ -175,6 +178,5 @@ thisR.summarize;
 
 
 %% END
-
 
 

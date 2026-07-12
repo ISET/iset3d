@@ -1,6 +1,11 @@
 % s_mccBasisGeneration
+% SkipFile
 %
 % Generate basis functions for measured reflectances of MCC
+%
+% This is a data-generation script that writes
+% data/basisFunctions/mccReflectance.mat.  It is intentionally excluded
+% from routine example smoke tests.
 %
 % Zheng Lyu, 2020
 

@@ -1,5 +1,7 @@
 %% Upload a local scene into the Mongo database 
+% SkipFile
 %
+% Requires authenticated PBRTResources database and remote acorn access.
 %
 thisDocker = isetdocker;
 pbrtDB = isetdb();

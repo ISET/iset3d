@@ -1,4 +1,8 @@
 %%
+% SkipFile
+%
+% Requires authenticated PBRTResources database and remote acorn access.
+
 ieInit; clear ISETdb
 % set up connection to the database, it's 49153 if we are in Stanford
 % Network. 
@@ -175,4 +179,3 @@ end
 remoteSkymaps = ourDB.contentFind('PBRTResources','type','skymap', 'show',true);
 
 %%
-

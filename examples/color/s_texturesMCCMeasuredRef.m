@@ -1,8 +1,12 @@
 % s_texturesMCCMeasuredRef
+% SkipFile
 % 
 % Render MCC with measured reflectance.
 % 
 % Warning: doesn't work very well.
+%
+% Uses the older PBRT v3 basis-function renderer and local generated
+% texture/basis assets, so exclude it from routine example smoke tests.
 %
 % Zheng Lyu, 2020
 %% Init

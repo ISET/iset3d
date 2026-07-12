@@ -1,7 +1,11 @@
 %% Wild to Tame
+% SkipFile
 %
 % We take some of the complex scripts from the wild, and convert them
 % to our format.
+%
+% This is an experimental round-trip/reformat script for parser work, not a
+% routine rendering smoke test.
 %{
  ieInit;
  if ~piDockerExists, piDockerConfig; end
@@ -34,4 +38,3 @@ piWRS(thisR);
 %% Reformat the simple scene
 
 thisR = piRecipeDefault('scene name','Simple scene');
-

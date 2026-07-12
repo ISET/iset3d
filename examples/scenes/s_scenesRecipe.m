@@ -1,8 +1,13 @@
 %% To speed up loading we pre-compute the recipes for certain scenes.
+% SkipFile
 %
 % This approach seems to work with mat-files, but it does not yet work for
 % all JSON file round trips.  In time we will try to figure out what is
 % missing, using piJSON2Recipe
+%
+% This is a recipe data-generation/debugging script that writes recipe
+% mat-files into scene data folders, so it is excluded from routine smoke
+% tests.
 %
 % We save these recipes in the original folder with a scene-recipe.mat file
 % name.

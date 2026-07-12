@@ -1,6 +1,9 @@
 %% s_dbResources
+% SkipFile
 % 
 % List database resources
+%
+% Requires authenticated PBRTResources database access.
 %
 % There are different resource types
 %

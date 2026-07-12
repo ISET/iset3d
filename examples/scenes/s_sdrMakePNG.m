@@ -1,6 +1,10 @@
 %% Prepare PNG and montage of PNGs for SDR upload
+% SkipFile
 %
 % The scene mat-files were rendrered using s_sdrRenderScenes
+%
+% This depends on prerendered files under local/prerender and is not a
+% standalone smoke-test example.
 %
 
 subdir = {'bitterli','pbrtv4','iset3d'};
