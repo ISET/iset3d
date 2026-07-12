@@ -39,15 +39,27 @@
 
 ieInit;
 if ~piDockerExists, piDockerConfig; end
-%%
 
-% Maybe we should have an instance flag?
+%% Create a sphere scene
 thisR = piRecipeCreate('sphere');
 thisR.set('film resolution',[160 120]);
 thisR.set('rays per pixel',32);
 
-% Turn this into an instance recipe
+% The sphere recipe has no useful default illumination.  Add a distant
+% light so the copied spheres render visibly without having to aim a spot
+% or area light at the object.
+thisR.set('light','all','delete');
+distantLight = piLightCreate('distant1','type','distant',...
+    'spd','equalEnergy',...
+    'specscale float',1,...
+    'cameracoordinate',true);
+thisR.set('lights',distantLight,'add');
+
+piWRS(thisR);
+
+%% Turn this into an instance recipe
 piObjectInstance(thisR);
+piWRS(thisR);
 
 %% Find the object
 %

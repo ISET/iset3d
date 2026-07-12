@@ -5,7 +5,7 @@ function [chartR, gName, oName]  = piChartCreate(chartName)
 %  [chartR, sName] = piChartCreate(chartName)
 %
 % Describe
-%   Used by s_assetsRecipe to create a recipe we later merge with other
+%   Used by data_assetsRecipe to create a recipe we later merge with other
 %   recipes.
 %
 % Input
@@ -18,7 +18,7 @@ function [chartR, gName, oName]  = piChartCreate(chartName)
 %   oName   - Object node name
 %
 % See also
-%  s_assetsRecipe, piRecipeMerge
+%  data_assetsRecipe, piRecipeMerge
 
 % Examples:
 %{
@@ -139,4 +139,3 @@ if ~exist(outputdir,'dir'), fprintf('Making output dir %s',outputdir); mkdir(out
 copyfile(textureFile,outputdir);
 
 end
-

@@ -1,6 +1,11 @@
 %% Rotation examples in object and world coordinates
+% SkipFile
 %
 %  ZLy/BW
+%
+%  This is a useful interactive rotation walkthrough, but it overlaps with
+%  the broader t_assets tutorial and the faster t_assetsWorldTrans tutorial.
+%  Keep it available for exploration, but skip it in automated tutorial runs.
 %
 % See also
 %  t_assetsWorldPos, t_assets*

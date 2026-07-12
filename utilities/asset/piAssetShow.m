@@ -2,7 +2,7 @@ function scene = piAssetShow(thisR,varargin)
 % Quickly render an asset
 %
 % Input
-%  thisR - The asset recipe from s_assetsRecipe
+%  thisR - The asset recipe from data_assetsRecipe
 %
 % Optional key/val
 %  object distance
@@ -14,7 +14,7 @@ function scene = piAssetShow(thisR,varargin)
 %   Adds a light, maybe sets another parameter, renders a scene with piWRS
 %
 % See also
-%  s_assetsRecipe
+%  data_assetsRecipe
 %
 
 %%

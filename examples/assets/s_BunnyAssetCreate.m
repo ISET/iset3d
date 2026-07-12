@@ -1,8 +1,8 @@
 % s_BunnyAssetCreate;
-% Generate and save bunny asset leaf node
-
-disp('I think this is v3 only?');
-pause;
+% SkipFile
+%
+% Generate and save bunny asset leaf node.
+%
 
 %% init
 ieInit;

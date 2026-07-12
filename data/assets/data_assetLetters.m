@@ -1,13 +1,13 @@
 %% Write out the letters in lettersAtDepth as loadable assets
 %
-%   thisAsset = piAssetLoad('latterA.mat');
+%   thisAsset = piAssetLoad('letterA.mat');
 %
 % There are also letters from Krithin stored in the characters directory,
 % made using Blender. They are now usable via textRender, as shown in
 % s_textRenderBasic and s_eyeChart.
 %
 % See also
-%   s_assetsRecipe, v_Assets, piAssetLoad, piRecipeMerge
+%   data_assetsRecipe, piAssetLoad, piRecipeMerge
 
 %% This is where we will save them
 assetDir = piDirGet('assets');
@@ -22,7 +22,7 @@ for ii=1:numel(letters)
     thisR = piRecipeDefault('scene name', sceneName);
     % thisR.show('objects');
     
-    % Eliminate everything example A,B,C    
+    % Eliminate everything except A, B, C    
     objects = {'Ground','Wall'};
     for jj=1:numel(objects)
         idx = piAssetSearch(thisR,'object name',objects{jj});
@@ -106,4 +106,3 @@ chessR.set('asset',idx,'world position',to + [0 0.1 0]);
 piWRS(chessR,'render type','radiance');
 
 %}
-

@@ -1,4 +1,5 @@
 %% Change the viewing direction and position
+% SkipFile
 %
 %   Put the camera at the position of different objects in the scene, and
 %   we look at other objects.  In the first case, from the blue guy to the
@@ -10,6 +11,10 @@
 %   Note that you cannot put the 'from' at exactly the same position as an
 %   object.  If you do, the camera will be in the middle of it and cannot
 %   see through it. You can put the camera adjacent to the object.
+%
+%   This is most useful as an interactive camera-position sweep.  It
+%   overlaps with the faster asset transform tutorials, so the automated
+%   tutorial runner skips it.
 %
 %   See also
 %    t_assets*

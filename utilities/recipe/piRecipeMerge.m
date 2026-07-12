@@ -28,7 +28,7 @@ function sceneR = piRecipeMerge(sceneR, objectRs, varargin)
 %   sceneR   - scene recipe with the added objects
 %
 % See also
-%   piAssetLoad, s_assetsRecipe (where assets are made and tested)
+%   piAssetLoad, data_assetsRecipe (where assets are made and tested)
 
 % Example:
 %{
@@ -189,6 +189,5 @@ for ii = 1:length(recipelist)
 end
 
 end
-
 
 

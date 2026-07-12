@@ -16,10 +16,11 @@ function asset = piAssetLoad(fname,varargin)
 %
 % Description
 %   We store certain assets as mat-files that contain a recipe.  These
-%   recipes be loaded (piAssetLoad) and then merged into any other
+%   recipes can be loaded (piAssetLoad) and then merged into any other
 %   scene recipe. 
 % 
-%   The assets are created and stored in the script s_assetsCreate. The
+%   The assets are created and stored by the data_assetsRecipe and
+%   data_assetLetters scripts. The
 %   piRecipeMerge function combines the asset into the scene. The asset
 %   recipe is stored along with the name of the critical node used for
 %   merging. 

@@ -1,4 +1,6 @@
 % s_MCCCBAssetCreate;
+% SkipFile
+%
 % Generate and save Macbeth Color Checker for Cornell Box project.
 
 %% init

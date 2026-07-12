@@ -1,12 +1,12 @@
 function piObjectInstance(thisR)
-% Create instances for each of the objects in a recipe
+% Prepare each recipe object so it can be duplicated as an instance
 %
 % Synopsis
 %   piObjectInstance(thisR)
 %
 % Brief
-%   This function prepares a recipe with assets so that its objects can be
-%   copied by creating an instance
+%   This function prepares a recipe's asset tree so that objects can be
+%   copied later with piObjectInstanceCreate.
 %
 % Inputs
 %   thisR - A recipe
@@ -15,7 +15,19 @@ function piObjectInstance(thisR)
 %   N/A
 %
 % Description
-%   
+%   Instancing is useful when a scene contains repeated objects.  Without
+%   instances, every duplicate object may carry its own copy of the mesh or
+%   other rendering data.  With instances, the recipe keeps one reference
+%   object that owns the geometry, and duplicated objects store only the
+%   transforms needed to place, rotate, and scale that reference object in
+%   the scene.  When the recipe is written to PBRT, this lets the renderer
+%   reuse the original geometry through ObjectInstance records instead of
+%   expanding the same geometry again and again.
+%
+%   piObjectInstance marks each top-level object branch as a reusable
+%   reference object and creates an initial instance branch for it.  After
+%   this preparation, call piObjectInstanceCreate to add additional copies
+%   at different positions, rotations, scales, or motion states.
 %
 % See also
 %  piObjectInstanceCreate, t_piSceneInstances

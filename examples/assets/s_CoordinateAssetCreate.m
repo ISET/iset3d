@@ -1,4 +1,6 @@
 % s_CoordinateAssetCreate
+% SkipFile
+%
 % Create and save coordinate asset leaf node
 % TODO: create recipeSet merge function
 %% init
@@ -26,5 +28,4 @@ matList = thisR.get('materials');
 
 outputPath = fullfile(piRootPath, 'data', 'assets', 'coordinate.mat'); 
 piAssetTreeSave(subTree, matList, 'outFilePath', outputPath);
-
 

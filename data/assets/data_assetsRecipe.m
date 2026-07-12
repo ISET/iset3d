@@ -3,7 +3,7 @@
 % We save certain small assets and specific test chart recipes in
 % data/assets. 
 %
-% The goal is to simplify inserting these objeccts into arbitrary scenes
+% The goal is to simplify inserting these objects into arbitrary scenes
 % easily. We save more complex scenes in the data/scenes directories.
 %
 % This script is used to produce the assets, which have
@@ -43,7 +43,7 @@
 %}
 % 
 % See also
-%   s_scenesRecipe
+%   data_assetLetters, piAssetLoad, piRecipeMerge
 %
 
 %% Init
@@ -176,6 +176,4 @@ oFile = thisR.save(fullfile(assetDir,'pointarray512.mat'));
 save(oFile,'mergeNode','-append');
 
 %% END
-
-
 
