@@ -73,7 +73,7 @@ dockerimage = dockerWrapper.localImage();
 % Give a name to docker container
 % make sure we don't have the same container numbers every time
 % right answer is to housekeep them!
-rng('shuffle');
+rng('shuffle','twister');
 dockercontainerName = ['ISET3d-',thisName,'-',num2str(randi(20000))];
 
 % The Docker base command includes 'toply'.  In that case, it does not
@@ -195,4 +195,3 @@ if exist(inputGeometryfname, 'file')
 end
 
 end
-

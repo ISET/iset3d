@@ -137,7 +137,7 @@ switch ieParamFormat(sceneDir)
         exporter = 'PARSE';
     case 'flatsurfacewhitetexture'
         sceneDir = 'flatsurfacewhitetexture';
-        sceneFile = 'flatSurfaceWhiteTexture.pbrt';
+        sceneFile = 'flatsurfacewhitetexture.pbrt';
         exporter = 'PARSE';
     case {'head','head-iset3d'}
         sceneDir = 'head';

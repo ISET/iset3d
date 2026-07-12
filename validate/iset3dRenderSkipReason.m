@@ -57,6 +57,7 @@ function [ready,details] = localCheckRenderer()
 %% Verify Docker preferences, context, and GPU visibility when required.
 
 ready = false;
+rng('default');
 localEnsureISETCam();
 
 [dockerExists,~,dockerResult] = piDockerExists();

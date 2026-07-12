@@ -305,7 +305,7 @@ classdef isetdocker < handle
             if isempty(useImage)
                 useImage = getpref('ISETDocker','dockerImage');
             end
-            rng('shuffle'); % make random numbers random
+            rng('shuffle','twister'); % make random numbers random
             uniqueid = randi(20000);
             if ispc
                 uName = ['Windows' int2str(uniqueid)];

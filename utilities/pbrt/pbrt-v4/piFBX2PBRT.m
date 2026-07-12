@@ -30,7 +30,7 @@ cd(nativeDir);
 
 % build docker base cmd
 dockerimage = dockerWrapper.localImage();
-rng('shuffle');
+rng('shuffle','twister');
 dockercontainerName = ['Assimp-',num2str(randi(20000))];
 
 if false % not sure we need this ispc
@@ -100,4 +100,3 @@ end
 %rmCmd = sprintf('docker rm %s',dockercontainerName);
 %system(rmCmd);
 %end
-

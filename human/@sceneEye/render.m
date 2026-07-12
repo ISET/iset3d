@@ -172,5 +172,20 @@ thisDocker.deviceID = '';
 if isempty(thisDocker.dockerImage) || contains(lower(thisDocker.dockerImage),'gpu')
     thisDocker.dockerImage = 'digitalprodev/pbrt-v4-cpu';
 end
+localResetSavedGPUContainer(thisDocker);
+
+end
+
+function localResetSavedGPUContainer(thisDocker)
+%% Avoid a device-mismatch warning when human-eye optics switch to CPU PBRT.
+
+if ~ispref('ISETDocker','PBRTContainer') || ~ismethod(thisDocker,'reset')
+    return;
+end
+
+containerName = char(string(getpref('ISETDocker','PBRTContainer')));
+if startsWith(containerName,'pbrt-gpu-')
+    thisDocker.reset();
+end
 
 end

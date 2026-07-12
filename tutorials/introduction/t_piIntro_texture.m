@@ -14,7 +14,7 @@ if ~piDockerExists, piDockerConfig; end
 
 %% Start with a textured flat surface
 
-thisR = piRecipeDefault('scene name','flatSurfaceWhiteTexture');
+thisR = piRecipeDefault('scene name','flatsurfacewhitetexture');
 thisR.set('film resolution',[160 160]);
 thisR.set('rays per pixel',32);
 
