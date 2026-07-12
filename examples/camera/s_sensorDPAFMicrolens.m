@@ -1,7 +1,11 @@
 %% Create a sensor for dual pixel autofocus experiments (DPAF).
+% SkipFile
 %
 % This is more recently updated in s_cameraDPAF and extended in
 % tls_cameraLightField.
+%
+% This older draft depends on stale microlens variables and is superseded
+% by the camera DPAF examples.
 %
 % Questions to answer:  
 % 

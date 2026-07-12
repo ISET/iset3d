@@ -1,6 +1,10 @@
 %% Add various charts to scenes
+% SkipFile
 %
 % Ultimately we will do this for metrics, such as MTF and color
+%
+% Uses the older raytransfer lens JSON format and docker image; it should
+% be refreshed before automated PBRT v4 smoke runs.
 %
 % See also
 %

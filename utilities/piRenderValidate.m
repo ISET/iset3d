@@ -31,7 +31,11 @@ p.parse(thisR);
 textureList = {};
 missingTextures = [];
 
-tList = thisR.textures.list;
+if isstruct(thisR.textures) && isfield(thisR.textures, 'list')
+    tList = thisR.textures.list;
+else
+    tList = {};
+end
 textureValues = localCollectionValues(tList);
 for ii = 1:numel(textureValues)
     curTexture = textureValues{ii};
@@ -81,8 +85,13 @@ missingAssets = [];
 ids = thisR.assets.findleaves;
 for ii = 1:numel(ids)
     curNode = thisR.get('assets', ids(ii));
+    if ~isstruct(curNode) || ~isfield(curNode, 'type')
+        continue;
+    end
+
     if isequal(curNode.type, 'object')
-        if isfield(curNode.shape, 'filename') && ~isempty(curNode.shape.filename)
+        if isfield(curNode, 'shape') && ...
+                isfield(curNode.shape, 'filename') && ~isempty(curNode.shape.filename)
             fpath = fullfile(thisR.get('output dir'), curNode.shape.filename);
             assetList{end + 1} = fpath;
             if exist(fpath, 'file')
@@ -90,7 +99,7 @@ for ii = 1:numel(ids)
                 missingAssets(end + 1) = numel(assetList);
             end
         end
-    elseif isequal(curNode.type, 'light')
+    elseif isequal(curNode.type, 'light') && isfield(curNode, 'lght')
         for jj = 1:numel(curNode.lght)
             curLight = curNode.lght{jj};
             if isfield(curLight, 'filename') && ~isempty(curLight.filename.value)
@@ -102,7 +111,7 @@ for ii = 1:numel(ids)
                 end
             end
 
-            if ischar(curLight.spd.value)
+            if isfield(curLight, 'spd') && ischar(curLight.spd.value)
                 fpath = localLightSpdPath(thisR, curLight.spd.value);
                 if ~isempty(fpath)
                     lightList{end + 1} = fpath;

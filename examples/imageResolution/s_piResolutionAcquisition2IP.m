@@ -1,4 +1,7 @@
 %% Multiple resolutions: 
+% SkipFile
+%
+%  Requires Flywheel/scitran access.
 %
 %  Convert rendered data from the image alignment render subject in camera
 %  array to an IP using different pixel sizes.

@@ -1,6 +1,9 @@
 %% Convert rendered data from the image alignment to an IP
+% SkipFile
 %
 % Description
+%
+%   Requires Flywheel/scitran access.
 %
 %   Find a Flywheel session and acquisition with PBRT rendered images.
 %   Download the rendered data and assemble them into an ISETCam IP with

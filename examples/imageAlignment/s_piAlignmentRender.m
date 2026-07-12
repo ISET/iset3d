@@ -1,6 +1,9 @@
 %% Replicate a scene that is stored in Flywheel using GCP, moving the camera
+% SkipFile
 %
 % Description:
+%   Requires ISETCloud/GCP and Flywheel/scitran access.
+%
 %   We created many automotive optical images and stored them in
 %   Flywheel, particularly in the project CameraEval2019.  This script
 %   shows how to recalculate one of these scenes using the google

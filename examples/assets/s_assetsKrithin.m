@@ -1,7 +1,11 @@
 %% Make images with Krithin's assets
+% SkipFile
 %
 % I think there are more.   I should find them all!  The letters and
 % numbers.  And I should put them here.
+%
+% Requires legacy table and arch PBRT assets that are not part of the
+% standard checkout.
 %
 % See also
 %

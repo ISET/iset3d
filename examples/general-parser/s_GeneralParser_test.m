@@ -1,7 +1,11 @@
 %% The new approach to parsing is illustrated here for PBRT V3
+% SkipFile
 %
 % We reformat various types of pbrt files into a standard format.  This
 % format is output by PBRT (V3) itself, when we use the 'toply' switch
+%
+% Requires legacy V3 parser assets that are not included in the standard
+% checkout.
 %
 %    pbrt -toply ....
 %
@@ -92,4 +96,3 @@ for ii = 7%1:numel(namelist)
 end
 
 %% move chess set
-

@@ -1,8 +1,11 @@
 %% Replicate a scene that is stored in Flywheel using GCP
+% SkipFile
 %
 %    s_piStereoImage
 %
 % Description:
+%   Requires ISETCloud/GCP and Flywheel/scitran access.
+%
 %   We created many automotive optical images and stored them in
 %   Flywheel, particularly in the project CameraEval2019.  This script
 %   shows how to calculate a stereo pair from those PBRT scenes.  We

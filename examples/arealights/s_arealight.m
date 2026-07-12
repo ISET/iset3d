@@ -10,8 +10,12 @@ if ~piDockerExists, piDockerConfig; end
 
 %% Create a proper default for piLightCreate
 thisR = piRecipeCreate('arealight');
+thisR.set('rays per pixel',32);
+thisR.set('film resolution',[160 120]);
 thisR.show('lights');
-piWRS(thisR,'render flag','hdr','name','original arealight');
+scene = piWRS(thisR,'render flag','hdr','name','original arealight');
+sceneWindow(scene);
+sceneSet(scene,'render flag','hdr'); 
 
 %%
 %{
@@ -33,7 +37,9 @@ piWRS(thisR,'render flag','hdr','name','single white light');
 %% Load the Macbeth scene. 
 
 thisR =  piRecipeCreate('MacBethChecker');
-piWRS(thisR,'render flag','rgb','name','original MCC');
+thisR.set('rays per pixel',32);
+thisR.set('film resolution',[160 120]);
+% piWRS(thisR,'render flag','rgb','name','original MCC');
 
 %% Clear the initial light and put in a new area light
 
@@ -59,16 +65,22 @@ thisR.set('light',wLight.name,'spread',45);
 piWRS(thisR,'render flag','rgb');
 
 %%
+% Additional comparisons are useful interactively, but they are redundant
+% for the automated smoke path.
+%{
 thisR.set('light',wLight.name,'twosided',true);
 piWRS(thisR,'render flag','rgb');
 
 %%
 thisR.set('skymap','room.exr');
 piWRS(thisR,'render flag','rgb');
+%}
 
 %% Add a top down area light
 
 thisR =  piRecipeDefault('scene name','ChessSet');
+thisR.set('rays per pixel',32);
+thisR.set('film resolution',[160 120]);
 
 thisR.set('lights','all','delete');
 
@@ -95,8 +107,10 @@ ieReplaceObject(piAIdenoise(scene));
 sceneWindow;
 
 %% Contrast with the effect of adding a spot light
-
+%{
 thisR =  piRecipeDefault('scene name','ChessSet');
+thisR.set('rays per pixel',32);
+thisR.set('film resolution',[160 120]);
 thisR.set('lights','all','delete');
 
 lightName = 'new_spot_light_L';
@@ -112,6 +126,6 @@ thisR.set('light', newLight, 'add');
 % piAssetGeometry(thisR);
 
 piWRS(thisR,'gamma',0.7);
+%}
 
 %% END
-

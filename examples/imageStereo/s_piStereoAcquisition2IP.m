@@ -1,6 +1,9 @@
 %% Draft script
+% SkipFile
 %
 % *** Deprecated ***
+%
+% Requires Flywheel/scitran access.
 %
 %   See s_piAlignmentAcquisition2IP.m
 % 

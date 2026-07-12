@@ -1,4 +1,8 @@
 %%
+% SkipFile
+%
+% Requires authenticated isetdb/MongoDB access.
+
 ieInit; 
 clear ISETdb;
 piDockerConfig;

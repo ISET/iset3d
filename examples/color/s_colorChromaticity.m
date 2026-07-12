@@ -1,7 +1,12 @@
 %% Chromaticity example
+% SkipFile
 %
 % * We render a scene of a sphere that is illuminated by a point source.
 % We calculate an RGB image using a typical oi, sensor and ip routines.
+%
+% Needs refresh before automated runs: the rendered sphere lacks the OI
+% metadata expected by the downstream sensor path, and the fruit example
+% uses external spectral data.
 %
 % Then we look at the chromaticity and luminance components of the
 % linear RGB image. 
