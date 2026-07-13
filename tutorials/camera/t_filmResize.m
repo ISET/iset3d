@@ -1,11 +1,23 @@
 %% t_filmResize
 % SkipFile
-% Long camera/eye comparison tutorial with many renders, denoising, and a
-% human-eye parameter sweep. Not appropriate for the smoke-test runner.
 %
-% Illustrate the impact of changing the aspect ratio and sampling
-% properties of a scene.  We start with manipulating the pinhole camera
-% case.  Then move on to omni and finally to human eye.
+% Explore how PBRT film and camera sampling settings affect rendered
+% field of view, image shape, and optical-image sampling.
+%
+% The tutorial starts with a pinhole chess-set render and varies the stored
+% camera FOV, PBRT spatial samples, image aspect ratio, and an extreme
+% line-sample case. It then switches to an omni lens camera to show how
+% film diagonal changes the rendered FOV, how focal distance changes the
+% film distance needed for focus, and how film size can be adjusted when
+% changing spatial samples so the optical image keeps the same FOV.
+%
+% The human-eye/sceneEye section at the end is currently parked here as a
+% reference, but belongs in ISETBio tutorials or examples rather than this
+% core ISET3D camera tutorial.
+%
+% This is not appropriate for the smoke-test runner because it performs
+% many remote renders and denoising steps, but it has several useful
+% camera-parameter examples.
 %
 % See also
 
@@ -27,7 +39,7 @@ piWRS(thisR);
 
 fprintf('FOV %.1f\n',thisR.get('fov'));
 
-%% Look around with a bigger film diagonal for a momoent
+%% Look around with a bigger film diagonal for a moment
 
 % For a pinhole camera, we store the FOV.  We do not store film
 % distance
@@ -41,6 +53,7 @@ piWRS(thisR);
 
 %% Changing the number of samples
 
+%{
 % Samples are (X,Y) in PBRT
 thisR.set('spatial samples',round([ss(1),ss(2)/2]));
 
@@ -52,20 +65,19 @@ thisR.set('fov',15);
 thisR.summarize('camera');
 
 piWRS(thisR);
+%}
 
 %% Enlarge the FOV
 
-thisR.set('spatial samples',ss);
+% thisR.set('spatial samples',ss);
 
 % This is what the image looks like
 thisR.set('fov',45)
 thisR.summarize('camera');
 piWRS(thisR);
 
-%%  An extreme case of generating a line sample for the pinhole
+%%  An extreme case of generating a line sample 
 
-% This is a problem.  I do not understand why we are seeing the whole
-% chess set.  We should only be seeing a strip through the chess set.
 nRows = 16;
 thisR.set('spatial samples',round([ss(1), nRows]));
 thisR.set('fov',30/(ss(2)/nRows));
@@ -89,24 +101,20 @@ lensfile  = 'dgauss.22deg.6.0mm.json';    %
 % We replace the pinhole with the lens
 thisR.camera = piCameraCreate('omni','lensFile',lensfile);
 
-ss = thisR.get('spatial samples');
-
 thisR.set('focal distance',1); % Meters
 thisR.set('film diagonal',4);
 
 thisR.summarize('camera');
 piWRS(thisR);
 
-%% Vary the film size 
+%% Vary 
 
-% If we reduce it, we also reduce the fov
+% Film size- reduces the fov
 thisR.get('fov')
 thisR.set('film diagonal',2);
 thisR.get('fov')
 
-%% Focus
-
-% We can choose the focal distance. 
+% Focus - We choose the focal distance. 
 % This changes the film distance to keep the focus.
 thisR.set('focal distance',100);  % Meters
 thisR.get('film distance','mm')
@@ -152,7 +160,7 @@ sz = oiGet(oi2,'size');
 uData2 = oiPlot(oi2,'illuminance hline',[1,sz(1)/2]);
 
 %% Now compare
-ieNewGraphWin([],'wide');
+ieFigure([],'wide');
 subplot(1,2,1)
 plot(uData1.pos,uData1.data,'b--',uData2.pos,uData2.data,'r-');
 subplot(1,2,2)
@@ -164,6 +172,10 @@ thisR.set('spatial samples',ss);
 thisR.get('fov')
 
 %% Human eye version
+
+% Move this to one of the sceneEye examples in ISETBio
+%
+%{
 thisSE = sceneEye('chessset','eye model',modelName{mm});
 thisSE.set('use pinhole',true);
 thisSE.piWRS;
@@ -209,5 +221,6 @@ for ii = 1:numel(aa)
     oi = piAIdenoise(oi); ieReplaceObject(oi);
     oiWindow;
 end
+%}
 
 %% END

@@ -1,6 +1,11 @@
 function [MTF,LSF,ESF] = piCalculateMTF(varargin)
 % Calculate The MTF, LSF and, ESF
 %
+% ****** Deprecated *****
+%
+% See:  piCalculateSlantedEdgeMTF, t_lensMTF
+%
+%
 % A vertical step function (black/white edge) is placed at a given
 % distance, this requires the 'stepfunction' scene. The scene is
 % simulated for one horizontal line to allow for high resolution. This

@@ -8,21 +8,30 @@
 ieInit;
 if ~piDockerExists, piDockerConfig; end
 
-%% Chart distance as measured from the camera film
+%% Create a camera. 
 
-chartDistancesFromFilm_mm = 1000;        % 1 meter, in mm
-% chartDistancesFromFilm_mm = [1 5 10]*1000; % Compare multiple distances.
-
-%% Create a camera. This can be omni or ray transfer.
-camera = piCameraCreate('omni','lensfile','dgauss.22deg.3.0mm.json');
+% This can be omni or ray transfer.
+lensFile = 'dgauss.22deg.3.0mm.json';
+camera = piCameraCreate('omni','lensfile',lensFile);
 
 % Focus distance (play with this by setting it to 1, 5 or 10 (see chart distances))
-camera.focusdistance.value =1;  % As measured from film in meters
+camera.focusdistance.value = 1;  % As measured from film in meters
 
 % Optionally force desired film  distance
-%camera = rmfield(camera,'focusdistance')
-%camera.filmdistance.type='float'
-%camera.filmdistance.value=filmdistance/1000;% milimeters to Meters
+%{
+camera = rmfield(camera,'focusdistance')
+camera.filmdistance.type='float'
+camera.filmdistance.value=filmdistance/1000;   % millimeters to Meters
+%}
+
+%% Chart distance as measured from the camera film
+
+chartDistancesFromFilm_mm = 500;        % 1 meter, in mm
+
+%{
+% We could loop over chart distances in some cases.
+ chartDistancesFromFilm_mm = [0.1 0.5 1 5]*1000; % Compare multiple distances.
+%}
 
 %% Calculate MTF for each chart distance
 
@@ -31,29 +40,26 @@ filmwidth_mm = 0.5;
     'filmwidth',filmwidth_mm, ...
     'distances',chartDistancesFromFilm_mm,...
     'resolution',1024, ...
-    'rays',64, ...
+    'rays',256, ...
     'plot',false);
 
 %% Compare ESF, LSF, and MTF
 
-figure(1);
-subplot(1,3,1)
+ieFigure([],'wide');
+tiledlayout(1,3);
+
+nexttile;
 plot(mtfData.lsfx*1e3,mtfData.esf)
-title('ESF')
-xlabel('Position (microns)')
+title('ESF'), xlabel('Position (microns)'), grid on
+
+nexttile;
+plot(mtfData.lsfx*1e3,mtfData.lsf);
+title('LSF'); xlabel('Position (microns)');
 grid on
 
-subplot(1,3,2)
-plot(mtfData.lsfx*1e3,mtfData.lsf)
-title('LSF')
-xlabel('Position (microns)')
-grid on
-
-subplot(1,3,3)
-plot(mtfData.freq,mtfData.mtf)
-xlabel('Cycles/mm on sensor')
-ylim([0 1])
-title('MTF')
+nexttile;
+plot(mtfData.freq,mtfData.mtf); 
+title('MTF'); xlabel('Cycles/mm on sensor'); ylim([0 1]);
 grid on
 
 oiWindow(oiList{1});

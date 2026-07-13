@@ -113,6 +113,9 @@ piWRS(thisR);
 %}
 
 %%
+defaultNoLightWarningState = warning('off','piRecipeDefault:NoLights');
+restoreDefaultNoLightWarning = onCleanup(@() warning(defaultNoLightWarningState));
+
 switch ieParamFormat(rName)
     case {'macbethchecker','macbethchart'}
         % Necessary if wwe are getting it from the SDR
@@ -386,6 +389,11 @@ switch ieParamFormat(rName)
         warning('There is a bug with the textures for the testplane scene.')
     otherwise
         error('Unknown recipe name %s\n',rName);
+end
+
+if thisR.get('n lights') == 0
+    warning('piRecipeCreate:NoLights', ...
+        'Created recipe "%s" has no parsed lights.', rName);
 end
 
 end
