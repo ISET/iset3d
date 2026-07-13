@@ -1,6 +1,8 @@
 %% s_bmwm6
 %
-% This one PARSED up without any editing from us, I think.
+%  The BMW renders nicely, but piLabel does not run on this scene.
+%
+%  DEBUG in the future
 %
 
 %%
@@ -15,7 +17,7 @@ scene = piWRS(thisR);
 %% Denoise is OK.
 ieReplaceObject(piAIdenoise(scene));
 
-%% This fails.
+%% The piLabel command is not working correctly for this scene.
 [idMap, oList] = piLabel(thisR);
 
 %%

@@ -80,6 +80,7 @@ otherData.instanceID = [];
 
 normalImage = [];
 albedoImage = [];
+hasRadiance = false;
 
 if ~iscell(label), label = {label}; end
 
@@ -87,6 +88,7 @@ for ii = 1:numel(label)
 
     switch label{ii}
         case {'radiance','illuminance'}
+            hasRadiance = true;
             nn = 1;
             radianceChannels = strings(1,31);
             for ww = 400:10:700
@@ -137,9 +139,19 @@ for ii = 1:numel(label)
             otherData.albedoImage = exrread(inputFile,Channels=["Albedo.R","Albedo.G","Albedo.B"]);
         case 'instance'
             % Should the instanceID be ieObject?
-            otherData = exrread(inputFile,Channels="InstanceId");
-            ieObject.type = 'metadata';
+            otherData.instanceID = exrread(inputFile,Channels="InstanceId");
     end
+end
+
+if ~hasRadiance
+    ieObject.type = 'metadata';
+    if ~isempty(otherData.instanceID) && ...
+            isempty(otherData.materialID) && isempty(otherData.coordinates)
+        ieObject.metadata = otherData.instanceID;
+    else
+        ieObject.metadata = otherData;
+    end
+    return;
 end
 
 %% Build the returned ieObject
