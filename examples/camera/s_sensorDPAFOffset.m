@@ -61,8 +61,12 @@ iLens = lensC('file name',iLensName);
 maxOffset = uLensDiameterM/4;
 
 % Linearly scaled offset of the microlens array
+lensDir = fullfile(piDirGet('local'),'lens');
+if ~isfolder(lensDir), mkdir(lensDir); end
+combinedLensFile = fullfile(lensDir,'s_sensorDPAFOffset-combined.json');
 [combinedLensFile, info] = piMicrolensInsert(uLens,iLens,'n microlens',nMicrolens,...
-    'offset method','linear','max offset',uLensDiameterM/4);
+    'offset method','linear','max offset',uLensDiameterM/4,...
+    'output name',combinedLensFile);
 
 thisR.set('film size',info.filmSize);
 

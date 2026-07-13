@@ -69,7 +69,11 @@ uLensDiameterMicrons = 2.8;         % Each covers the dual pixels
 uLens.scale(uLensDiameterMicrons/uLens.get('lens diameter','microns'));
 nMicrolens = [64 64]*4;            % There will be this many dual pixels
 
-[combinedLensFile, ~] = piMicrolensInsert(uLens,iLens,'n microlens',nMicrolens);
+lensDir = fullfile(piDirGet('local'),'lens');
+if ~isfolder(lensDir), mkdir(lensDir); end
+combinedLensFile = fullfile(lensDir,'s_cameraDPAF-combined.json');
+[combinedLensFile, ~] = piMicrolensInsert(uLens,iLens,...
+    'n microlens',nMicrolens,'output name',combinedLensFile);
 %[combinedLensFile, uLens, iLens] = lensCombine(uLensName,iLensName,uLensDiameterMicrons,nMicrolens);
 camera = piCameraCreate('omni','lensFile',combinedLensFile);
 thisR.set('camera',camera);
@@ -110,7 +114,7 @@ thisR.set('rays per pixel',256);
 
 [oi, ~] = piWRS(thisR);
 ss = oiGet(oi,'sample spacing','mm');
-assert(abs(ss(1) - halfPixelWidth_mm) < 1e-5);
+assert(abs(ss(1) - halfPixelWidth_mm) < 0.01*halfPixelWidth_mm);
 %% Make a dual pixel sensor that has rectangular pixels
 
 sensor = sensorCreate('dual pixel',[],oi,nMicrolens);

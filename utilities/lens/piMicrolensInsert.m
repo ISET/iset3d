@@ -86,14 +86,22 @@ filmSize     = p.Results.filmsize;
 offsetMethod = p.Results.offsetmethod;
 maxOffset    = p.Results.maxoffset;
 
+if isempty(p.Results.outputname)
+    outputDir = pwd;
+else
+    outputDir = fileparts(p.Results.outputname);
+    if isempty(outputDir), outputDir = pwd; end
+    if ~isfolder(outputDir), mkdir(outputDir); end
+end
+
 %%  Create the iLens and mLens (lensC) objects
 
 % If a lensC was input, the  data in the lensC might have been modified
 % from its original state. So we write out a copy of the JSON file in the
-% current working directory and use this copy as input for the PBRT
+% output directory and use this copy as input for the PBRT
 % rendering. 
 if isa(imagingLens,'lensC')
-    thisName = fullfile(pwd,[imagingLens.get('name'),'.json']);
+    thisName = fullfile(outputDir,[imagingLens.get('name'),'.json']);
     imagingLensName = imagingLens.fileWrite(thisName);
 else
     imagingLensName = imagingLens;
@@ -101,7 +109,7 @@ end
 iLens = lensC('file name',imagingLensName);
 
 if isa(microLens,'lensC')
-    thisName = fullfile(pwd,[microLens.get('name'),'.json']);
+    thisName = fullfile(outputDir,[microLens.get('name'),'.json']);
     microLensName = microLens.fileWrite(thisName);     
 else
     microLensName = microLens;
@@ -112,7 +120,7 @@ uLens = lensC('file name',microLensName);
 if isempty(p.Results.outputname)
     [~,imagingLensName,~] = fileparts(imagingLensName);
     [~,microLensName,e]   = fileparts(microLensName); 
-    combinedLensName = fullfile(pwd,sprintf('%s+%s',imagingLensName,[microLensName,e]));
+    combinedLensName = fullfile(outputDir,sprintf('%s+%s',imagingLensName,[microLensName,e]));
 else
     combinedLensName = p.Results.outputname;
 end

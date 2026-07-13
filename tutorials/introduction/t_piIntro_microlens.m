@@ -67,8 +67,11 @@ pixelSize  = microlens.get('lens height')/pixelsPerMicrolens;   % mm
 filmresolution = [filmheight, filmwidth]/pixelSize;
 
 %% Build the combined lens file
+lensDir = fullfile(piDirGet('local'),'lens');
+if ~isfolder(lensDir), mkdir(lensDir); end
+combinedLensFile = fullfile(lensDir,'t_piIntro_microlens-combined.json');
 [combinedlens, info] = piMicrolensInsert(microlens,imagingLens,...
-    'n microlens',nMicrolens);
+    'n microlens',nMicrolens,'output name',combinedLensFile);
 
 %% Create the camera with the lens+microlens
 

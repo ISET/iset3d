@@ -68,9 +68,12 @@ nMicrolens = [512 512];  % Chess set.
 % maxMLXY = uLensDiameterM * ((nMicrolens(1)/256)/5);       % Meters
 maxMLXY = 0;
 
+lensDir = fullfile(piDirGet('local'),'lens');
+if ~isfolder(lensDir), mkdir(lensDir); end
+combinedLensFile = fullfile(lensDir,'s_sensorDPAFOffset2-combined.json');
 [combinedLensFile, info] = piMicrolensInsert(uLens,iLens,...
     'n microlens',nMicrolens, 'offset method','linear', ...
-    'max offset',maxMLXY);
+    'max offset',maxMLXY,'output name',combinedLensFile);
 thisR.camera = piCameraCreate('omni','lensFile',combinedLensFile);
 
 %% Set up the film parameters
