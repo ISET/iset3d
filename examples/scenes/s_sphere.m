@@ -1,4 +1,7 @@
 % s_sphere
+%
+% Illustrate the sphere rendering
+%
 
 %% init
 ieInit;
@@ -15,24 +18,26 @@ thisR.set('n bounces',3);
 %% Add an equal-energy distant light
 thisR.set('lights','all','delete');
 
+from = thisR.get('from');
+to   = thisR.get('to');
+
 distantLight = piLightCreate('distantLight', ...
     'type','distant', ...
     'spd','equalEnergy', ...
-    'cameracoordinate',true);
+    'from',from, ...
+    'to',to);
 thisR.set('light',distantLight,'add');
 
 %% Render
-scene = piWRS(thisR,'render flag','hdr');
 
-% Adjust the mean luminance to 100 cd/m2.
-scene = sceneAdjustLuminance(scene,100);
+scene = piWRS(thisR);
 
 %% Optical image
 oi = oiCreate;
 oi = oiSet(oi,'optics fnumber',4);
 oi = oiSet(oi,'optics offaxis method','skip');
 oi = oiSet(oi,'optics focal length',3e-3);
-oi = oiCompute(scene,oi);
+oi = oiCompute(oi,scene);
 
 %% Sensor and IP
 sensor = sensorCreate('bayer (gbrg)');
@@ -44,3 +49,5 @@ sensor = sensorCompute(sensor,oi);
 ip = ipCreate;
 ip = ipSet(ip,'gamma',1);
 ip = ipCompute(ip,sensor);
+
+%%

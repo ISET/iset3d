@@ -15,18 +15,32 @@ thisR.set('film resolution',[160 160]);
 thisR.set('rays per pixel',32);
 thisR.set('n bounces',3);
 
-%% Render
-scene = piWRS(thisR,'render flag','hdr');
+%% Render with the point light
+scenePoint = piWRS(thisR,'name','Point light');
 
-% Adjust the mean luminance to 100 cd/m2.
-scene = sceneAdjustLuminance(scene,100);
+%%  Now render with a distant light
 
-%% Optical image
+thisR.set('lights','all','delete');
+
+from = thisR.get('from');
+to   = thisR.get('to');
+
+distantLight = piLightCreate('distantLight', ...
+    'type','distant', ...
+    'spd','equalEnergy', ...
+    'from',from, ...
+    'to',to);
+thisR.set('light',distantLight,'add');
+
+scene = piWRS(thisR,'name','Distant light');
+
+%% Optical image, using the point light image
+
 oi = oiCreate;
 oi = oiSet(oi,'optics fnumber',4);
 oi = oiSet(oi,'optics offaxis method','skip');
 oi = oiSet(oi,'optics focal length',3e-3);
-oi = oiCompute(scene,oi);
+oi = oiCompute(oi,scenePoint);
 
 %% Sensor and IP
 sensor = sensorCreate('bayer (gbrg)');

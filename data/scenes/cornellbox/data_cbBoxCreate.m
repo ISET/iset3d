@@ -10,16 +10,25 @@ function thisR = data_cbBoxCreate(varargin)
 % Returns:
 %   thisR   - recipe of cornell box
 %
-%%
+% Example
+%   thisR = data_cbBoxCreate;
+%   piWRS(thisR,'render flag','hdr');
+%
+% In the future, we will add more parameters to this function
+%
+
+%% Initialize
 varargin = ieParamFormat(varargin);
 p = inputParser;
 p.addParameter('surfacecolor', 'redgreen', @ischar);
 p.addParameter('from', [0 0.115 -0.40],@isnumeric);
 p.addParameter('to', [0 0.115, 0.6], @isnumeric);
+
 p.parse(varargin{:});
 surfaceColor = p.Results.surfacecolor;
 from = p.Results.from;
 to = p.Results.to;
+
 %% Read recipe
 thisR = piRecipeDefault('scene name', 'cornell box reference');
 thisR.set('from', from);
