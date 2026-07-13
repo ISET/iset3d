@@ -19,7 +19,7 @@ ieReplaceObject(piAIdenoise(scene));
 [idMap, oList] = piLabel(thisR);
 
 %%
-ieNewGraphWin;image(idMap);  
+ieFigure;image(idMap);  
 colormap("prism"); axis image;
 
 %% END
