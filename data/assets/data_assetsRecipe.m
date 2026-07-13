@@ -49,7 +49,6 @@
 %% Init
 
 ieInit;
-if ~piDockerExists, piDockerConfig; end
 
 assetDir = piDirGet('assets');
 
@@ -175,5 +174,12 @@ save(oFile,'mergeNode','-append');
 oFile = thisR.save(fullfile(assetDir,'pointarray512.mat'));
 save(oFile,'mergeNode','-append');
 
-%% END
+%% Character assets
+%
+% Text rendering uses generated character mat-files plus PLY geometry from
+% data/assets/characters. Keep the generation step reachable from this
+% asset refresh script so checked-in assets can be recreated locally.
 
+run(fullfile(piRootPath,'examples','text','data_characterToAsset.m'));
+
+%% END

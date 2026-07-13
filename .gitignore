@@ -19,5 +19,15 @@ data/.DS_Store
 data/scenes/testplane/dgauss.22deg.3.0mm+microlens.json
 data/assets/*
 !data/assets/data_*.m
+!data/assets/*.mat
+!data/assets/characters/
+data/assets/characters/*
+!data/assets/characters/*.mat
+!data/assets/characters/*/
+data/assets/characters/*/*
+!data/assets/characters/*/*.pbrt
+!data/assets/characters/*/geometry/
+data/assets/characters/*/geometry/*
+!data/assets/characters/*/geometry/*.ply
 data.orig
 local

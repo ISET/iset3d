@@ -10,16 +10,16 @@
 
 %% Set up the directories
 
-% The input directory with the pbrt files
-recipeDir = piDirGet('character-recipes');
-
 % The output directory where we write the mat-files
 charAssetDir = piDirGet('character-assets');
 
 %% number assets
 for ii = 0:9 
-    characterRecipe = [num2str(ii) '-pbrt.pbrt'];
-    thisR = piRead(characterRecipe);
+    recipeStem = [num2str(ii) '-pbrt'];
+    characterRecipe = [recipeStem '.pbrt'];
+    characterRecipeFile = fullfile(charAssetDir,recipeStem,characterRecipe);
+    assert(isfile(characterRecipeFile),'Missing character PBRT source: %s',characterRecipeFile);
+    thisR = piRead(characterRecipeFile);
 
     % We do not want the input file to have the user's full path.  So we
     % reduce it to just the name of the pbrt file.
@@ -32,7 +32,7 @@ for ii = 0:9
     n = thisR.get('asset names');
 
     % Save in assets/characters instead...
-    saveFile = [erase(characterRecipe,'.pbrt') '.mat'];
+    saveFile = [recipeStem '.mat'];
     oFile = thisR.save(lower(fullfile(charAssetDir,saveFile)));
 
     letter = num2str(ii); % hard-code for testing
@@ -52,15 +52,15 @@ allLetters = [Alphabet_LC Alphabet_UC];
 for ii = 1:numel(allLetters)
     disp(ii);
     if isequal(upper(allLetters(ii)),allLetters(ii))
-        characterRecipe = [lower(allLetters(ii)) '_uc-pbrt.pbrt'];
+        recipeStem = [lower(allLetters(ii)) '_uc-pbrt'];
     else
-        characterRecipe = [allLetters(ii) '-pbrt.pbrt'];
+        recipeStem = [allLetters(ii) '-pbrt'];
     end
 
-    if ~exist(characterRecipe,'file')
-        warning("Help! %s\n", characterRecipe)
-    end
-    thisR = piRead(characterRecipe);
+    characterRecipe = [recipeStem '.pbrt'];
+    characterRecipeFile = fullfile(charAssetDir,recipeStem,characterRecipe);
+    assert(isfile(characterRecipeFile),'Missing character PBRT source: %s',characterRecipeFile);
+    thisR = piRead(characterRecipeFile);
 
     % We do not want the input file to have the user's full path.  So we
     % reduce it to just the name of the pbrt file.
@@ -77,8 +77,7 @@ for ii = 1:numel(allLetters)
     n = thisR.get('asset names');
 
     % Save in assets/characters instead...
-    saveFileStub = erase(characterRecipe,'.pbrt');
-    saveFile = [saveFileStub '.mat'];
+    saveFile = [recipeStem '.mat'];
     %{
     % not sure why we needed this?
     if isequal(upper(allLetters(ii)),allLetters(ii))
@@ -98,15 +97,15 @@ end
 for ii = 1:numel(Alphabet_UC)
     disp(ii);
 %    if isequal(upper(allLetters(ii)),allLetters(ii))
-        characterRecipe = [Alphabet_UC(ii) '_UC-Courier-Bold-pbrt.pbrt'];
+        recipeStem = [Alphabet_UC(ii) '_UC-Courier-Bold-pbrt'];
 %    else
 %        characterRecipe = [allLetters(ii) '-pbrt.pbrt'];
 %    end
 
-    if ~exist(characterRecipe,'file')
-        warning("Help! %s\n", characterRecipe)
-    end
-    thisR = piRead(characterRecipe);
+    characterRecipe = [recipeStem '.pbrt'];
+    characterRecipeFile = fullfile(charAssetDir,recipeStem,characterRecipe);
+    assert(isfile(characterRecipeFile),'Missing character PBRT source: %s',characterRecipeFile);
+    thisR = piRead(characterRecipeFile);
 
     % We do not want the input file to have the user's full path.  So we
     % reduce it to just the name of the pbrt file.
@@ -123,8 +122,7 @@ for ii = 1:numel(Alphabet_UC)
     n = thisR.get('asset names');
 
     % Save in assets/characters instead...
-    saveFileStub = erase(characterRecipe,'.pbrt');
-    saveFile = [saveFileStub '.mat'];
+    saveFile = [recipeStem '.mat'];
     %{
     % not sure why we needed this?
     if isequal(upper(allLetters(ii)),allLetters(ii))
@@ -151,4 +149,3 @@ end
         %thisR.set('material','White','reflectance',[.5 .5 .5]);
         piWRS(thisR);
 %}
-

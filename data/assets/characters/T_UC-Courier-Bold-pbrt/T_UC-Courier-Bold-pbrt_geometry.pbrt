@@ -1,0 +1,32 @@
+ObjectBegin "T_UC-Courier-Bold_m"
+#Instance MeshName: "T_UC-Courier-Bold"
+	AttributeBegin
+	#MeshName: "T_UC-Courier-Bold" #Dimension:[0.4840869903564453 0.10000001639127731 0.5209380388259888]" 
+		Transform [1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 ]
+		AttributeBegin
+			NamedMaterial "matteblack"
+			Shape "plymesh" "string filename" ["geometry/T_UC-Courier-Bold_mat0.ply"]
+		AttributeEnd
+	AttributeEnd
+ObjectEnd
+
+ObjectBegin "Camera_m"
+#Instance MeshName: "Camera"
+ObjectEnd
+
+AttributeBegin
+#CollectionName: "Scene Collection"
+	AttributeBegin
+	#CollectionName: "Collection"
+		AttributeBegin
+		#MeshName: "Camera"
+			Transform [1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 ]
+			ObjectInstance "Camera_m"
+		AttributeEnd
+		AttributeBegin
+		#MeshName: "T_UC-Courier-Bold"
+			Transform [1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 ]
+			ObjectInstance "T_UC-Courier-Bold_m"
+		AttributeEnd
+	AttributeEnd
+AttributeEnd
