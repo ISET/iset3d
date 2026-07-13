@@ -455,7 +455,9 @@ classdef tree
                     obj.mapFullName2Idx(names{ii}) = ii;
                     obj.mapShortName2Idx(stripNames{ii}) = ii;
                     
-                    if isequal(obj.Node{ii}.type, 'light')
+                    if isstruct(obj.Node{ii}) && ...
+                            isfield(obj.Node{ii}, 'type') && ...
+                            isequal(obj.Node{ii}.type, 'light')
                         obj.mapLgtFullName2Idx(names{ii}) = ii;
                         obj.mapLgtShortName2Idx(stripNames{ii}) = ii;
                     end
@@ -478,7 +480,9 @@ classdef tree
                 obj.mapFullName2Idx(thisName) = id;
                 obj.mapShortName2Idx(stripNames{id}) = id;
 
-                if isequal(obj.Node{id}.type, 'light')
+                if isstruct(obj.Node{id}) && ...
+                        isfield(obj.Node{id}, 'type') && ...
+                        isequal(obj.Node{id}.type, 'light')
                     obj.mapLgtFullName2Idx(thisName) = id;
                     obj.mapLgtShortName2Idx(thisName) = id;
                 end

@@ -1,3 +1,7 @@
+% SkipFile
+%
+% Historical parser example for missing PBRT v3 ChessSet data.
+
 % We start up ISET and check that the user is configured for docker
 ieInit;
 if ~piDockerExists, piDockerConfig; end

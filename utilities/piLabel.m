@@ -99,6 +99,14 @@ piWrite(thisR);
 outputFile = thisR.get('outputfile');
 fname = strrep(outputFile,'.pbrt','_geometry.pbrt');
 fileID = fopen(fname);
+if fileID < 0
+    fname = outputFile;
+    fileID = fopen(fname);
+end
+if fileID < 0
+    error('piLabel:MissingGeometryFile', ...
+        'Could not open label geometry file or output file: %s',fname);
+end
 tmp = textscan(fileID,'%s','Delimiter','\n');
 txtLines = tmp{1};
 fclose(fileID);

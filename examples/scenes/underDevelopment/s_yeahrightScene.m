@@ -1,6 +1,9 @@
 %% Render a the yeahright scene for calibration purposes
+% SkipFile
 %
 % DEPRECATED.  Not implemented for V4
+% Moved to underDevelopment because the yeahright scene is not available
+% from piRecipeDefault in the PBRT v4 scene set.
 %
 %  Uses the integrator subtype 'path' with 3 bounces
 %  Generates a reflection scene

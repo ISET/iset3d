@@ -300,6 +300,15 @@ switch ieParamFormat(rName)
         % We scale the surface size to be 1,1,0.1 meter.
         sz = thisR.get('asset',cubeID,'size');
         thisR.set('asset',cubeID,'scale', (1 ./ sz).*[1 1 0.1]);
+
+        % The parsed flatSurface scene has a camera-side point light, but
+        % this simplified recipe removes the parsed light tree. Add a
+        % replacement so generated flat-surface targets render by default.
+        lgt = piLightCreate('cameraPoint', ...
+            'type','point', ...
+            'spd','equalEnergy', ...
+            'cameracoordinate',true);
+        thisR.set('lights',lgt,'add');
         
     case 'flatsurfacewhitetexture'
         thisR = piRecipeDefault('scene name',rName);
@@ -380,4 +389,3 @@ switch ieParamFormat(rName)
 end
 
 end
-
