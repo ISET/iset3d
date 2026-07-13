@@ -12,8 +12,8 @@ ieInit;
 if ~piDockerExists, piDockerConfig; end
 
 thisR = piRecipeDefault('scene name','SimpleScene');
-thisR.set('film resolution',[160 120]);
-thisR.set('rays per pixel',32);
+thisR.set('film resolution',[120 90]);
+thisR.set('rays per pixel',16);
 thisR.set('fov',45);
 thisR.set('nbounces',2);
 
@@ -55,7 +55,8 @@ fprintf('Updated mirror material: %s\n',thisR.get('asset',assetMirror,'material 
 
 %% Render once
 
-scene = piWRS(thisR,'name','material edits','render flag','hdr');
+scene = piWRS(thisR, 'render type', 'radiance', ...
+    'name','material edits','render flag','hdr');
 fprintf('Rendered material scene: %d x %d pixels\n',sceneGet(scene,'cols'),sceneGet(scene,'rows'));
 
 %% END

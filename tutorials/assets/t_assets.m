@@ -64,13 +64,14 @@ if ~piDockerExists, piDockerConfig; end
 thisR = piRecipeDefault('scene name', 'SimpleScene');
 %% We set a low resolution for speed.
 
-thisR.set('film resolution',[200 150]*2);
-thisR.set('rays per pixel',64*4);
+thisR.set('film resolution',[160 120]);
+thisR.set('rays per pixel',32);
 thisR.set('fov',45);
-thisR.set('nbounces',4)
+thisR.set('nbounces',2)
 %% Render the scene
 
-piWRS(thisR,'name', 'reference scene', ...
+piWRS(thisR, 'render type', 'radiance', ...
+    'name', 'reference scene', ...
     'render flag','hdr');
 %% The asset tree
 % The recipe *thisR* contains the *assets* tree.  This is a simple tree with 
@@ -126,22 +127,17 @@ thisR.get('node',blueIDX, 'world position')
 % index into that object node.  Then we rotate the object with this 'set' command
 
 thisR.set('node', blueIDX, 'rotate', [0, 0, 45]);
-piWRS(thisR, 'render type', 'radiance', ...
-    'name', 'Rotation');
 %% Translate
 % The yellow man's position in the world can be translated this way.
 
 yellowIDX = piAssetSearch(thisR,'object name','figure_6m');
 thisR.set('node', yellowIDX, 'translate', [0, 0, -2]);
-piWRS(thisR, ...
-    'render type', 'radiance', ...
-    'name', 'Translation');
 %% Scale
 % We increase the size of the yellow man
 
 thisR.set('node', yellowIDX, 'scale', 1.3);
 piWRS(thisR, 'render type', 'radiance', ...
-    'name', 'Scaling');
+    'name', 'Transformed figures');
 %% Add an object into a scene
 % We have test charts and other assets stored as recipes that can be merged 
 % into a scene.  Here we add the famous "Stanford Bunny" to our scene:
@@ -161,14 +157,15 @@ thisR.recipeSet('asset', bunnyIDX, 'scale',[12 12 12]*5);
 bPos = thisR.get('asset',blueIDX,'world position');
 
 thisR.set('asset',bunnyIDX,'world position',bPos + [0 0 2]);
-piWRS(thisR,'name','With Added Object');
+piWRS(thisR, 'render type', 'radiance', ...
+    'name','With Added Object');
 %% Delete an object
 % Let's remove the blue man so we can see the bunny more clearly.
 
 thisR.set('node',blueIDX,'delete'); 
-scene = piWRS(thisR,'name','blue man removal');
 %%
 bunnyIDX = piAssetSearch(thisR,'object name','Bunny');
 thisR.set('asset',bunnyIDX,'scale',0.3);
-piWRS(thisR,'name','bunny resized.');
+scene = piWRS(thisR, 'render type', 'radiance', ...
+    'name','bunny resized.');
 %% END

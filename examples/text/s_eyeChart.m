@@ -1,4 +1,6 @@
 % Create a virtual eye chart (modified Snellen for now)
+% SkipFile
+% Requires ISETBio coneMosaic analysis after the PBRT render.
 %
 % D. Cardinal, Stanford University, December, 2022
 %
@@ -56,8 +58,8 @@ thisR = piRecipeCreate('flatsurface');
 
 thisR = piMaterialsInsert(thisR,'names',{'glossy-black'});
 
-% Set our chart up on a medical office skymap and rotate letters to back wall
-% This takes time to render, so also can use any other skymap
+% Set our chart up on a medical office skymap and rotate letters to back wall.
+% This takes time to render, so also can use any other skymap.
 thisR.set('skymap', 'office_map.exr', 'rotation val', [-90.1 90.4 0]);
 letterRotation = [0 0 0]; % try to match the wall
 
@@ -243,4 +245,3 @@ else
     end
 
 end
-

@@ -60,6 +60,19 @@ iLens = lensC('file name',iLensName);
 % nMicrolens = [256 256];  % Chess set.
 nMicrolens = [512 512];  % Chess set.
 
+% For some offset, we match the chief ray angle as we extend out. When
+% nMicrolens is 2.8 um, this imaging lens, and we have 256
+% microlenses, the shift is 1/5th of the diameter of the microlens.
+% We found this by experimenting.  We should find a systematic way to
+% estimate.
+% maxMLXY = uLensDiameterM * ((nMicrolens(1)/256)/5);       % Meters
+maxMLXY = 0;
+
+[combinedLensFile, info] = piMicrolensInsert(uLens,iLens,...
+    'n microlens',nMicrolens, 'offset method','linear', ...
+    'max offset',maxMLXY);
+thisR.camera = piCameraCreate('omni','lensFile',combinedLensFile);
+
 %% Set up the film parameters
 
 % We want the OI to be calculated at 4 positions behind each microlens.
@@ -86,18 +99,6 @@ thisR.set('aperture diameter',10);
 thisR.set('rays per pixel',512);
 
 %% Experiments with the mlZ and mlXY
-
-% For some offset, we match the chief ray angle as we extend out. When
-% nMicrolens is 2.8 um, this imaging lens, and we have 256
-% microlenses, the shift is 1/5th of the diameter of the microlens.
-% We found this by experimenting.  We should find a systematic way to
-% estimate.
-% maxMLXY = uLensDiameterM * ((nMicrolens(1)/256)/5);       % Meters
-maxMLXY = 0;
-
-[combinedLensFile, info] = piMicrolensInsert(uLens,iLens,...
-    'n microlens',nMicrolens, 'offset method','linear', ...
-    'max offset',maxMLXY);
 %{
   offsets = info.combinedLens.microlens.offsets;
   X = info.X; Y = info.Y;
@@ -105,7 +106,6 @@ maxMLXY = 0;
         hold on; plot(X(:),Y(:),'b.')
 plot(X(:),X(:))
 %}
-thisR.camera = piCameraCreate('omni','lensFile',combinedLensFile);
 
 % This has to be set after we create the lens file.  Unfortunate.
 mlZ = 7e-6;  % Meters
@@ -200,4 +200,3 @@ rightip = ipCompute(rightip,rightSensor);
 ipWindow(rightip);
 rightuData = ipPlot(rightip,'horizontal line',[89 89]);
 %% END
-
