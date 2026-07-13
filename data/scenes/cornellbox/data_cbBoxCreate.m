@@ -1,8 +1,8 @@
-function thisR = cbBoxCreate(varargin)
+function thisR = data_cbBoxCreate(varargin)
 % Build basic cornell box scene with measured light and reflectance
 %
 % Synopsis:
-%   thisR = cbBoxCreate
+%   thisR = data_cbBoxCreate
 %
 % Inputs:
 %   N/A
@@ -24,21 +24,33 @@ to = p.Results.to;
 thisR = piRecipeDefault('scene name', 'cornell box reference');
 thisR.set('from', from);
 thisR.set('to', to);
-%% Remove current existing lights
-thisR.set('lights','all','delete');
 
 %% Turn the object to area light
 
-areaLight = piLightCreate('lamp', 'type', 'area');
+lightAssetName = localFirstAssetName(thisR, ...
+    {'000007ID_AreaLight_L','001_AreaLight_L'},false);
+if isempty(lightAssetName)
+    thisR.set('lights','all','delete');
+end
+assetName = localFirstAssetName(thisR, ...
+    {'001_AreaLight_O','000006ID_AreaLight_B','000005ID_AreaLight_B'},true);
 lightName = 'cbox-lights-1';
-areaLight = piLightSet(areaLight, 'spd val', lightName);
 
-assetName = '001_AreaLight_O';
 % Move area light lower by 0.5 cm
 thisR.set('asset', assetName, 'world translate', [0 -0.005 0]);
-thisR.set('asset', assetName, 'obj2light', areaLight);
+if isempty(lightAssetName)
+    areaLight = piLightCreate('lamp', 'type', 'area');
+    areaLight = piLightSet(areaLight, 'spd val', lightName);
+    thisR.set('asset', assetName, 'obj2light', areaLight);
+else
+    lightNode = thisR.get('asset', lightAssetName);
+    areaLight = lightNode.lght{1};
+    areaLight = piLightSet(areaLight, 'spd val', lightName);
+    thisR.set('asset', lightAssetName, 'light', areaLight);
+end
 
-assetNameCube = '001_CubeLarge_O';
+assetNameCube = localFirstAssetName(thisR, ...
+    {'001_CubeLarge_O','000013ID_CubeLarge_O'},true);
 thisR.set('asset', assetNameCube, 'world translate', [0.006 -0.008 0]);
 thisR.set('asset', assetNameCube, 'world rotate', [0 -8 0]);
 thisR.set('asset', assetNameCube, 'scale', [1 1.1 1]);
@@ -78,6 +90,24 @@ elseif isequal(surfaceColor, 'white')
     reflList = [wRefl, wRefl wRefl wRefl wRefl wRefl wRefl wRefl];
 end
 for ii=1:numel(matList)
-    thisR = cbAssignMaterial(thisR, matList{ii}, reflList(:, ii));
+    thisR = data_cbAssignMaterial(thisR, matList{ii}, reflList(:, ii));
 end
+end
+
+function assetName = localFirstAssetName(thisR,candidates,required)
+%% Return the first candidate present in the recipe asset tree.
+
+if nargin < 3, required = true; end
+assetName = '';
+for ii = 1:numel(candidates)
+    assetID = piAssetFind(thisR.assets,'name',candidates{ii});
+    if ~isempty(assetID)
+        assetName = candidates{ii};
+        return;
+    end
+end
+if ~required, return; end
+error('data_cbBoxCreate:MissingAsset', ...
+    'Could not find any candidate asset: %s',strjoin(candidates,', '));
+
 end

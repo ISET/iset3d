@@ -1,4 +1,6 @@
 %%
+% SkipFile
+%
 % Example of rendering a cornell box specified with: (1) Setting the
 % rendering parameters, (2) positioning the camera, (3) adding a lens, (4)
 % write the recipe, (5)render irradiance and (6) compute the sensor image.
@@ -10,7 +12,7 @@ if ~piDockerExists, piDockerConfig; end
 
 %% Create Cornell Box recipe
 % The recipe includes all information of PBRT to do the rendering
-thisR = cbBoxCreate;
+thisR = data_cbBoxCreate;
 
 %% Modify new rendering settings
 thisR.set('film resolution',[320 320]);

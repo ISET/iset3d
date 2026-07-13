@@ -1,4 +1,6 @@
 % s_cornellBox_pos
+% SkipFile
+%
 % Used to illustrate how to set object position at absolute world
 % positions.
 
@@ -9,7 +11,7 @@ if ~piDockerExists, piDockerConfig; end
 
 %% Create Cornell Box recipe
 % The recipe includes all information of PBRT to do the rendering
-thisR = cbBoxCreate;
+thisR = data_cbBoxCreate;
 
 %% Modify new rendering settings
 thisR.set('film resolution',[320 320]);

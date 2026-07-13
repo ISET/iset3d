@@ -1,8 +1,8 @@
-function thisR = cbAssignMaterial(thisR, mat, refl, varargin)
+function thisR = data_cbAssignMaterial(thisR, mat, refl, varargin)
 % Use measured reflectance on Cornell Box surface
 % 
 % Synopsis:
-%   thisR = cbAssignMaterial(thisR, mat, refl, varargin)
+%   thisR = data_cbAssignMaterial(thisR, mat, refl, varargin)
 %
 % Brief description:
 %   Assume matte materials in Cornell Box   
@@ -37,21 +37,8 @@ end
 curReflSPD = piMaterialCreateSPD(wave, refl);
 
 
-switch mat
-    case {'LeftWall', 'RightWall'}
-        wallKSSPD = piMaterialCreateSPD(wave, 0.1 * refl);
-        newMat = piMaterialCreate(mat, 'type', 'uber', 'kd value', curReflSPD,...
-            'ks value', wallKSSPD, 'roughness value', 0.3);
-    case {'CubeLarge', 'CubeSmall'}
-        cubeKSSPD = piMaterialCreateSPD(wave, refl);
-        cubeKRSPD = piMaterialCreateSPD(wave, 0.5*refl);
-        
-        newMat = piMaterialCreate(mat, 'type', 'uber', 'kd value', curReflSPD,...
-        'ks value', cubeKSSPD, 'kr value', cubeKRSPD, 'roughness value', 1.5);
-    otherwise
-        newMat = piMaterialCreate(mat, 'type', 'matte', 'kd value', curReflSPD);
-end
-
+newMat = piMaterialCreate(mat, 'type', 'diffuse', ...
+    'reflectance value', curReflSPD);
 
 thisR.set('material', mat, newMat);
 

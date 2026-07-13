@@ -18,13 +18,13 @@
 ieInit;
 if ~piDockerExists, piDockerConfig; end
 
-%% Se6t up the parameters
+%% Set up the parameters
 
-resolution = [320 320]*1;
+resolution = [160 160];
 
 thisR = piRecipeDefault('scene name','kitchen');
-thisR.set('n bounces',5);
-thisR.set('rays per pixel',512);
+thisR.set('n bounces',3);
+thisR.set('rays per pixel',32);
 thisR.set('film resolution',resolution);
 thisR.set('render type',{'radiance','depth'});
 
@@ -51,7 +51,7 @@ thisR.set('render type',{'radiance','depth'});
 % After running this once, I was able to run just piWRS(thisR);
 %
 % scene = piWRS(thisR,'push resources',true);
-scene = piWRS(thisR);
+scene = piWRS(thisR,'render flag','hdr');
 %{
  scene = piAIdenoise(scene);
  ieReplaceObject(scene); sceneWindow;
@@ -59,6 +59,9 @@ scene = piWRS(thisR);
 % dRange = sceneGet(scene,'depth range');
 
 %% Samples the scene from a few new directions around the current from
+%{
+% This block is useful for exploring viewpoints, but it renders several
+% additional kitchen views and is too slow for the example smoke test.
 
 from = thisR.get('from'); to = thisR.get('to');
 direction = thisR.get('fromto');
@@ -77,11 +80,16 @@ end
 %%
 thisR.set('from',from); thisR.set('to',to);
 piWRS(thisR);
+%}
 
 %%  You can see the depth from the depth map.
 % scenePlot(scene,'depth map');
 
 %% Another double Gauss
+%{
+% Optional lens-rendering examples.  They are left here for reference, but
+% not run automatically because the base kitchen render is already enough
+% work for this example.
 
 % lensList
 lensfile  = 'dgauss.22deg.3.0mm.json';    % 30 38 18 10
@@ -99,6 +107,6 @@ thisR.set('film diagonal',7);  %% 3 mm is small
 thisR.camera = piCameraCreate('omni','lensFile',lensfile);
 oi = piWRS(thisR,'name','fisheye');
 oi = piAIdenoise(oi); ieReplaceObject(oi); oiWindow;
+%}
 
 %% END
-
