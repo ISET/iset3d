@@ -46,6 +46,7 @@ if exist('isMATLABReleaseOlderThan','file') > 0 && ~isMATLABReleaseOlderThan('R2
     end
 
     data = exrread(inputFile, Channels = channels);
+    data = localPreserveEXRImageShape(data, inputFile, channels);
     return;
 
 elseif isfile(fullfile(isetRootPath,'imgproc','openexr','exrread.m'))
@@ -164,3 +165,28 @@ end
 
 end
 
+function data = localPreserveEXRImageShape(data, inputFile, channels)
+% MATLAB exrread squeezes singleton image dimensions for channel stacks.
+
+info = exrinfo(inputFile);
+dataWindow = info.DataWindow;
+imageWidth = dataWindow(3) - dataWindow(1) + 1;
+imageHeight = dataWindow(4) - dataWindow(2) + 1;
+
+if ischar(channels) || (isstring(channels) && isscalar(channels))
+    nChannels = 1;
+else
+    nChannels = numel(channels);
+end
+
+if nChannels == 1
+    expectedSize = [imageHeight imageWidth];
+else
+    expectedSize = [imageHeight imageWidth nChannels];
+end
+
+if ~isequal(size(data), expectedSize) && numel(data) == prod(expectedSize)
+    data = reshape(data, expectedSize);
+end
+
+end

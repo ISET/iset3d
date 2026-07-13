@@ -44,8 +44,29 @@ end
 
 end
 
+function testCheckerboardPresetUsesValidTextureParameters(testCase)
+%% Verify checkerboard preset does not pass stale texture parameter names.
+
+lastwarn('');
+thisR = piRecipeDefault('scene name', 'flatsurfacewhitetexture');
+thisR = piMaterialsInsert(thisR, 'names', 'checkerboard');
+[warningText, ~] = lastwarn;
+
+testCase.verifyFalse(contains(warningText, 'spectrumtex1'), ...
+    'Checkerboard preset used stale spectrumtex1 texture parameter.');
+testCase.verifyFalse(contains(warningText, 'spectrumtex2'), ...
+    'Checkerboard preset used stale spectrumtex2 texture parameter.');
+testCase.verifyEqual(thisR.get('texture', 'checkerboard', 'tex1'), ...
+    [0.05 0.05 0.05], 'AbsTol', 1e-12);
+testCase.verifyEqual(thisR.get('texture', 'checkerboard', 'tex2'), ...
+    [0.95 0.95 0.95], 'AbsTol', 1e-12);
+
+end
+
 function testSlantedEdgePresetWritesImageMapTexture(testCase)
 %% Verify slantededge material writes and stages slantedbar.png.
+
+localSuppressNoLightWarning(testCase);
 
 thisR = localSlantedEdgeCornellRecipe(testCase, 'test_texture_assets');
 
@@ -58,6 +79,7 @@ end
 function testSlantedEdgePresetStagesTextureForOrdinaryRemoteRender(testCase)
 %% Verify remote rendering without DB still stages texture files for rsync.
 
+localSuppressNoLightWarning(testCase);
 localSaveISETDockerPrefs(testCase);
 localSetRemoteRenderPrefs();
 
@@ -76,6 +98,7 @@ end
 function testResourceTextureStagesForOrdinaryRemoteRender(testCase)
 %% Verify piResourceFind textures are staged and rewritten for remote upload.
 
+localSuppressNoLightWarning(testCase);
 localSaveISETDockerPrefs(testCase);
 localSetRemoteRenderPrefs();
 
@@ -193,6 +216,14 @@ else
     oldPrefs = struct();
 end
 testCase.addTeardown(@() localRestoreISETDockerPrefs(hadPrefs, oldPrefs));
+
+end
+
+function localSuppressNoLightWarning(testCase)
+%% Keep texture staging tests focused on texture behavior, not scene lighting.
+
+warningState = warning('off','piRecipeDefault:NoLights');
+testCase.addTeardown(@() warning(warningState));
 
 end
 

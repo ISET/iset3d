@@ -1,15 +1,20 @@
+% Lens MTF validation renders remotely and is too expensive for the routine
+% tutorial smoke test.
 % SkipFile
-% Rendering-based MTF workflow is currently unstable in the smoke runner.
-clear; close all
-% SkipFile
-% Lens MTF validation currently exercises a fragile spectral EXR conversion
-% path and is too expensive for the routine tutorial smoke test.
-%% Difference distances of chart as measured from the camera film
+% Remote-rendering MTF workflow; run manually when Docker/PBRT is available.
 
-chartDistancesFromFilm_mm=[1 5 10]*1000; % meter to mm
+%% Initialize
 
-%% Create a camera , this can be omni or RTF
-camera= piCameraCreate('omni','lensfile',['dgauss.22deg.3.0mm.json']);
+ieInit;
+if ~piDockerExists, piDockerConfig; end
+
+%% Chart distance as measured from the camera film
+
+chartDistancesFromFilm_mm = 1000;        % 1 meter, in mm
+% chartDistancesFromFilm_mm = [1 5 10]*1000; % Compare multiple distances.
+
+%% Create a camera. This can be omni or ray transfer.
+camera = piCameraCreate('omni','lensfile','dgauss.22deg.3.0mm.json');
 
 % Focus distance (play with this by setting it to 1, 5 or 10 (see chart distances))
 camera.focusdistance.value =1;  % As measured from film in meters
@@ -19,38 +24,38 @@ camera.focusdistance.value =1;  % As measured from film in meters
 %camera.filmdistance.type='float'
 %camera.filmdistance.value=filmdistance/1000;% milimeters to Meters
 
-%% Calculate MTF's for all chart distances
+%% Calculate MTF for each chart distance
 
+filmwidth_mm = 0.5;
+[mtfData, oiList] = piCalculateSlantedEdgeMTF('camera',camera,...
+    'filmwidth',filmwidth_mm, ...
+    'distances',chartDistancesFromFilm_mm,...
+    'resolution',1024, ...
+    'rays',64, ...
+    'plot',false);
 
-    filmwidth_mm=0.01;
- [MTF,LSF,ESF] = piCalculateMTF('camera',camera,'filmwidth',filmwidth_mm,'distances',chartDistancesFromFilm_mm,...
-    'resolution',2000,'rays',1000);
-
-
-%% Comparison off all three quantities: ESF, LSF, MTF
+%% Compare ESF, LSF, and MTF
 
 figure(1);
-subplot(131)
-colororder([1 0 0 ; 0  1 0 ;  0 0 1])
-
-plot(ESF.pixelsMicron,ESF.ESF)
+subplot(1,3,1)
+plot(mtfData.lsfx*1e3,mtfData.esf)
 title('ESF')
-xlabel('Micron')
-subplot(132)
-% LSF is a derivative of ESF  and can hence be very noise depending on
-% rendering noise level
-% In the MTF this high frequency noise is not a huge issue
-plot(LSF.pixelsMicron,LSF.LSF)
-colororder([1 0 0 ; 0  1 0 ;  0 0 1])
+xlabel('Position (microns)')
+grid on
 
-xlim(0.5*[-1 1])
+subplot(1,3,2)
+plot(mtfData.lsfx*1e3,mtfData.lsf)
 title('LSF')
-xlabel('Micron')
-subplot(133)
-plot(MTF.cyclespermilimeter,MTF.MTF)
-xlabel('cy/mm')
+xlabel('Position (microns)')
+grid on
+
+subplot(1,3,3)
+plot(mtfData.freq,mtfData.mtf)
+xlabel('Cycles/mm on sensor')
 ylim([0 1])
-xlim([0 1000])
 title('MTF')
+grid on
 
+oiWindow(oiList{1});
 
+%%

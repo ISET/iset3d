@@ -1,11 +1,12 @@
 function [MTF,LSF,ESF] = piCalculateMTF(varargin)
 % Calculate The MTF, LSF and, ESF
+%
 % A vertical step function (black/white edge) is placed at a given
-% distance, this requires the 'stepfunction' scene. 
-% The scene is simulated for one horizontal line to allow for high
-% resolution. This gives the edge spread function (ESF) from which the
-% linespread (LSF) is calculated using differentation. The MTF is then
-% obtained as the Fourier Transform of the Linespread function.
+% distance, this requires the 'stepfunction' scene. The scene is
+% simulated for one horizontal line to allow for high resolution. This
+% gives the edge spread function (ESF) from which the linespread (LSF)
+% is calculated using differentation. The MTF is then obtained as the
+% Fourier Transform of the Linespread function.
 %
 % RERUIRED INPUTS
 %  camera - Camera (omni or RTF)
@@ -62,19 +63,18 @@ distancesFromFilm_meter = 1e-3* (distancesFromFilm_mm);
 %% Create A camera for each polynomial degree
 cameras={camera};
 
-
 %% Loop over different chart distances, as measured from film
 for c=1:numel(cameras)
     for i=1:numel(distancesFromFilm_meter)
         if ~p.Results.quiet
             disp(['Render Camera ' num2str(c) ' position ' num2str(i)]);
         end
+
         % Build the scene
         thisR=piRecipeDefault('scene name','stepfunction');
         
         % Control Distance to Step Funtion Chart
-        setChartDistance(thisR,distancesFromFilm_meter(i));
-        
+        setChartDistance(thisR,distancesFromFilm_meter(i));        
         
         % Set Camera Properaties
         thisR.set('camera',cameras{c});
@@ -85,7 +85,7 @@ for c=1:numel(cameras)
         
         % Write and render
         piWrite(thisR);
-        oiESF{i} = piRender(thisR,'render type','radiance'); %,'dockerimagename','vistalab/pbrt-v3-spectral:latest');
+        oiESF{i} = piRender(thisR,'render type','radiance'); 
         oiESF{i}.name=['Chart distance from film: ' num2str(distancesFromFilm_meter(i))];
         %oiWindow(oiESF)
         
@@ -160,4 +160,3 @@ end
 
 
 end
-

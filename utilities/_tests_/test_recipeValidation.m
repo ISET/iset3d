@@ -11,7 +11,9 @@ end
 function testAllPredefinedRecipesLoad(testCase)
 %% Test that piRecipeCreate can parse and load every predefined scene.
 
-validNames = piRecipeCreate('list');
+localSuppressNoLightWarning(testCase);
+
+validNames = localListRecipesQuietly;
 testCase.assertNotEmpty(validNames);
 
 for ii = 1:numel(validNames)
@@ -22,7 +24,7 @@ for ii = 1:numel(validNames)
     end
     
     try
-        thisR = piRecipeCreate(recipeName);
+        thisR = localCreateRecipeQuietly(recipeName);
         testCase.verifyClass(thisR, ?recipe, ...
             sprintf('Scene "%s" did not return a valid recipe class object.', recipeName));
     catch exception
@@ -37,5 +39,27 @@ for ii = 1:numel(validNames)
         end
     end
 end
+
+end
+
+function localSuppressNoLightWarning(testCase)
+%% Keep load-only recipe tests from reporting expected no-light warnings.
+
+warningState = warning('off','piRecipeDefault:NoLights');
+testCase.addTeardown(@() warning(warningState));
+
+end
+
+function thisR = localCreateRecipeQuietly(recipeName)
+%% Create a recipe while capturing expected preset status chatter.
+
+evalc('thisR = piRecipeCreate(recipeName);');
+
+end
+
+function validNames = localListRecipesQuietly
+%% List predefined recipes without printing the list during unit tests.
+
+evalc('validNames = piRecipeCreate(''list'');');
 
 end

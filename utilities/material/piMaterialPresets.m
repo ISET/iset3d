@@ -396,8 +396,8 @@ switch ieParamFormat(keyword)
             'format', 'spectrum',...
             'uscale', 2,...
             'vscale', 2, ...
-            'spectrum tex1', [.05 .05 .05],...
-            'spectrum tex2', [.95 .95 .95]);
+            'tex1', [.05 .05 .05],...
+            'tex2', [.95 .95 .95]);
 
         newMat.material = piMaterialCreate(materialName,'type','diffuse','reflectance val',materialName);
 
@@ -442,7 +442,6 @@ switch ieParamFormat(keyword)
 end
 
 end
-
 
 
 

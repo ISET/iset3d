@@ -113,6 +113,42 @@ testCase.verifyFalse(ispref('ISETDocker','remoteSceneDir'));
 
 end
 
+function testRadianceEXRPreservesSingletonRow(testCase)
+%% Test spectral EXR reads preserve a one-row image shape.
+
+testCase.assumeTrue(exist('exrwrite','file') > 0, ...
+    'MATLAB exrwrite is required for this test.');
+
+tempDir = fullfile(tempdir, 'iset3d_exr_singleton_row');
+if ~isfolder(tempDir), mkdir(tempDir); end
+testCase.addTeardown(@() localRemoveDir(tempDir));
+
+exrFile = fullfile(tempDir, 'radiance_row.exr');
+localWriteRadianceEXR(exrFile, 1, 17);
+
+data = piReadEXR(exrFile, 'data type', 'radiance');
+testCase.verifyEqual(size(data), [1 17 31]);
+
+end
+
+function testRadianceEXRPreservesSingletonColumn(testCase)
+%% Test spectral EXR reads preserve a one-column image shape.
+
+testCase.assumeTrue(exist('exrwrite','file') > 0, ...
+    'MATLAB exrwrite is required for this test.');
+
+tempDir = fullfile(tempdir, 'iset3d_exr_singleton_column');
+if ~isfolder(tempDir), mkdir(tempDir); end
+testCase.addTeardown(@() localRemoveDir(tempDir));
+
+exrFile = fullfile(tempDir, 'radiance_column.exr');
+localWriteRadianceEXR(exrFile, 19, 1);
+
+data = piReadEXR(exrFile, 'data type', 'radiance');
+testCase.verifyEqual(size(data), [19 1 31]);
+
+end
+
 function localSaveISETDockerPrefs(testCase)
 %% Restore ISETDocker preferences after tests that intentionally mutate them.
 
@@ -143,5 +179,17 @@ function localRemoveDir(dirName)
 if exist(dirName, 'dir')
     rmdir(dirName, 's');
 end
+
+end
+
+function localWriteRadianceEXR(exrFile, nRows, nCols)
+channels = strings(1,31);
+channelData = cell(1,31);
+for ii = 1:31
+    channels(ii) = sprintf('Radiance.C%02d',ii);
+    channelData{ii} = single(ii + reshape(1:(nRows*nCols), nRows, nCols));
+end
+
+exrwrite(channelData, exrFile, Channels = channels, OutputType = "single");
 
 end
