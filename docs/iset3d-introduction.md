@@ -12,8 +12,10 @@ edit assets, lights, materials, cameras, or lenses more deeply.
 ## Before You Start
 
 ISET3D expects ISETCam to be installed and on the MATLAB path. Most rendering
-tutorials also expect Docker-based PBRT rendering to be configured, often using
-a remote rendering host.
+tutorials also expect Docker-based PBRT rendering to be configured. Start with
+local rendering on your own computer. Remote rendering is useful later for
+larger scenes, GPU rendering, or shared database-backed resources, but it is
+not needed for the first tutorials.
 
 In a fresh MATLAB session, the common setup pattern is:
 
@@ -24,15 +26,31 @@ if ~piDockerExists
 end
 ```
 
-If rendering fails before PBRT starts, check the Docker and remote rendering
-configuration first:
+For local rendering, run `isetdocker.setUserPrefs` once and choose a local
+render context. Select CPU if you do not have a local NVIDIA GPU and select
+GPU only when Docker can see the GPU on your machine. The local CPU image used
+by the current configuration is `digitalprodev/pbrt-v4-cpu`. If you have not
+downloaded the relevant Docker images yet, see the local Docker setup summary
+at the end of this document.
+
+You can check the current rendering preferences with:
+
+```matlab
+getpref('ISETDocker')
+```
+
+For a local setup, `remoteHost` should be empty. The render output and staged
+PBRT files will be written under the repository's `local/` folder.
+
+If rendering fails before PBRT starts, check Docker first:
 
 ```matlab
 piDockerDiagnose('render',false);
 ```
 
-See [remote-rendering.md](remote-rendering.md) for the full remote rendering
-workflow and [testing.md](testing.md) for how tutorials are smoke-tested.
+See [remote-rendering.md](remote-rendering.md) only when you are ready to use
+a remote rendering host. See [testing.md](testing.md) for how tutorials are
+smoke-tested.
 
 ## First Tutorial Path
 
@@ -96,6 +114,152 @@ fprintf('Mean luminance %.3f\n',sceneGet(scene,'mean luminance'));
 scene, renders it, and shows or returns the result. Lower-level workflows may
 call `piWrite` and `piRender` separately when they need finer control.
 
+## Local Rendering First
+
+The first rendering tutorial should run on your own computer with local Docker
+preferences. This is the shortest useful local-rendering loop:
+
+```matlab
+ieInit;
+if ~piDockerExists
+    piDockerConfig;
+end
+
+thisR = piRecipeDefault('scene name','chessset');
+thisR.set('film resolution',[160 160]);
+thisR.set('rays per pixel',32);
+thisR.set('n bounces',2);
+thisR.set('render type',{'radiance','depth'});
+
+scene = piWRS(thisR,'render flag','hdr');
+sceneWindow(scene);
+scenePlot(scene,'depth map');
+```
+
+This is the pattern in
+[t_piIntro_chess.m](../tutorials/introduction/t_piIntro_chess.m). Keep the
+film resolution and rays per pixel small while learning. Increase them only
+after the scene edits are correct.
+
+## Common Next Edits
+
+Once you can render the chess set locally, the next useful tasks are small
+recipe edits. The snippets below show the important API calls and point to the
+tutorials that expand each topic.
+
+### Add Camera Motion
+
+Camera motion is specified as start and end transforms over the exposure.
+[t_cameraMotion.m](../tutorials/camera/t_cameraMotion.m) demonstrates
+translation and rotation blur. A calibrated translation uses metric units:
+
+```matlab
+startPos = [0 0 0];
+endPos = [0.02 0 0];      % 2 cm lateral motion
+
+thisR.set('camera motion translate start',startPos);
+thisR.set('camera motion translate end',endPos);
+thisR.set('camera motion rotate start',piRotationMatrix);
+thisR.set('camera motion rotate end',piRotationMatrix);
+
+scene = piWRS(thisR,'render type','radiance','render flag','hdr');
+```
+
+To add a small rotation over the same exposure, replace the final rotation:
+
+```matlab
+thisR.set('camera motion rotate end',piRotationMatrix('zrot',5));
+```
+
+### Change The Skymap
+
+A skymap is an environment light. The introductory chess tutorial shows the
+basic pattern:
+
+```matlab
+[~, skyMap] = thisR.set('skymap','room.exr');
+thisR.set('light',skyMap.name,'rotate',[30 0 0]);
+```
+
+Use this after deleting or inspecting other lights when you want the
+environment to be the main illumination. See
+[t_piIntro_chess.m](../tutorials/introduction/t_piIntro_chess.m) for a simple
+rendered example and [t_skymapDaylight.m](../tutorials/skymap/t_skymapDaylight.m)
+for spectral daylight calculations that can guide sky color choices.
+
+### Change Light Color
+
+Light color is controlled by the light spectrum. Use a named illuminant, a
+blackbody temperature, or a spectrum file, depending on the experiment.
+[t_piLightSpectrum.m](../tutorials/lights/t_piLightSpectrum.m) shows this
+directly:
+
+```matlab
+thisR.set('light','all','delete');
+spotLight = piLightCreate('spot1', ...
+    'type','spot', ...
+    'spd','equalEnergy', ...
+    'specscale float',1, ...
+    'coneangle',20, ...
+    'cameracoordinate',true);
+thisR.set('light',spotLight,'add');
+
+thisR.set('lights','spot1_L','spd','D50');
+thisR.set('lights','spot1_L','spd',3000);   % 3000 K blackbody
+```
+
+For a first illumination tutorial, see
+[t_piIntro_illumination.m](../tutorials/introduction/t_piIntro_illumination.m).
+
+### Change Material Properties
+
+Materials are stored in the recipe and assigned to assets. The usual workflow
+is to find an asset, inspect its material, edit or create a material, and then
+assign it:
+
+```matlab
+assetID = piAssetSearch(thisR,'object name','figure_3m');
+matName = thisR.get('asset',assetID,'material name');
+
+thisR.get('material',matName,'reflectance');
+thisR.set('material',matName,'reflectance',[0 0.5 0]);
+
+glassMaterial = piMaterialCreate('blueGuyGlass','type','dielectric');
+thisR.set('material','add',glassMaterial);
+thisR.set('asset',assetID,'material name',glassMaterial.name);
+```
+
+Start with [t_materials.m](../tutorials/materials/t_materials.m) for
+inspection, editing, and reassignment. Use
+[t_piIntro_material.m](../tutorials/introduction/t_piIntro_material.m) for the
+shortest example of creating a diffuse material from a spectral reflectance.
+
+## Related Examples
+
+Tutorials are the best first source for these controls. Examples are useful
+once you want a workflow to adapt:
+
+- Camera motion: the main reference is still
+  [t_cameraMotion.m](../tutorials/camera/t_cameraMotion.m). There is not
+  currently a stable `examples/` script dedicated to calibrated camera motion.
+  For object motion rather than camera motion, see
+  [t_assetsMotion.m](../tutorials/assets/t_assetsMotion.m).
+- Skymaps: [s_piMaterials.m](../examples/materials/s_piMaterials.m) uses a
+  room skymap while comparing material changes, and
+  [s_lightHeadlamp.m](../examples/arealights/s_lightHeadlamp.m) uses a night
+  skymap in an applied lighting setup.
+- Light color: [s_arealight.m](../examples/arealights/s_arealight.m) assigns
+  different RGB spectra to area lights, and
+  [s_slantedBarMTF.m](../examples/metrics/s_slantedBarMTF.m) illuminates a
+  target with a blue spot light.
+- Materials: [s_piMaterials.m](../examples/materials/s_piMaterials.m) changes a
+  sphere from diffuse to mirror and coated green materials. It is the most
+  directly related applied example for material property edits.
+
+Some under-development examples also touch these topics, especially database
+skymaps and custom scene construction. Treat files under `examples/*/underDevelopment/`
+as exploratory rather than as first-copy templates.
+
 ## Scene Editing Path
 
 After the first path, choose the topic folder that matches what you want to
@@ -139,11 +303,13 @@ Light-field and microlens tutorials are useful but more advanced. Treat
 [t_piIntro_microlens.m](../tutorials/introduction/t_piIntro_microlens.m) as
 optional follow-ups after the basic lens path.
 
-## Remote Rendering
+## Optional Remote Rendering
 
-Most ISET3D render tutorials eventually call PBRT through Docker. On systems
-configured for remote rendering, MATLAB stores the Docker context, host, image,
-work directory, and container state in preferences under `ISETDocker`.
+Most introductory work should use local Docker rendering. Move to remote
+rendering when a scene is too slow locally, when you need a remote GPU, or when
+you are using shared remote resources. On systems configured for remote
+rendering, MATLAB stores the Docker context, host, image, work directory, and
+container state in preferences under `ISETDocker`.
 
 Before running a render-heavy tutorial, a short checklist is:
 
@@ -163,7 +329,7 @@ texture staging, and common failure modes, use
 From MATLAB, you can run a tutorial script directly:
 
 ```matlab
-run(fullfile(piRootPath,'tutorials','introduction','t_piIntro_chess.m'));
+t_piIntro_chess
 ```
 
 If you are checking whether a tutorial still runs cleanly in the automated
@@ -177,21 +343,82 @@ ieTestReport(runInfo,'List','all');
 The runner starts each selected tutorial with fresh ISET state, which is useful
 for catching hidden dependencies on variables left behind by earlier scripts.
 
-## Current Tutorial Coverage Gaps
+## Current Tutorial Notes
 
-The tutorial collection is broad, but a new user may still need a little
-orientation:
+The tutorial collection is broad. This guide is meant to provide the first
+orientation layer; a few points still matter as you move deeper:
 
-- There is not yet a single "first 30 minutes" tutorial that walks from
-  `ieInit` through recipe creation, scene edits, rendering, and display in one
-  continuous beginner narrative.
 - The difference between a rendered `scene` and a rendered `oi` appears across
   several tutorials, but is not explained centrally in the tutorial tree.
-- Remote rendering is documented in detail, but beginners may benefit from a
-  short configuration checklist before running render-heavy tutorials.
 - Several valuable advanced tutorials are marked `% SkipFile` or are intended
   for interactive exploration, so they should be treated as optional follow-ups
   rather than first-run material.
-- The tutorials demonstrate many individual controls, but users may need more
-  guidance on when to use `piRecipeCreate`, `piRecipeDefault`, `piWRS`, and
-  the lower-level `piWrite`/`piRender` pair.
+- When you need applied workflows rather than short API orientation, use
+  `examples/` instead of `tutorials/`.
+
+## Local Docker Setup Summary
+
+ISET3D renders locally when the `ISETDocker` MATLAB preferences describe a
+local Docker context. For a colleague with one local NVIDIA GPU, the essential
+preferences are:
+
+```matlab
+setpref('ISETDocker','device','gpu');
+setpref('ISETDocker','deviceID','0');
+setpref('ISETDocker','dockerImage','vistalab/pbrt-v4-gpu');
+setpref('ISETDocker','remoteHost','');
+setpref('ISETDocker','remoteUser','');
+setpref('ISETDocker','renderContext','default');
+setpref('ISETDocker','workDir',fullfile(piRootPath,'local'));
+```
+
+For local CPU rendering, use:
+
+```matlab
+setpref('ISETDocker','device','cpu');
+setpref('ISETDocker','deviceID','');
+setpref('ISETDocker','dockerImage','digitalprodev/pbrt-v4-cpu');
+setpref('ISETDocker','remoteHost','');
+setpref('ISETDocker','remoteUser','');
+setpref('ISETDocker','renderContext','default');
+setpref('ISETDocker','workDir',fullfile(piRootPath,'local'));
+```
+
+Do not set `PBRTContainer` manually. It is a transient preference created by
+`isetdocker.startPBRT` when rendering starts.
+
+Docker image names such as `vistalab/pbrt-v4-gpu` and
+`digitalprodev/pbrt-v4-cpu` do not include an explicit registry hostname, so
+Docker treats them as Docker Hub images. If the image is already cached
+locally, Docker uses the cached copy. If not, Docker tries to download it from
+Docker Hub.
+
+A useful command-line preflight for a one-GPU machine is:
+
+```bash
+docker pull vistalab/pbrt-v4-gpu
+docker run --rm --gpus device=0 vistalab/pbrt-v4-gpu nvidia-smi
+```
+
+For CPU rendering:
+
+```bash
+docker pull digitalprodev/pbrt-v4-cpu
+```
+
+If `PBRTResources` is set to a Stanford-specific path such as
+`/acorn/data/iset/PBRTResources`, remove it for a local-only external machine
+unless that path exists and should be mounted:
+
+```matlab
+if ispref('ISETDocker','PBRTResources')
+    rmpref('ISETDocker','PBRTResources');
+end
+```
+
+After setting preferences, check them and run the Docker diagnostic:
+
+```matlab
+getpref('ISETDocker')
+piDockerDiagnose('render',false);
+```
