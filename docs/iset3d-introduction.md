@@ -26,12 +26,11 @@ if ~piDockerExists
 end
 ```
 
-For local rendering, run `isetdocker.setUserPrefs` once and choose a local
-render context. Select CPU if you do not have a local NVIDIA GPU and select
-GPU only when Docker can see the GPU on your machine. The local CPU image used
-by the current configuration is `digitalprodev/pbrt-v4-cpu`. If you have not
-downloaded the relevant Docker images yet, see the local Docker setup summary
-at the end of this document.
+If you have not configured local rendering yet, follow
+[setting-up-iset3d.md](setting-up-iset3d.md) first. It covers installing
+Docker, pulling the CPU image, setting the `ISETDocker` preferences, and
+downloading scenes &mdash; everything needed to render on your own computer
+without Stanford servers. This tutorial guide assumes that setup is done.
 
 You can check the current rendering preferences with:
 
@@ -356,69 +355,10 @@ orientation layer; a few points still matter as you move deeper:
 - When you need applied workflows rather than short API orientation, use
   `examples/` instead of `tutorials/`.
 
-## Local Docker Setup Summary
+## Local Docker Setup
 
-ISET3D renders locally when the `ISETDocker` MATLAB preferences describe a
-local Docker context. For a colleague with one local NVIDIA GPU, the essential
-preferences are:
-
-```matlab
-setpref('ISETDocker','device','gpu');
-setpref('ISETDocker','deviceID','0');
-setpref('ISETDocker','dockerImage','vistalab/pbrt-v4-gpu');
-setpref('ISETDocker','remoteHost','');
-setpref('ISETDocker','remoteUser','');
-setpref('ISETDocker','renderContext','default');
-setpref('ISETDocker','workDir',fullfile(piRootPath,'local'));
-```
-
-For local CPU rendering, use:
-
-```matlab
-setpref('ISETDocker','device','cpu');
-setpref('ISETDocker','deviceID','');
-setpref('ISETDocker','dockerImage','digitalprodev/pbrt-v4-cpu');
-setpref('ISETDocker','remoteHost','');
-setpref('ISETDocker','remoteUser','');
-setpref('ISETDocker','renderContext','default');
-setpref('ISETDocker','workDir',fullfile(piRootPath,'local'));
-```
-
-Do not set `PBRTContainer` manually. It is a transient preference created by
-`isetdocker.startPBRT` when rendering starts.
-
-Docker image names such as `vistalab/pbrt-v4-gpu` and
-`digitalprodev/pbrt-v4-cpu` do not include an explicit registry hostname, so
-Docker treats them as Docker Hub images. If the image is already cached
-locally, Docker uses the cached copy. If not, Docker tries to download it from
-Docker Hub.
-
-A useful command-line preflight for a one-GPU machine is:
-
-```bash
-docker pull vistalab/pbrt-v4-gpu
-docker run --rm --gpus device=0 vistalab/pbrt-v4-gpu nvidia-smi
-```
-
-For CPU rendering:
-
-```bash
-docker pull digitalprodev/pbrt-v4-cpu
-```
-
-If `PBRTResources` is set to a Stanford-specific path such as
-`/acorn/data/iset/PBRTResources`, remove it for a local-only external machine
-unless that path exists and should be mounted:
-
-```matlab
-if ispref('ISETDocker','PBRTResources')
-    rmpref('ISETDocker','PBRTResources');
-end
-```
-
-After setting preferences, check them and run the Docker diagnostic:
-
-```matlab
-getpref('ISETDocker')
-piDockerDiagnose('render',false);
-```
+Local rendering setup &mdash; installing Docker, pulling the CPU or GPU image,
+setting the `ISETDocker` preferences, clearing the Stanford resource mount, and
+downloading scenes with `ieWebGet` &mdash; now lives in one place:
+[setting-up-iset3d.md](setting-up-iset3d.md). Follow that guide before running
+the tutorials above.
