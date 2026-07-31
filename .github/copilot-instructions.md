@@ -1,93 +1,107 @@
 # ISET3D AI Instructions
 
-Use this file as the shared startup guidance for Copilot, Claude, Codex,
-Gemini, and other AI coding assistants working in this repository.
+Shared startup guidance for Copilot, Claude, Codex, Gemini, and other AI coding
+assistants working in this repository.
+
+This file is a **router**. It carries repository-wide context and coding rules;
+the operational depth lives in `.github/skills/`. Read the skill that matches
+the task before making changes.
 
 ## Repository Context
 
 - MATLAB is the primary runtime.
-- The main repository is `iset3d`. ISETCam (`../isetcam`) is a required
-  dependency and is always expected to be on the MATLAB path when ISET3D is
+- The main repository is `iset3d`. **ISETCam (`../isetcam`) is a required
+  dependency** and is always expected to be on the MATLAB path when ISET3D is
   used or tested.
-- ISET3D code and tests may directly use ISETCam utilities, including
-  `ieTestReport`. Do not duplicate utilities already supplied by ISETCam.
-- Many independently maintained repositories depend on ISET3D. Before removing
-- or changing public APIs, paths, data locations, setup behavior, or integration
-  hooks, search for likely external usage and prefer staged deprecation when an
-  immediate change could disrupt collaborators. Allow time for dependent
-  repositories to migrate unless coordinated cleanup is explicitly requested.
-- For VS Code MATLAB setup, see `.vscode/matlab-setup.md`.
-- For MATLAB Command Window path setup, use `.github/matlab-paths.md`.
+- ISET3D code and tests may use ISETCam utilities directly, including `ieInit`,
+  `ieTestReport`, `ieWebGet`, and `iePublish`. **Do not duplicate a utility
+  ISETCam already supplies.**
+- **Many independently maintained repositories depend on ISET3D.** Before
+  removing or changing public APIs, paths, data locations, setup behavior, or
+  integration hooks, search for likely external usage and prefer staged
+  deprecation when an immediate change could disrupt collaborators. Allow time
+  for dependent repositories to migrate unless coordinated cleanup is
+  explicitly requested.
+- Rendering happens in PBRT inside Docker. MATLAB writes scene files, invokes
+  the container, and reads the result back. **Local rendering is the default
+  and the priority**; remote rendering on Stanford hosts is an option, not a
+  requirement.
 
-## Tutorials and Examples
+## Skills
 
-ISET3D keeps `tutorials/` and `examples/` as separate teaching surfaces for
-different goals and audiences.
+Read the matching `SKILL.md` under `.github/skills/` before working in that
+area.
 
-- **Tutorials (`tutorials/`)**
+**Where they live.** The canonical files are in `.github/skills/<name>/SKILL.md`,
+which is where Copilot, Codex, and Gemini look. Claude Code discovers skills only
+in `.claude/skills/`, so the whole directory is symlinked:
 
-  - Audience: learners (including new students) who can program and are
-    learning image systems engineering and the ISET3D/PBRT rendering pipeline.
-  - Purpose: short, heavily commented introductions to key objects and APIs.
-  - Expected content:
-    - object creation and setup
-    - `*Get`/`*Set` usage for key properties
-    - basic visualization (`*Window`, `*Plot`)
-    - one simple quantitative computation/checkpoint
-  - Expected behavior: runs relatively quickly and is easy to read linearly.
-- **Examples (`examples/`)**
-
-  - Audience: users looking for realistic analysis patterns to adapt.
-  - Purpose: applied workflows and more advanced computations using ISET3D.
-  - Expected content:
-    - end-to-end numerical analyses or visualization workflows
-    - realistic parameter choices and tradeoff exploration
-    - code that users may copy/adapt as a starting point for their own work
-  - Expected behavior: can be longer and more detailed than tutorials.
-
-When adding or editing files, preserve this distinction. If content is mainly
-onboarding and API orientation, place it in `tutorials/`. If content is mainly
-applied workflow, analysis, or deeper exploration, place it in `examples/`.
-
-### Data-Generation Scripts
-
-Some scripts exist to generate or refresh repository data files rather than to
-serve as tutorials or examples. Name these scripts `data_*.m`. This naming
-distinguishes them from automated tutorial (`t_*.m`) and example (`s_*.m`)
-smoke-test sources and makes their side-effecting purpose explicit.
-
-You can convert these tutorials and examples into HTML documentation by running
-the `s_publishTutorials` and `s_publishScripts` utilities (provided by ISETCam)
-from the MATLAB command window. To publish a single file, use the underlying
-utility `iePublish('filename.m')` which applies the correct HTML
-formatting and embedded figure styles needed for the tutorials site.
-
-For student contributors, prioritize clarity, reproducibility, and instructional
-value: use clear comments, stable outputs, and explicit links to related wiki
-pages, tests, and nearby tutorials/examples.
-
-### Skipping Automated Tutorial and Example Runs
-
-The `iset3dTutorialTest` and `iset3dExampleTest` runners execute `t_*` and
-`s_*` files by default. To exclude a source file from these automated smoke
-runs, add this exact comment anywhere in the file:
-
-```matlab
-% SkipFile
+```text
+.claude/skills -> ../.github/skills
 ```
 
-Use this opt-out sparingly for files that require unavailable external data or
-toolboxes, deliberate user interaction, unusually expensive computation, or a
-known failure that is explicitly documented nearby. The runners report these
-files as `Skipped`. Remove the tag when the file becomes suitable for routine
-automated execution.
+One symlink per repository, not one per skill. **Adding a skill therefore needs
+no bookkeeping** — create `.github/skills/<name>/SKILL.md` with `name` and
+`description` frontmatter and it appears on both sides automatically. The same
+one-line arrangement is used in ISETCam, ISETBio, SDM, and OralEye.
 
-The legacy `% UTTBSkip` marker remains supported for compatibility, but new
-and updated files should use `% SkipFile`.
+Link the directory, never the individual skills. A directory of per-skill
+symlinks enumerates as symlinks rather than directories, which any tool
+filtering on "is a directory" will skip.
 
-ISET3D's wrappers use the shared ISETCam test engine. See
-`../isetcam/docs/tutorial-example-test-architecture.md` for the canonical run
-schema and the wrapper contract for additional repositories.
+Write the `description` as a trigger list — the situations and function names
+that should make an agent open the file — not as a summary. That text is the
+only thing a tool sees before deciding to read the skill.
+
+On Windows, `git config core.symlinks true` (plus Developer Mode) is needed for
+`.claude/skills` to check out as a real symlink. Without it, it arrives as a
+small text file and Claude Code will not see the skills; the canonical
+`.github/skills/` tree is unaffected and remains readable.
+
+### Core workflow
+
+| Skill | Read it when |
+| --- | --- |
+| `iset3d-recipe-workflow` | Creating, loading, inspecting, or editing a recipe; `piWRS`/`piWrite`/`piRender`; looking up a `thisR.get`/`set` parameter name; render quality settings; deciding whether a render returns a `scene` or an `oi`. |
+| `iset3d-docker-rendering` | Setting up rendering on a new machine; `ISETDocker` preferences; local CPU or GPU config; a render that fails before PBRT produces output; `piDockerConfig`, `piDockerDiagnose`, stale `PBRTContainer`. |
+| `iset3d-scene-sources` | Finding or downloading a scene; in-repo vs. SDR vs. database scenes; `ieWebGet`, `piSDRSceneNames`, `piDirGet`; building a synthetic target. |
+| `iset3d-testing-workflow` | Running or choosing tests; `iset3dUnitTest` core vs. full; area runners; `iset3dTutorialTest`/`iset3dExampleTest`; the `_remote` and `FullOnly` conventions; `% SkipFile`; `ieTestReport`. |
+
+### Editing scene content
+
+| Skill | Read it when |
+| --- | --- |
+| `iset3d-lights-and-skymaps` | Adding, deleting, or editing lights; light types; spectra (named illuminant, blackbody K, RGB); `specscale`; `cameracoordinate`; area lights; setting and rotating a skymap. |
+| `iset3d-materials-and-textures` | Creating, editing, or assigning materials; `piMaterialPresets`; procedural vs. image-map textures; a PBRT "file not found" error naming a texture. |
+| `iset3d-assets-and-transforms` | Navigating or editing the asset tree; `piAssetSearch`; translate/rotate/scale; world vs. local coordinates; object instances; asset motion. |
+
+### Optics
+
+| Skill | Read it when |
+| --- | --- |
+| `iset3d-camera-and-optics` | Camera setup; `piCameraCreate`; camera subtypes; attaching a lens file; focus distance and accommodation; film size and resolution; camera motion; microlens and film shape. |
+| `iset3d-sceneEye` | Human-eye rendering; the navarro, arizona, and legrand models; accommodation; retinal geometry; why `sceneEye` renders on the CPU. |
+| `iset3d-lens-toolbox` | The imported ISETLENS code — `lensC`, `rayC`, `surfaceC`, `filmC`, `psfCameraC`; `lensFocus`; paraxial matrix optics; black box model; MTF via `piCalculateSlantedEdgeMTF`. |
+
+### Infrastructure and process
+
+| Skill | Read it when |
+| --- | --- |
+| `iset3d-remote-resources-database` | Remote rendering; rsync scene staging; the `/acorn` `PBRTResources` tree; `thisR.useDB`; `isetdb` Mongo metadata; `piTextureResourcesUpload`; SSH tunnels. |
+| `matlab-environment-setup` | Setting up or troubleshooting a MATLAB session; repository paths; `which ieInit` failing; the VS Code MATLAB extension; `-batch` from a shell. |
+| `authoring-tutorials-examples` | Adding or placing a file in `tutorials/` or `examples/`; naming a `t_*.m`, `s_*.m`, or `data_*.m`; `% SkipFile`; `underDevelopment/`. |
+| `golden-value-testing` | Adding or updating a numerical regression test; tolerance choice; golden storage; `test_<subject>Golden_remote.m`; updating a baseline. |
+| `publishing-tutorials-examples` | Converting a tutorial or example to self-contained HTML; `iePublish`, `s_publishTutorials`, `s_publishExamples`. |
+
+## Agents
+
+`.github/agents/` holds read-only review and diagnosis agents:
+
+- `matlab-script-review.agent.md` — review tutorials and examples for
+  runnability, comment quality, overlap, and coverage against nearby `_tests_`
+  directories.
+- `render-failure-triage.agent.md` — walk a failing render through the whole
+  chain (Docker → write → staging → upload → PBRT) and report where it broke.
 
 ## ISETCam Pipeline
 
@@ -99,24 +113,25 @@ Prefer existing object-specific functions before writing new utilities.
 4. Image processing: `ip*` functions, accessed with `ipGet` and `ipSet`.
 5. Display: `display*` functions, accessed with `displayGet` and `displaySet`.
 
-Common constructors and compute functions include `sceneCreate`,
-`oiCreate`, `oiCompute`, `sensorCreate`, `sensorCompute`, `ipCreate`,
-`ipCompute`, and `displayCreate`.
+Common constructors and compute functions: `sceneCreate`, `oiCreate`,
+`oiCompute`, `sensorCreate`, `sensorCompute`, `ipCreate`, `ipCompute`,
+`displayCreate`.
 
-For object diagnostics, prefer existing plotting functions such as
-`scenePlot`, `oiPlot`, `sensorPlot`, `ipPlot`, and `displayPlot` over ad hoc
-plotting.
+For diagnostics, prefer existing plotting functions — `scenePlot`, `oiPlot`,
+`sensorPlot`, `ipPlot`, `displayPlot`, `piMaterialPlot` — over ad hoc plotting.
 
 ## Search Guidance
 
-- Use `rg` for text search and `fd` for filename/path search when using a
-  terminal.
+- Use `rg` for text search and `fd` for filename/path search in a terminal.
 - Before adding behavior, search for nearby examples with the relevant object
-  prefix.
-- For color transforms and color science utilities, search `color/` before
-  implementing new code.
-- For new scene patterns or chart behavior, check existing examples in
-  `scene/` and especially related pattern/chart code.
+  prefix (`piAsset*`, `piLight*`, `piMaterial*`, `piTexture*`, `piCamera*`).
+- **Do not guess a `thisR.get`/`set` parameter name.** Grep the case lists:
+  `rg "^    case" @recipe/recipeGet.m`. Names are normalized by `ieParamFormat`,
+  and most cases carry several aliases.
+- For color transforms and color science, search ISETCam's `color/` before
+  writing new code.
+- For scene patterns and chart behavior, check `utilities/scenes/` and the
+  existing `piCreate*` builders.
 
 ## Coding Style
 
@@ -126,109 +141,55 @@ plotting.
 - Prefer vectorized MATLAB where it improves clarity or performance.
 - Update function header comments when behavior changes, especially `Syntax`,
   `Inputs`, `Returns`, and `See also`.
-- Do not add dependencies unless they are necessary and consistent with the
-  repository.
+- Do not add dependencies unless necessary and consistent with the repository.
+- Distance units are meters in recipes and **millimeters** in the lens toolbox.
+  Rotations are degrees, ordered `[x y z]`.
 
 ## Validation
 
 - Validate modified files with MATLAB diagnostics or focused test commands when
   practical.
-- Place tests for major objects and computational areas in colocated `_tests_`
-  directories. Use ISETCam's `_tests_` directories as the reference
-  implementation when an ISET3D convention is not yet established.
-- Write function-based MATLAB tests in files named `test_<subject>.m`, starting
-  each file with `tests = functiontests(localfunctions)`.
-- Prefer focused, descriptively named test functions that cover accessors,
-  computations, dimensions and shapes, invariants, important validation
-  errors, and stable golden-value fingerprints with explicit named tolerances.
-- Keep core tests deterministic and non-interactive. Control random-number
-  generation when randomness is required, and classify GUI, smoke, slow, or
-  resource-heavy tests outside the core suite.
-- Give each `_tests_` directory a local `<area>UnitTest.m` runner built with
-  `TestSuite.fromFolder`, `TestRunner.withTextOutput`, and `ieTestReport`.
-  Local runners should run the `core` suite by default and accept `full` to
-  include all tests.
+- Place tests in colocated `_tests_` directories. Use ISETCam's `_tests_`
+  directories as the reference when an ISET3D convention is not established.
+- Write function-based tests named `test_<subject>.m`, starting with
+  `tests = functiontests(localfunctions)`.
+- **Any test that calls a Docker-dependent render path must include `_remote`
+  in its filename.** `iset3dUnitTest('core')` excludes `_remote` and `FullOnly`
+  so the fast suite runs without network or Docker.
+- Run the full suite with `iset3dUnitTest` and report with `ieTestReport`.
+  `iset3dUnitTest` is the ISET3D master runner; `ieUnitTest` is ISETCam's.
+- Keep core tests deterministic and non-interactive; control the RNG when
+  randomness is required.
 - Local and repository-wide runners must close figures created during testing
-  while preserving figures that were open before the test run.
-- Run the full ISET3D unit-test suite with `iset3dUnitTest` and render or
-  summarize its output with ISETCam's `ieTestReport`. `iset3dUnitTest` is
-  the ISET3D master runner; `ieUnitTest` is the ISETCam master runner.
-- For details on the shared script-testing engine and runner contract, see
-  [tutorial-example-test-architecture.md](file:///Users/wandell/Documents/MATLAB/isetcam/docs/tutorial-example-test-architecture.md).
-- When converting legacy `isetvalidate` scripts into built-in unit tests,
-  place each test with the ISET3D subsystem or behavior it protects rather
-  than copying the legacy validation directory layout. Do not duplicate a
-  test already maintained by ISETCam merely because the validation script
-  historically lived under an ISET3D validation directory.
-- MATLAB is available through the VS Code MATLAB extension.
-- A local MATLAB executable is available at
-  `/Applications/MATLAB_R2025b.app/bin/matlab` and can be used with `-batch`
-  for non-interactive checks.
-- If launching MATLAB from a sandboxed shell fails silently or exits with
-  status 1, retry unsandboxed or escalated because MATLAB may need to write
-  preferences or cache files outside the repository.
+  while preserving figures open beforehand.
+- MATLAB is available through the VS Code extension, and at
+  `/Applications/MATLAB_R2025b.app/bin/matlab` with `-batch` for
+  non-interactive checks. If launching from a sandboxed shell fails silently or
+  exits with status 1, retry unsandboxed — MATLAB may need to write preferences
+  outside the repository.
 
-## Remote Rendering (Docker / PBRT)
+See the `iset3d-testing-workflow` and `golden-value-testing` skills for detail.
 
-ISET3D renders scenes by calling PBRT inside Docker containers that run on
-remote GPU servers (currently `orange.stanford.edu`). Tests, tutorials, and
-examples that invoke `piWRS`, `piRender`, or any rendering pipeline have
-several environmental prerequisites:
+## Documentation
 
-- **Stanford VPN**: When working off-campus, an active Stanford VPN
-  connection is required to reach the remote rendering servers. Tests
-  labelled `_remote` in their filename assume this access.
-- **Docker context**: MATLAB must have a Docker context configured for the
-  remote host. Run `piDockerConfig` to set this up. Use
-  `piDockerDiagnose('render',false)` as the first diagnostic check for
-  configured context, SSH/SFTP reachability, rsync, GPU visibility, and stale
-  PBRT container state. Use `piDockerDiagnose('render',true)` only when a tiny
-  acceptance render is needed.
-- **Stale containers**: A running `PBRTContainer` preference can point at a
-  container that no longer sees a GPU, producing PBRT failures such as
-  `no CUDA-capable device is detected`. Prefer `piDockerDiagnose` for
-  diagnosis and repair hints before manually removing containers. If needed,
-  run `piDockerDiagnose('resetStaleContainer',true)`.
-- **Cleanup**: MATLAB shutdown runs `docker/finish.m`, which removes the
-  current PBRT container when `ISETDocker.PBRTContainer` is set. If this cleanup
-  reports failure, inspect the message rather than ignoring it; stale cleanup is
-  a common cause of later rendering confusion.
-- **MATLAB preferences**: Docker-related configuration is stored in MATLAB
-  preferences, mainly under `ISETDocker`. These preferences include the render
-  context name, Docker image, remote host, work directory, and GPU assignment.
-  They are machine-specific and persist across sessions. When switching between
-  machines, campus vs. VPN, or GPU assignments, prefer `piDockerDiagnose`
-  first; when a full reset is needed, clear stale `ISETDocker` preferences and
-  re-run `piDockerConfig`.
-- **Test classification**: Any test file that calls Docker-dependent
-  rendering must include `_remote` in its filename (e.g.,
-  `test_macbethGolden_remote.m`). The `iset3dUnitTest('core')` runner
-  automatically excludes `_remote` tests so that the fast/local suite
-  runs without network or Docker dependencies. Use `iset3dUnitTest('full')`
-  to include them.
+Long-form prose for humans lives in `docs/`:
 
-## Golden Value Testing
+- [iset3d-introduction.md](../docs/iset3d-introduction.md) — first tutorial path
+  and core workflow.
+- [setting-up-iset3d.md](../docs/setting-up-iset3d.md) — local rendering setup.
+- [remote-rendering.md](../docs/remote-rendering.md) and
+  [rendering-database.md](../docs/rendering-database.md) — remote hosts, shared
+  resources, and the database.
+- [testing.md](../docs/testing.md) — test runners.
+- [sceneEye-gpu.md](../docs/sceneEye-gpu.md) — why human-eye optics is CPU-only.
+- [golden-value-testing.md](../docs/golden-value-testing.md) — the golden value
+  target list and plan.
 
-Golden value tests protect numerical outputs against regressions by
-comparing computed results to pre-established reference values.
-
-- **Tolerances**: Always use explicit named tolerances (`'RelTol'` or
-  `'AbsTol'`) with `verifyEqual`. Rendering-based goldens should use
-  relative tolerances of 1–5% to accommodate Monte Carlo noise. Purely
-  deterministic computations (geometry, optics) can use tighter tolerances
-  (e.g., `'AbsTol', 1e-6`).
-- **Storage**: Store scalar and small-vector golden values directly in the
-  test source code. For large reference arrays (images, spectra), save to a
-  MAT file in the same `_tests_` directory and load it in the test setup.
-- **Naming**: Golden value test files that require rendering should follow
-  the `test_<subject>Golden_remote.m` naming convention.
-- **Baseline updates**: When an intentional code change shifts golden
-  values, update the reference values in the test and document the reason
-  in the commit message.
-- See `.github/agents/GOLDEN.md` for the overall plan and target list.
+Skills distill these into operational guidance and link back. When a fact
+changes, update the skill and the doc together.
 
 ## When Uncertain
 
-Choose the simplest implementation that matches existing `scene*`, `oi*`,
-`sensor*`, `ip*`, and `display*` patterns. Ask the user only when the choice
-would materially affect behavior, API shape, or test expectations.
+Choose the simplest implementation that matches existing `pi*` and ISETCam
+`scene*`/`oi*`/`sensor*`/`ip*`/`display*` patterns. Ask the user only when the
+choice would materially affect behavior, API shape, or test expectations.

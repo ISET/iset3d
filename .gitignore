@@ -31,3 +31,6 @@ data/assets/characters/*/geometry/*
 !data/assets/characters/*/geometry/*.ply
 data.orig
 local
+
+# Personal Claude Code overrides; .claude/settings.json is shared and committed
+.claude/settings.local.json
