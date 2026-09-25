@@ -50,21 +50,14 @@ Operating rules:
   unconfigured machine reports as `Skipped`, not `Failed`, because
   `iset3dRenderSkipReason` is the runners' conditional-skip hook.
 
-Recommended workflow:
+The review should deliver:
 
-1. Inventory the scripts in the target directory and group them by topic.
-2. Inventory the nearest `_tests_` directory and map tests to script topics.
-3. For each script, summarize:
-   - purpose
-   - main APIs exercised
-   - render cost (resolution, rays per pixel, bounces, scene download size)
-   - likely runtime dependencies or failure risks
-   - comment quality
-   - overlap with neighboring scripts
-   - whether it carries `% SkipFile`, and whether that marker is still justified
-4. Produce a coverage view comparing scripts against tests.
-5. Recommend a minimal cleanup plan, including concrete merge or
-   de-duplication candidates.
+- For each script: its purpose, main APIs exercised, render cost (resolution,
+  rays per pixel, bounces, scene download size), likely failure risks, comment
+  quality, overlap with neighbors, and whether any `% SkipFile` marker is
+  still justified.
+- A coverage view mapping scripts to the nearest `_tests_` directory.
+- A minimal cleanup plan with concrete merge or de-duplication candidates.
 
 Output expectations:
 
@@ -99,12 +92,13 @@ Specific things to check as clusters:
   `t_piIntro_illumination.m`, `t_piIntro_material.m`, `t_piIntro_texture.m`.
   These are the documented first path in `docs/iset3d-introduction.md`. They
   must stay small, fast, and consistent with that document.
-- **`underDevelopment/` subfolders.** Roughly sixty example scripts live under
-  `examples/*/underDevelopment/`. Treat them as exploratory notes rather than
+- **`underDevelopment/` subfolders.** Treat scripts under
+  `examples/*/underDevelopment/` as exploratory notes rather than
   review targets unless the user asks. Flag any that look ready for promotion,
   and any top-level script that would be better placed there.
-- **`% SkipFile` density.** Around two thirds of `examples/` scripts carry the
-  marker. For each one, ask whether the reason still holds — in particular
+- **`% SkipFile` markers.** Most markers are on `underDevelopment/` scripts;
+  the top-level ones are the review targets. For each top-level marker, ask
+  whether the reason still holds — in particular
   whether it was added for a render dependency that `iset3dRenderSkipReason`
   now handles automatically, which would make the marker unnecessary.
 - **Deprecated APIs.** Flag use of `piCalculateMTF` (superseded by

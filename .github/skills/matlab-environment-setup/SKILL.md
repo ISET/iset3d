@@ -119,7 +119,8 @@ iset3dRootPath
 ## Non-Interactive / CLI MATLAB
 
 A local MATLAB executable is available at
-`/Applications/MATLAB_R2025b.app/bin/matlab` and can be used with `-batch` for
+`/Applications/MATLAB_<release>.app/bin/matlab` (list installed releases with
+`ls -d /Applications/MATLAB_R20*`) and can be used with `-batch` for
 non-interactive checks, for example from an agent or a CI-style shell:
 
 ```bash
