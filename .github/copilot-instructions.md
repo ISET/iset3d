@@ -163,7 +163,8 @@ For diagnostics, prefer existing plotting functions — `scenePlot`, `oiPlot`,
 - Local and repository-wide runners must close figures created during testing
   while preserving figures open beforehand.
 - MATLAB is available through the VS Code extension, and at
-  `/Applications/MATLAB_R2025b.app/bin/matlab` with `-batch` for
+  `/Applications/MATLAB_<release>.app/bin/matlab` (`ls -d /Applications/MATLAB_R20*`
+  lists installed releases) with `-batch` for
   non-interactive checks. If launching from a sandboxed shell fails silently or
   exits with status 1, retry unsandboxed — MATLAB may need to write preferences
   outside the repository.
