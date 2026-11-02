@@ -314,10 +314,13 @@ Before running a render-heavy tutorial, a short checklist is:
 
 - ISETCam and ISET3D are both on the MATLAB path.
 - Stanford VPN is active if the remote host requires it.
-- `piDockerConfig` has been run on this machine.
-- `piDockerDiagnose('render',false)` passes before attempting a full render.
+- `piDockerDiagnose('render',false)` passes, and then a small render succeeds.
+  The diagnostic does not run PBRT, so it cannot confirm rendering by itself.
 - Stale PBRT containers have been diagnosed with `piDockerDiagnose` before
   manually changing Docker state.
+
+If you are coming back after time away, use the fuller checklist in
+[returning-to-iset3d.md](returning-to-iset3d.md).
 
 For details about ordinary remote rendering, database-backed resources,
 texture staging, and common failure modes, use

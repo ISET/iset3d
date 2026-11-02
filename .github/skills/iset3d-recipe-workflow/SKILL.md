@@ -134,6 +134,8 @@ key/value options:
 - `'name'` — sets the scene/oi name.
 - `'docker'` — pass an `isetdocker` object to override the preference-derived one.
 - `'denoise'` — run `piAIdenoise` before returning.
+- `'overwrite lens file'` — replace the copy of the lens file in the output
+  `lens/` folder even if the source is not newer. Default `false`.
 
 Drop to the two-step form when you need to inspect the staged files between
 writing and rendering — this is the standard move when debugging a missing

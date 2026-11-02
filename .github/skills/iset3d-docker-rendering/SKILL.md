@@ -56,7 +56,10 @@ setpref('ISETDocker','workDir',fullfile(piRootPath,'local'));
 ```
 
 The two fields that matter most are `remoteHost` empty (keeps rendering local)
-and `renderContext` set to `default` (this machine's Docker daemon).
+and `renderContext` naming a context that reaches this machine's Docker daemon.
+The name is used literally, and an empty value fails validation. `default` suits
+Docker Engine on Linux but can fail on Docker Desktop for Mac. Run `docker context
+ls` and use the starred name, usually `desktop-linux` on Docker Desktop.
 
 **Clear the Stanford resource mount.** `PBRTResources` points at
 `/acorn/data/iset/PBRTResources`, which does not exist off the Stanford
@@ -131,14 +134,15 @@ report = piDockerDiagnose('resetStaleContainer',true);% repair stale container s
 
 It checks the `docker` and `rsync` commands, validates the `ISETDocker`
 preference structure, checks the Docker context, SSH/SFTP reachability (remote
-only), GPU visibility, and stale PBRT container state.
+only), GPU visibility, and stale PBRT container state. With `'render',false` it
+does not run PBRT, so `ok` does not prove that rendering works.
 
 The returned struct has `ok`, `errors`, `warnings`, `checks`, `repairHints`,
 and `prefs`. **Read `report.repairHints`** — it names the command to run.
 
 Related helpers: `piDockerExists` (is Docker findable at all),
-`piDockerConfig` (set up the context and MATLAB environment),
-`piDockerCurrentContext`, `piDockerTest`, `piDockerWarmup`.
+`piDockerConfig` (find `docker` and adjust `PATH` for this session; it does not
+set preferences), `piDockerCurrentContext`, `piDockerTest`, `piDockerWarmup`.
 
 ## Preference Reference
 
@@ -175,6 +179,19 @@ preference pointing at a container that no longer sees a GPU. Run
 `piDockerDiagnose('render',false)` first for the diagnosis, then
 `piDockerDiagnose('resetStaleContainer',true)` rather than removing containers
 by hand.
+
+**`Docker render failed with status 132` and `Illegal instruction`.** PBRT itself
+crashed, with any scene and any camera, while `piDockerDiagnose('render',false)`
+reports no problem. This was seen with the June 2024 `digitalprodev/pbrt-v4-cpu`
+image on an Intel i9-9900K iMac. The binary contains AVX-512 instructions, which
+that CPU lacks, and the same image runs on `orange`, whose Xeon has them. Render
+on a machine that has AVX-512. Other CPUs without it may behave the same way.
+
+**A GPU render never returns.** `system` has no timeout, so MATLAB waits
+indefinitely. A hung PBRT shows CPU use with the GPU at 0% in `nvidia-smi`. This
+was seen once on `orange`, in a render that normally takes seconds, with identical
+scene files before and after, and three repeats ran normally. Stop it with `docker
+--context remote-orange exec <container> pkill pbrt`, and MATLAB reports status 143.
 
 **Cleanup failure at MATLAB shutdown.** `docker/finish.m` removes the current
 PBRT container when `ISETDocker.PBRTContainer` is set. If it reports a failure,

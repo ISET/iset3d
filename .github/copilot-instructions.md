@@ -58,6 +58,12 @@ On Windows, `git config core.symlinks true` (plus Developer Mode) is needed for
 small text file and Claude Code will not see the skills; the canonical
 `.github/skills/` tree is unaffected and remains readable.
 
+### Start here
+
+| Skill | Read it when |
+| --- | --- |
+| `iset3d-session-startup` | Starting work after time away; "startup checks"; before a session's first render; Cisco Secure Client, the Stanford VPN, CardinalKey, or SSH to `orange`; which `ISETDocker` `setpref` values to use; what `ieInit` does; whether a test run proves that rendering works. |
+
 ### Core workflow
 
 | Skill | Read it when |
@@ -156,8 +162,10 @@ For diagnostics, prefer existing plotting functions — `scenePlot`, `oiPlot`,
 - **Any test that calls a Docker-dependent render path must include `_remote`
   in its filename.** `iset3dUnitTest('core')` excludes `_remote` and `FullOnly`
   so the fast suite runs without network or Docker.
-- Run the full suite with `iset3dUnitTest` and report with `ieTestReport`.
-  `iset3dUnitTest` is the ISET3D master runner; `ieUnitTest` is ISETCam's.
+- Run the core suite with `iset3dUnitTest`, or add the `_remote` render tests
+  with `iset3dUnitTest('full')`, and report with `ieTestReport`. A core pass says
+  nothing about rendering. `iset3dUnitTest` is the ISET3D master runner;
+  `ieUnitTest` is ISETCam's.
 - Keep core tests deterministic and non-interactive; control the RNG when
   randomness is required.
 - Local and repository-wide runners must close figures created during testing
@@ -175,6 +183,8 @@ See the `iset3d-testing-workflow` and `golden-value-testing` skills for detail.
 
 Long-form prose for humans lives in `docs/`:
 
+- [returning-to-iset3d.md](../docs/returning-to-iset3d.md) — startup checklist
+  after time away, `ieInit`, and the preference reference.
 - [iset3d-introduction.md](../docs/iset3d-introduction.md) — first tutorial path
   and core workflow.
 - [setting-up-iset3d.md](../docs/setting-up-iset3d.md) — local rendering setup.

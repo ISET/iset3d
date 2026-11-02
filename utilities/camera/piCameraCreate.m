@@ -30,9 +30,10 @@ function camera = piCameraCreate(cameraType,varargin)
 %                    field camera
 %    'realisticDiffraction' - Not sure what that sub type is doing in
 %                                  light field
-%    'realistic'   - This seems to be superseded completely by omni, except
-%                    for some old car scene generation cases that have not
-%                    been updated.
+%    'realistic'   - Superseded by omni.  Warns, then returns an omni camera
+%                    that uses the json version of the lens file, because
+%                    PBRT's omni camera reads only json.  It is an error if
+%                    there is no json version.
 %
 % TL,BW SCIEN STANFORD 2017
 %
@@ -77,19 +78,14 @@ varargin = ieParamFormat(varargin);
 p = inputParser;
 % pinhole and perspective are synonyms
 % omni is the most general type in current use
-% realistic should be replaced by omni in the future.  Not sure what we are
-% waiting for, but there is some feature ... (BW)
+% realistic is deprecated, and we convert it to omni below
 validCameraTypes = {'pinhole','perspective','realistic','omni', 'humaneye','lightfield','raytransfer'};
 p.addRequired('cameraType',@(x)(ismember(ieParamFormat(x),validCameraTypes)));
 
-% This will work for realistic, but not omni.  Perhaps we should make the
-% default depend on the camera type.
 switch ieParamFormat(cameraType)
     % Omni and realistic have lenses.  We are using this default lens.
-    case 'omni'
+    case {'omni','realistic'}
         lensDefault = 'dgauss.22deg.12.5mm.json';
-    case 'realistic'
-        lensDefault = 'dgauss.22deg.12.5mm.dat';
     case 'raytransfer'
         % This is the json file for a default RTF when we have one
         lensDefault = 'dgauss-22deg-3.0mm.json';
@@ -107,6 +103,16 @@ if isequal(cameraType,'perspective'), cameraType = 'pinhole'; end
 lensFile = p.Results.lensfile;
 eyeModel = p.Results.eyemodel;
 
+% PBRT's omni camera rejects a .dat lens file, and PBRT's own realistic camera
+% cannot parse our .dat files.  So realistic becomes omni with the json lens.
+if isequal(ieParamFormat(cameraType),'realistic')
+    warning('piCameraCreate:RealisticDeprecated', ...
+        'realistic is deprecated. Using omni with the json version of the lens file.');
+    [lensDir,lensName,~] = fileparts(lensFile);
+    lensFile = fullfile(lensDir,[lensName '.json']);
+    cameraType = 'omni';
+end
+
 %% Initialize the default camera type
 switch ieParamFormat(cameraType)
     case {'pinhole'}
@@ -118,31 +124,6 @@ switch ieParamFormat(cameraType)
         camera.fov.value = 45;         % angle in deg
         camera.lensradius.type = 'float';
         camera.lensradius.value = 0;   % Radius in mm???
-
-    case {'realistic'}
-        % Check for lens .dat file
-        warning('realistic will be deprecated for omni');
-        [~,~,e] = fileparts(lensFile);
-        if(~strcmp(e,'.dat'))
-            % Sometimes we are sent in the json file
-            warning('Realistic camera needs *.dat lens file. Checking.');
-            [p,n,~] = fileparts(lensFile);
-            lensFile = fullfile(p,[n '.dat']);
-            if ~exist(fullfile(p,[n '.dat']),'file')
-                error('No corresponding dat file found');
-            else
-                fprintf('Found %s\n',lensFile);
-            end
-        end
-
-        camera.type          = 'Camera';
-        camera.subtype       = 'omni';
-        camera.lensfile.type = 'string';
-        camera.lensfile.value = which(lensFile);
-        camera.aperturediameter.type  = 'float';
-        camera.aperturediameter.value = 5;    % mm
-        camera.focusdistance.type     = 'float';
-        camera.focusdistance.value    = 10; % mm
 
     case {'omni'}
         [~,name,e] = fileparts(lensFile);

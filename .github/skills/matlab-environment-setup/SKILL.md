@@ -28,6 +28,10 @@ which ieInit
 before anything else, because most ISET3D failures downstream of a missing
 ISETCam are misleading.
 
+`ieInit` takes no parameters and does not set the path or start Docker. It is a
+script that closes figures, clears globals, and by default clears the workspace.
+Coming back after time away? Use the `iset3d-session-startup` skill.
+
 Adjust the paths if your checkouts live elsewhere. The canonical copy of this
 block is [.github/matlab-paths.md](../../matlab-paths.md).
 

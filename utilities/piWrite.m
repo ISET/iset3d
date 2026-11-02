@@ -13,6 +13,9 @@ function workingDir = piWrite(thisR,varargin)
 %
 % Optional key/value parameters
 %   verbose -- how chatty to be in this routine.
+%   overwrite lens file -- Replace the copy of the lens file in the output
+%        lens folder. Default false, which replaces it only when the source
+%        file is newer.
 %
 % Return
 %    workingDir - path to the output directory mounted by the Docker
@@ -195,20 +198,28 @@ if isequal(thisR.get('optics type'),'lens')
         % We have a nominal lens file.  Check that it exists, or that we
         % have insisted on overwriting it.
         if ~exist(lensFile,'file') || overwritelensfile
-            piWriteLens(thisR);
+            piWriteLens(thisR,overwritelensfile);
         end
 
-        if exist(lensFile,'file') && ~isempty(getpref('ISETDocker','remoteHost'))
-            % if we render the scene remotely, we need to rewrite the lens
-            % path from absolute to relative.
+        % PBRT runs in a container that cannot see an arbitrary lens path on
+        % this computer.  So whether we render locally or remotely, copy the
+        % file to local/thisScene/lens and rewrite the path from absolute to
+        % relative.  The copy is refreshed when the source is newer, such as a
+        % regenerated microlens file.  The human eye models write their own
+        % lens file there, so a local render has nothing to do for them.
+        isRemote   = ~isempty(getpref('ISETDocker','remoteHost'));
+        isHumanEye = isequal(thisR.get('camera subtype'),'humaneye');
+        if exist(lensFile,'file') && (isRemote || ~isHumanEye)
             [~,lensName,ext] = fileparts(lensFile);
-            thisR.set('lensfile',fullfile('lens',[lensName, ext]));
-            % also copy the file over to local/thisScene/lens
             lensDir = fullfile(thisR.get('output dir'),'lens');
             if ~exist(lensDir,'dir'), mkdir(lensDir);end
-            if ~exist(fullfile(lensDir,[lensName, ext]),'file')
-                copyfile(lensFile,fullfile(lensDir,[lensName, ext]));
+            lensCopy = fullfile(lensDir,[lensName, ext]);
+            sourceInfo = dir(lensFile);
+            copyInfo   = dir(lensCopy);
+            if isempty(copyInfo) || (~isempty(sourceInfo) && sourceInfo.datenum > copyInfo.datenum)
+                copyfile(lensFile,lensCopy);
             end
+            thisR.set('lensfile',['lens/' lensName ext]);
         end
 
     end

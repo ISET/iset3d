@@ -27,11 +27,14 @@ This progression usually catches problems faster than beginning with every repos
 
 ## Unit tests
 
-Run all ISET3D unit tests:
+Run the core unit tests, which need no Docker or network, or the full set, which adds the `_remote` tests that render:
 
 ```matlab
-results = iset3dUnitTest;
+results = iset3dUnitTest;          % core, the default
+results = iset3dUnitTest('full');  % core plus the _remote render tests
 ```
+
+A core pass says nothing about rendering. To check that rendering works, see [returning-to-iset3d.md](returning-to-iset3d.md).
 
 Unit tests are stored in `_tests_` directories near the code they protect. For example:
 

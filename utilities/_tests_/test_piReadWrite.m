@@ -113,6 +113,117 @@ testCase.verifyFalse(ispref('ISETDocker','remoteSceneDir'));
 
 end
 
+function testLocalWriteCopiesLensFile(testCase)
+%% Test a local render finds the lens file the PBRT scene file refers to.
+
+localSaveISETDockerPrefs(testCase);
+setpref('ISETDocker','remoteHost','');
+
+[thisR, lensCopy] = localLensRecipe(testCase, 'test_lens_local');
+originalLensFile = thisR.get('lensfile');
+piWrite(thisR);
+
+testCase.verifyTrue(isfile(lensCopy));
+testCase.verifySubstring(fileread(thisR.get('output file')), ...
+    '"string lensfile" "lens/dgauss.22deg.3.0mm.json"');
+testCase.verifyEqual(thisR.get('lensfile'), originalLensFile);
+
+end
+
+function testRemoteWriteCopiesLensFile(testCase)
+%% Test a remote render uploads the lens file the PBRT scene file refers to.
+
+localSaveISETDockerPrefs(testCase);
+setpref('ISETDocker','remoteHost','orange.stanford.edu');
+setpref('ISETDocker','workDir','/home/wandell/ISETRemoteRender');
+
+[thisR, lensCopy] = localLensRecipe(testCase, 'test_lens_remote');
+piWrite(thisR);
+
+testCase.verifyTrue(isfile(lensCopy));
+testCase.verifySubstring(fileread(thisR.get('output file')), ...
+    '"string lensfile" "lens/dgauss.22deg.3.0mm.json"');
+
+end
+
+function testLensOutsideMatlabPathIsCopied(testCase)
+%% Test a lens file that is not on the MATLAB path, as in a microlens build.
+
+localSaveISETDockerPrefs(testCase);
+setpref('ISETDocker','remoteHost','');
+
+[thisR, ~] = localLensRecipe(testCase, 'test_lens_outside');
+
+sourceDir = tempname;
+mkdir(sourceDir);
+testCase.addTeardown(@() localRemoveDir(sourceDir));
+sourceLens = fullfile(sourceDir, 'custom.lens.json');
+copyfile(thisR.get('lensfile'), sourceLens);
+thisR.camera = piCameraCreate('omni','lens file',sourceLens);
+
+piWrite(thisR);
+
+testCase.verifyTrue(isfile(fullfile(thisR.get('output dir'),'lens','custom.lens.json')));
+testCase.verifySubstring(fileread(thisR.get('output file')), ...
+    '"string lensfile" "lens/custom.lens.json"');
+testCase.verifyEqual(thisR.get('lensfile'), sourceLens);
+
+end
+
+function testNewerLensReplacesCopy(testCase)
+%% Test piWrite refreshes a lens copy that is older than its source.
+
+localSaveISETDockerPrefs(testCase);
+setpref('ISETDocker','remoteHost','');
+
+[thisR, lensCopy] = localLensRecipe(testCase, 'test_lens_newer');
+original = fileread(thisR.get('lensfile'));
+
+localWriteText(lensCopy, 'stale');
+java.io.File(lensCopy).setLastModified(0);
+piWrite(thisR);
+
+testCase.verifyEqual(fileread(lensCopy), original);
+
+end
+
+function testOverwriteLensFileReplacesCopy(testCase)
+%% Test piWrite keeps a copy newer than its source unless asked to replace it.
+
+localSaveISETDockerPrefs(testCase);
+setpref('ISETDocker','remoteHost','');
+
+[thisR, lensCopy] = localLensRecipe(testCase, 'test_lens_overwrite');
+original = fileread(thisR.get('lensfile'));
+
+localWriteText(lensCopy, 'edited');
+piWrite(thisR);
+testCase.verifyEqual(fileread(lensCopy), 'edited');
+
+piWrite(thisR, 'overwrite lens file', true);
+testCase.verifyEqual(fileread(lensCopy), original);
+
+end
+
+function testPiWRSForwardsOverwriteLensFile(testCase)
+%% Test piWRS passes the lens overwrite flag to piWrite.
+%
+% piRender rejects a docker that is not an isetdocker before it starts
+% anything, so this reaches piWrite without needing Docker.
+
+localSaveISETDockerPrefs(testCase);
+setpref('ISETDocker','remoteHost','');
+
+[thisR, lensCopy] = localLensRecipe(testCase, 'test_lens_piwrs');
+original = fileread(thisR.get('lensfile'));
+
+localWriteText(lensCopy, 'stale');
+testCase.verifyError(@() piWRS(thisR, 'docker', struct('verbosity', 0), ...
+    'overwrite lens file', true, 'show', false), ?MException);
+testCase.verifyEqual(fileread(lensCopy), original);
+
+end
+
 function testRadianceEXRPreservesSingletonRow(testCase)
 %% Test spectral EXR reads preserve a one-row image shape.
 
@@ -173,6 +284,29 @@ if hadPrefs
     end
 end
 
+end
+
+function [thisR, lensCopy] = localLensRecipe(testCase, dirName)
+%% A lens camera recipe, with a clean output folder removed after the test.
+
+tempDir = fullfile(piRootPath, 'local', dirName);
+localRemoveDir(tempDir);
+mkdir(tempDir);
+testCase.addTeardown(@() localRemoveDir(tempDir));
+
+thisR = piRecipeDefault('scene name', 'SimpleScene');
+thisR.camera = piCameraCreate('omni','lens file','dgauss.22deg.3.0mm.json');
+thisR.outputFile = fullfile(tempDir, [dirName '.pbrt']);
+
+lensCopy = fullfile(tempDir, 'lens', 'dgauss.22deg.3.0mm.json');
+if ~isfolder(fileparts(lensCopy)), mkdir(fileparts(lensCopy)); end
+
+end
+
+function localWriteText(fileName, str)
+fid = fopen(fileName, 'w');
+fprintf(fid, '%s', str);
+fclose(fid);
 end
 
 function localRemoveDir(dirName)

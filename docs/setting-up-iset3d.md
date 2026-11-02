@@ -67,6 +67,11 @@ Docker download it the first time you render.
 > (arm64) builds of these images, so on an M-series Mac the CPU image runs
 > under emulation: it works correctly, just more slowly. Keep the film
 > resolution and rays per pixel small while you are learning.
+>
+> The June 2024 CPU image has crashed with `Illegal instruction` on an Intel
+> i9-9900K iMac, and other CPUs without AVX-512 may do the same. The test render
+> in Step 4 will show this. See
+> [returning-to-iset3d.md](returning-to-iset3d.md#illegal-instruction-from-the-cpu-image).
 
 ## Step 2: Configure The MATLAB Preferences
 
@@ -89,7 +94,11 @@ setpref('ISETDocker','workDir',fullfile(piRootPath,'local'));
 ```
 
 The key fields are `remoteHost` empty (so rendering stays local) and
-`renderContext` set to `default` (your own machine's Docker daemon).
+`renderContext` naming a Docker context that reaches your own machine's Docker
+daemon. ISET3D uses this name literally, and leaving it empty fails validation.
+`default` suits Docker Engine on Linux, but it can fail on Docker Desktop for Mac.
+Run `docker context ls` and use the starred name, which on Docker Desktop is
+usually `desktop-linux`.
 
 **Remove the Stanford resource mount.** `PBRTResources` points at a Stanford
 storage path (`/acorn/data/iset/PBRTResources`) that does not exist on your
@@ -171,6 +180,8 @@ reachable, the context is valid, and the preferences are well formed:
 ```matlab
 piDockerDiagnose('render',false);
 ```
+
+This does not run PBRT, so it can pass on a machine that cannot render.
 
 When that passes, run a small render. Keep it low resolution so the first CPU
 render finishes quickly:

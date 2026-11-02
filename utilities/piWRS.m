@@ -39,6 +39,9 @@ function [obj, results, thisD] = piWRS(thisR,varargin)
 %             from the local computer.  (Better comment needed)
 %    'denoise' - Run the piAIdenoise prior to returning
 %    'main file only' - piWrite flag
+%    'overwrite lens file' - piWrite flag.  Replace the copy of the lens
+%                   file in the output lens folder, even if the source is
+%                   not newer (Default: false)
 %    'verbosity'  - Set isetdocker verbosity level (0 quiet, 1,2,3
 %                   noisy)
 %
@@ -73,6 +76,7 @@ p.addParameter('speed',1,@isscalar);     % Spatial resolution divide
 p.addParameter('meanluminance',-1,@isscalar);
 p.addParameter('replace',false,@islogical);
 p.addParameter('mainfileonly',false,@islogical);
+p.addParameter('overwritelensfile',false,@islogical);
 p.addParameter('pushresources',false,@islogical);
 p.addParameter('verbosity',1,@isnumeric);
 
@@ -137,7 +141,8 @@ thisR.set('render type',renderType);
 
 % Write the local/pbrt directory being aware about whether the resources
 % are expected to be present remotely.
-piWrite(thisR, 'main file only', p.Results.mainfileonly);
+piWrite(thisR, 'main file only', p.Results.mainfileonly, ...
+    'overwrite lens file', p.Results.overwritelensfile);
 
 [obj, results, thisD] = piRender(thisR, 'docker', thisD, varargin{:});
 

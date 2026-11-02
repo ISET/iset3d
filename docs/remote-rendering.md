@@ -54,10 +54,14 @@ preference group. Important fields include:
 - `PBRTContainer`: transient running PBRT container name. This can become stale.
 - `device`, `deviceID`, `dockerImage`: CPU/GPU and container image settings.
 
-Use `piDockerConfig` to set these preferences and `piDockerDiagnose` to inspect
-them. `piDockerDiagnose('render',false)` checks Docker, rsync, SSH, preference
-structure, Docker context, GPU visibility, and stale container state without
-running a full scene render.
+Set these preferences with `setpref` or `DockerPref`, and use `piDockerDiagnose`
+to inspect them. `piDockerConfig` does not set them; it finds the `docker` command
+for the current session. `piDockerDiagnose('render',false)` checks Docker, rsync,
+SSH, preference structure, Docker context, GPU visibility, and stale container
+state without running PBRT, so it does not by itself prove that rendering works.
+[returning-to-iset3d.md](returning-to-iset3d.md) has the values to use, the
+`docker context create` command, and a startup checklist that includes the VPN
+and CardinalKey.
 
 When the PBRT container starts, `isetdocker.startPBRT` mounts both:
 

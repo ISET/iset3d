@@ -42,16 +42,24 @@ thisR.set('camera',piCameraCreate('omni','lens file',lensname));
 
 Deprecated subtypes that still appear in older scenes: `light field`
 (superseded by `omni` with a microlens), `realisticDiffraction`, and
-`realistic` (superseded by `omni` except in some old car scenes).
+`realistic`. `piCameraCreate('realistic',...)` warns and returns an `omni` camera
+using the JSON version of the lens, and it errors if there is no JSON version.
 
 Lens files live in **ISETCam**, not ISET3D — `piDirGet('lens')` points there.
 JSON is the current lens format; `.dat` files persist for the eye models.
+PBRT's `omni` camera rejects a `.dat` file.
 
 ```matlab
 thisR.get('lens file');
 thisR.get('lens dir');
 thisR.get('lens basename');
 ```
+
+`piWrite` copies the lens file to `local/<scene>/lens/`, and the PBRT file refers
+to it there, for both local and remote rendering. The copy is replaced only when
+the source is newer. To force it, use `piWRS(thisR,'overwrite lens file',true)`
+(`piWrite` takes the same option). The human eye models write their own lens
+files.
 
 ## Camera Placement
 

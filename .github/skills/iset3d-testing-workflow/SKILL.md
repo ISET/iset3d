@@ -42,6 +42,9 @@ results = iset3dUnitTest;          % 'core' — the default
 results = iset3dUnitTest('full');  % everything
 ```
 
+A `core` pass says nothing about rendering, because `core` never touches Docker.
+To check that rendering works, see the `iset3d-session-startup` skill.
+
 `iset3dUnitTest` recursively discovers every `_tests_` directory under
 `iset3dRootPath` and builds one master suite.
 
@@ -139,7 +142,8 @@ with a reason instead of failing with a long PBRT stack trace.
 
 This means **you do not need `% SkipFile` on a tutorial merely because it
 renders.** Docker-dependent scripts skip themselves cleanly on a machine with
-no renderer.
+no renderer. It also means **a summary with no failures may mean nothing
+rendered,** so check the skip count when you are testing the renderer.
 
 The runners also silence `piRecipeDefault:NoLights`, since many teaching
 scripts deliberately render lightless scenes.

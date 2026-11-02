@@ -10,7 +10,8 @@ never need any of it. Set up local rendering first — see the
 `iset3d-docker-rendering` skill — and come here only when you actually have a
 remote host.
 
-Off-campus access to `orange.stanford.edu` requires an active Stanford VPN.
+Off-campus access to `orange.stanford.edu` requires an active Stanford VPN. The
+`iset3d-session-startup` skill has the checks for that access.
 
 ## Four Separate Things
 
