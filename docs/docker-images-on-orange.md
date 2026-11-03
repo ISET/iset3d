@@ -43,7 +43,7 @@ first is what makes that safe.
   but we cannot publish it under that name.
 - **Names do not describe contents.** `vistalab/pbrt-v4-cpu-intel` on Docker Hub
   requires AVX-512, so it crashes on Intel CPUs without it. `vistalab/pbrt-v4-cpu:latest`
-  is a different image on `orange` than on the Intel iMac.
+  was a different image on `orange` than on the Intel iMac.
 - **Nothing records how an image was made.** The PBRT commit has to be read from
   inside each image, and the build flags are not recorded at all.
 
@@ -153,7 +153,7 @@ This table, from 2026-11-03, can seed the catalog. "Hub" means Docker Hub.
 | `vistalab/pbrt-v4-cpu:latest` | `6ad05a2c0cca` | `fe436b7` 2025-08-14 | AVX-512 | `orange` only |
 | `digitalprodev/pbrt-v4-cpu:latest`, also `vistalab/pbrt-v4-cpu-intel:latest` | `28857506ce5f` | `b73fe96` 2023-12-10 | AVX-512 | `orange`, Hub |
 | `digitalprodev/pbrt-v4-cpu:test` | `d5c01e67ec73` | `a4f6332` 2023-12-15 | No AVX-512 | Intel iMac, Hub |
-| `vistalab/pbrt-v4-cpu-oops:latest` | `0b337d109232` | `88827e5`, about 2021 | Fails on lens cameras | `orange`, and the Intel iMac under other names |
+| `vistalab/pbrt-v4-cpu-oops:latest` | `0b337d109232` | `88827e5`, about 2021 | Fails on lens cameras | `orange` only |
 | `vistalab/pbrt-v4-gpu:latest`, also `:test` | `709d051d85ea` | `db02147` 2024-03-21 | NVIDIA GPU | `orange` only |
 | `vistalab/pbrt-v4-gpu:intel-cuda12.4` | `64908a0fa295` | `db02147` 2024-03-21 | NVIDIA GPU | `orange`, Hub |
 
