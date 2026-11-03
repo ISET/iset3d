@@ -68,9 +68,10 @@ Docker download it the first time you render.
 > under emulation: it works correctly, just more slowly. Keep the film
 > resolution and rays per pixel small while you are learning.
 >
-> The June 2024 CPU image has crashed with `Illegal instruction` on an Intel
-> i9-9900K iMac, and other CPUs without AVX-512 may do the same. The test render
-> in Step 4 will show this. See
+> `digitalprodev/pbrt-v4-cpu:latest` crashes with `Illegal instruction` on an Intel
+> i9-9900K iMac because that CPU has no AVX-512, and other such CPUs may do the
+> same. The test render in Step 4 will show this. Use
+> `digitalprodev/pbrt-v4-cpu:test` instead. See
 > [returning-to-iset3d.md](returning-to-iset3d.md#illegal-instruction-from-the-cpu-image).
 
 ## Step 2: Configure The MATLAB Preferences

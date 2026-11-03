@@ -165,7 +165,7 @@ MATLAB preferences are saved per MATLAB release and survive restarts.
 | `workDir` | `fullfile(piRootPath,'local')` | `/home/<user>/ISETRemoteRender` | Mounted at the same path inside the container. |
 | `device` | `'cpu'` | `'gpu'` | |
 | `deviceID` | `''` | `'0'` (24 GB) or `'1'` (8 GB) | Which GPU. This is a string. |
-| `dockerImage` | `digitalprodev/pbrt-v4-cpu` | `vistalab/pbrt-v4-gpu` | |
+| `dockerImage` | `digitalprodev/pbrt-v4-cpu` | `vistalab/pbrt-v4-gpu` | Without AVX-512, add `:test` to the local image. See [below](#illegal-instruction-from-the-cpu-image). |
 | `PBRTResources` | remove it | `/acorn/data/iset/PBRTResources` | Shared resources, Stanford only. |
 | `PBRTContainer` | never set | never set | Running container. ISET3D manages it. |
 | `batch` | omit | omit | If true, a remote render does not download its result. |
@@ -200,7 +200,7 @@ setpref('ISETDocker','renderContext','desktop-linux');   % the starred name in: 
 setpref('ISETDocker','workDir',fullfile(piRootPath,'local'));
 setpref('ISETDocker','device','cpu');
 setpref('ISETDocker','deviceID','');
-setpref('ISETDocker','dockerImage','digitalprodev/pbrt-v4-cpu');
+setpref('ISETDocker','dockerImage','digitalprodev/pbrt-v4-cpu');   % add :test on a CPU without AVX-512
 if ispref('ISETDocker','PBRTResources'), rmpref('ISETDocker','PBRTResources'); end
 ```
 
@@ -215,7 +215,7 @@ settings.
 | `ssh` times out, or the `Remote SSH` check fails | The VPN is not connected, or SSH access has lapsed | Step 1 |
 | The `Docker context` check fails in local mode, or `failed to connect ... /var/run/docker.sock` | `renderContext` names a context that does not work on this machine, which can happen with `default` on Docker Desktop for Mac | Run `docker context ls` and set `renderContext` to the starred name |
 | The `Docker context` check fails in remote mode | The context does not exist on this machine | Create it as shown above |
-| `Docker render failed with status 132` and `Illegal instruction` | The PBRT CPU image cannot run on this CPU | Render on `orange`. See below. |
+| `Docker render failed with status 132` and `Illegal instruction` | The PBRT CPU image needs AVX-512, which this CPU lacks | Use `digitalprodev/pbrt-v4-cpu:test`. See below. |
 | A tutorial is `Skipped` with `rendering unavailable` | The renderer was not ready, so nothing rendered | Read the reason, then go back to step 5 |
 | A GPU render on `orange` never returns, with PBRT using CPU but the GPU at 0% in `nvidia-smi` | PBRT has hung. This was seen once, in a render that normally takes seconds, and three repeats ran normally. MATLAB waits indefinitely. | From a terminal, run `docker --context remote-orange exec <container> pkill pbrt`, using the name in `getpref('ISETDocker','PBRTContainer')`, then render again |
 | `no CUDA-capable device is detected` | `PBRTContainer` is stale | `piDockerDiagnose('resetStaleContainer',true)` |
@@ -224,11 +224,42 @@ settings.
 
 ### Illegal instruction from the CPU image
 
-The `digitalprodev/pbrt-v4-cpu` image built in June 2024 crashes on an Intel Core
-i9-9900K iMac, even for a one-sphere scene, while `piDockerDiagnose('render',false)`
-reports no problem. The likely cause is that the binary contains AVX-512
-instructions, which that CPU lacks. The same image runs correctly on `orange`,
-whose Xeon has AVX-512. Other CPUs without AVX-512 may behave the same way.
+PBRT's build compiles for the CPU of the machine doing the build (`-march=native`),
+so an image can need instructions that another CPU lacks.
+`digitalprodev/pbrt-v4-cpu:latest`, built in June 2024, contains AVX-512
+instructions. On an Intel Core i9-9900K iMac, which has no AVX-512, it crashes even
+for a one-sphere scene, while `piDockerDiagnose('render',false)` reports no problem.
+
+To check a CPU:
+
+```bash
+sysctl -n hw.optional.avx512f    # macOS: 0 means no AVX-512
+grep -c avx512f /proc/cpuinfo    # Linux: 0 means no AVX-512
+```
+
+On a CPU without AVX-512, use the December 2023 image, which has no AVX-512
+instructions:
+
+```matlab
+setpref('ISETDocker','dockerImage','digitalprodev/pbrt-v4-cpu:test');
+```
+
+On that iMac this image passed `iset3dUnitTest('full')` and the chess set and lens
+tutorials. Its pinhole, lens, microlens, ray transfer, and human eye renders were
+compared with current PBRT on `orange`. Mean radiance agreed to five digits, and no
+single pixel and wavelength band differed by more than 0.7%.
+
+**Compare numbers only between renders from the same image.** On two chess set
+scenes, `:latest` differed from current PBRT by up to about 3.5% in individual
+wavelength bands, although the overall mean agreed to about 0.03%. `:latest`
+predates a commit that turned wavelength jitter back on, which is the likely reason.
+
+These images do not solve the problem:
+
+| Image | Why not |
+| --- | --- |
+| `vistalab/pbrt-v4-cpu-intel` | On Docker Hub this is the same image as `digitalprodev/pbrt-v4-cpu:latest`, despite its name. A local copy from before that change may be a 2021 build, which fails on lens cameras with `omni: camera type unknown`. Pulling replaces that copy. |
+| `vistalab/pbrt-v4-cpu:x86_64` and `:latest` | They contain AVX-512 instructions too. They are on `orange` and cannot be pulled from Docker Hub. |
 
 ## Related
 

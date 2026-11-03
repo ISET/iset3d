@@ -50,8 +50,9 @@ lenses.
 - **`iset3dUnitTest` defaults to `core`,** which excludes every `_remote` test. It
   never touches Docker, the VPN, or PBRT.
 - **`piDockerDiagnose('render',false)` never runs PBRT.** On an Intel i9-9900K
-  iMac it returned `ok = 1` while every render crashed with `Illegal instruction`
-  (status 132).
+  iMac it returned `ok = 1` while every render with the default CPU image crashed
+  with `Illegal instruction` (status 132). The `iset3d-docker-rendering` skill has
+  the fix.
 - **A render script can report `Skipped` rather than `Failed`** when the renderer
   is not ready, so a summary with no failures may mean nothing rendered. Check the
   skip count.

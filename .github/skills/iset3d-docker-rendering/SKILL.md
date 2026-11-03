@@ -182,10 +182,15 @@ by hand.
 
 **`Docker render failed with status 132` and `Illegal instruction`.** PBRT itself
 crashed, with any scene and any camera, while `piDockerDiagnose('render',false)`
-reports no problem. This was seen with the June 2024 `digitalprodev/pbrt-v4-cpu`
-image on an Intel i9-9900K iMac. The binary contains AVX-512 instructions, which
-that CPU lacks, and the same image runs on `orange`, whose Xeon has them. Render
-on a machine that has AVX-512. Other CPUs without it may behave the same way.
+reports no problem. PBRT's build uses `-march=native`, and the June 2024
+`digitalprodev/pbrt-v4-cpu:latest` contains AVX-512 instructions, so it crashes on
+a CPU without them, such as an Intel i9-9900K iMac. Check with `sysctl -n
+hw.optional.avx512f` on macOS or `grep -c avx512f /proc/cpuinfo` on Linux. On such
+a CPU, set `dockerImage` to `digitalprodev/pbrt-v4-cpu:test`, which has none and
+matched current PBRT numerically for every camera type tried. Do not pull
+`vistalab/pbrt-v4-cpu-intel` to fix this: on Docker Hub it is the same image as
+`:latest`. See
+[docs/returning-to-iset3d.md](../../../docs/returning-to-iset3d.md#illegal-instruction-from-the-cpu-image).
 
 **A GPU render never returns.** `system` has no timeout, so MATLAB waits
 indefinitely. A hung PBRT shows CPU use with the GPU at 0% in `nvidia-smi`. This
