@@ -56,7 +56,9 @@ RUN apt-get update -yq && apt-get install -y git \
 
 WORKDIR /pbrt/pbrt-v4/build
 
-RUN cmake -DCMAKE_BUILD_TYPE=MINSIZEREL .. \
+# By default PBRT compiles with -march=native, and then the image crashes on any
+# CPU that lacks the instructions of the machine that built it.
+RUN cmake -DCMAKE_BUILD_TYPE=MINSIZEREL -DPBRT_BUILD_NATIVE_EXECUTABLE=OFF .. \
 && make -j12
 
 ENV PATH=$PATH:/pbrt/pbrt-v4/build
